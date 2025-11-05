@@ -1,0 +1,14 @@
+---
+globs: client
+alwaysApply: false
+---
+
+# Client Development Rules
+1. All CSS and design elements must be managed separately in .css files. Never control them directly in tsx or ts files.
+2. Before creating a new file, always check the existing directory structure, files, and components. Aim to reuse existing components and code.
+3. Manage every component separately. Do not create components repeatedly within a single file; separate them by component for reusability.
+4. When writing code to communicate with the server, make sure to check and connect to the API provided by app-server.
+5. The client must be developed to be fully responsive. Build the UI so that it adapts responsively rather than using fixed positions. Our base development reference is 1440 x 900.
+6. If a component overlaps or breaks when the screen is reduced, implement clipping (overflow: hidden) so that the screen is cut off rather than allowing components to overlap or scroll.
+7. Maintain horizontal layout at all screen sizes. Do not change from horizontal to vertical layout (no flex-wrap, no stacking elements vertically). Components should always remain in a horizontal row regardless of screen size.
+8. When implementing responsive spacing: keep internal spacing within components fixed (e.g., gap between items inside a navigation menu). For spacing between major sections/components, set a minimum gap value. When the screen cannot be reduced further without going below the minimum gap, allow content to overflow off-screen instead of reducing spacing below the minimum.

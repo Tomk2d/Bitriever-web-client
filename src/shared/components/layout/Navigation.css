@@ -1,0 +1,268 @@
+.navigation {
+  width: 100%;
+  height: 88px;
+  background-color: #ffffff;
+  border-bottom: none;
+}
+
+.navigation-container {
+  max-width: 1440px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+}
+
+.navigation-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: fit-content;
+  height: 100%;
+}
+
+.navigation-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+/* 로고 섹션 */
+.navigation-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.logo-image {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-brand {
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 29px;
+  color: #02a262;
+}
+
+/* 메인 네비게이션 메뉴 */
+.navigation-menu {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  justify-content: flex-start;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.nav-item {
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19.5px;
+  color: #79838c;
+  text-decoration: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-item:hover {
+  color: #333d4b;
+}
+
+.nav-item.active {
+  color: #333d4b;
+}
+
+/* 오른쪽 섹션 */
+.navigation-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* 검색바 */
+.navigation-search {
+  width: 160px;
+  height: 35px;
+  background-color: #f5f5f5;
+  border: 1px solid rgba(217, 217, 255, 0.11);
+  border-radius: 8.75px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.search-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  color: #333d4b;
+}
+
+.search-input::placeholder {
+  color: #9e9ea4;
+}
+
+/* 테마 토글 버튼 */
+.theme-toggle {
+  width: 72px;
+  height: 32px;
+  border: none;
+  background-color: #ffffff;
+  border-radius: 20px;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  transition: background-color 0.3s;
+}
+
+.theme-toggle-slider {
+  position: absolute;
+  width: 46px;
+  height: 32px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  transition: transform 0.3s ease;
+  left: 0;
+  top: 0;
+}
+
+.theme-toggle.dark .theme-toggle-slider {
+  transform: translateX(26px);
+}
+
+.theme-toggle:hover {
+  opacity: 0.9;
+}
+
+.theme-toggle:active {
+  transform: scale(0.98);
+}
+
+/* 로그인 버튼 */
+.login-button {
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 19.5px;
+  color: #333d4b;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.login-button:hover {
+  opacity: 0.7;
+}
+
+/* 다크 모드 스타일 */
+.dark .navigation {
+  background-color: #1a1a1a;
+}
+
+.dark .nav-item {
+  color: #a0a0a0;
+}
+
+.dark .nav-item:hover {
+  color: #ededed;
+}
+
+.dark .nav-item.active {
+  color: #ededed;
+}
+
+.dark .navigation-search {
+  background-color: #2a2a2a;
+  border-color: rgba(217, 217, 255, 0.2);
+}
+
+.dark .search-input {
+  color: #ededed;
+}
+
+.dark .search-input::placeholder {
+  color: #666666;
+}
+
+.dark .login-button {
+  color: #ededed;
+}
+
+.dark .logo-brand {
+  color: #02a262;
+}
+
+.dark .theme-toggle {
+  background-color: #2a2a2a;
+}
+
+.dark .theme-toggle-slider {
+  background-color: #2a2a2a;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .navigation-content {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 968px) {
+  .navigation-container {
+    padding: 0 16px;
+  }
+  
+  .navigation-content {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navigation-container {
+    padding: 0 12px;
+  }
+  
+  .navigation-content {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navigation-container {
+    padding: 10px 12px;
+  }
+  
+  .navigation-content {
+    gap: 4px;
+  }
+}
+
