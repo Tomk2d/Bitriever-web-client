@@ -279,42 +279,42 @@ export default function LoginPage() {
           
           {!isSignup ? (
             <>
-              <form onSubmit={handleSubmit} className="login-form">
-                <div className="form-group">
-                  <Input
-                    type="email"
-                    label="이메일"
-                    placeholder="이메일을 입력하세요"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    error={errors.email}
-                  />
-                </div>
-                <div className="form-group">
-                  <Input
-                    type="password"
-                    label="비밀번호"
-                    placeholder="비밀번호를 입력하세요"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    error={errors.password}
-                  />
-                </div>
-                {submitError && (
-                  <div className="error-message">
-                    {submitError}
-                  </div>
-                )}
-                <div className="form-actions">
-                  <Button 
-                    type="submit" 
-                    variant="primary" 
-                    size="lg" 
-                    className="login-submit-button"
-                    disabled={loading}
-                  >
-                    {loading ? '로그인 중...' : '로그인'}
-                  </Button>
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <Input
+                type="email"
+                label="이메일"
+                placeholder="이메일을 입력하세요"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={errors.email}
+              />
+            </div>
+            <div className="form-group">
+              <Input
+                type="password"
+                label="비밀번호"
+                placeholder="비밀번호를 입력하세요"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={errors.password}
+              />
+            </div>
+            {submitError && (
+              <div className="error-message">
+                {submitError}
+              </div>
+            )}
+            <div className="form-actions">
+              <Button 
+                type="submit" 
+                variant="primary" 
+                size="lg" 
+                className="login-submit-button"
+                disabled={loading}
+              >
+                {loading ? '로그인 중...' : '로그인'}
+              </Button>
                   <Button
                     type="button"
                     variant="secondary"
@@ -324,37 +324,37 @@ export default function LoginPage() {
                   >
                     회원가입
                   </Button>
-                </div>
-              </form>
-              
-              <div className="social-login">
-                <div className="social-divider">
-                  <span>또는</span>
-                </div>
-                <div className="social-buttons">
-                  <button
-                    type="button"
-                    onClick={handleKakaoLogin}
-                    className="social-button kakao-button"
-                  >
-                    <span className="social-icon">K</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNaverLogin}
-                    className="social-button naver-button"
-                  >
-                    <span className="social-icon">N</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleGoogleLogin}
-                    className="social-button google-button"
-                  >
-                    <span className="social-icon">G</span>
-                  </button>
-                </div>
-              </div>
+            </div>
+          </form>
+          
+          <div className="social-login">
+            <div className="social-divider">
+              <span>또는</span>
+            </div>
+            <div className="social-buttons">
+              <button
+                type="button"
+                onClick={handleKakaoLogin}
+                className="social-button kakao-button"
+              >
+                <span className="social-icon">K</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleNaverLogin}
+                className="social-button naver-button"
+              >
+                <span className="social-icon">N</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="social-button google-button"
+              >
+                <span className="social-icon">G</span>
+              </button>
+            </div>
+          </div>
             </>
           ) : (
             <form onSubmit={handleSignupSubmit} className="login-form">

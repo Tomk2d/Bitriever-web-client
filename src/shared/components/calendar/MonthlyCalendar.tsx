@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './MonthlyCalendar.css';
+import { useTradingHistories } from '@/features/trading/hooks/useTradingHistories';
+import { getDateKey } from '@/shared/utils/dateUtils';
+import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
 
 export default function MonthlyCalendar() {
   const today = useMemo(() => {
@@ -13,7 +16,19 @@ export default function MonthlyCalendar() {
   }, []);
 
   const [value, setValue] = useState<Date>(today);
+  const [activeStartDate, setActiveStartDate] = useState<Date | null>(today);
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  const { data: tradingHistories = [], isLoading, error } = useTradingHistories(activeStartDate);
+
+  useEffect(() => {
+    console.log('[MonthlyCalendar] Trading histories state:', {
+      count: tradingHistories.length,
+      isLoading,
+      hasError: !!error,
+      activeStartDate: activeStartDate?.toISOString(),
+    });
+  }, [tradingHistories, isLoading, error, activeStartDate]);
 
   const handleChange = (val: any) => {
     if (val instanceof Date) {
@@ -22,6 +37,63 @@ export default function MonthlyCalendar() {
       setValue(date);
     }
   };
+
+  const handleActiveStartDateChange = ({ activeStartDate }: { activeStartDate: Date | null }) => {
+    if (activeStartDate) {
+      setActiveStartDate(activeStartDate);
+    }
+  };
+
+  const tradingHistoriesByDate = useMemo(() => {
+    const grouped: Record<string, TradingHistoryResponse[]> = {};
+    
+    tradingHistories.forEach((history) => {
+      const tradeDate = new Date(history.tradeTime);
+      const dateKey = getDateKey(tradeDate);
+      
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(history);
+    });
+
+    return grouped;
+  }, [tradingHistories]);
+
+  const tileContent = useCallback(({ date, view }: { date: Date; view: string }) => {
+    if (view !== 'month') {
+      return null;
+    }
+
+    const dateKey = getDateKey(date);
+    const histories = tradingHistoriesByDate[dateKey] || [];
+
+    if (histories.length === 0) {
+      return null;
+    }
+
+    // 첫 번째 거래만 선택
+    const firstHistory = histories[0];
+    const coin = firstHistory.coin;
+    const coinSymbol = coin?.symbol || `코인 ${firstHistory.coinId}`;
+    const isBuy = firstHistory.tradeType === 0;
+    const remainingCount = histories.length - 1;
+
+    return (
+      <div className="calendar-event-indicator">
+        <div className="event-content">
+          <div className={`event-coin-block ${isBuy ? 'event-buy' : 'event-sell'}`}>
+            <span className="event-coin-name">{coinSymbol}</span>
+          </div>
+          {remainingCount > 0 && (
+            <div className="event-remaining-count">
+              외 {remainingCount}개의 거래
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }, [tradingHistoriesByDate]);
 
   useEffect(() => {
     if (!calendarRef.current) return;
@@ -88,6 +160,8 @@ export default function MonthlyCalendar() {
           locale="ko-KR"
           formatDay={(locale, date) => date.getDate().toString()}
           defaultActiveStartDate={today}
+          onActiveStartDateChange={handleActiveStartDateChange}
+          tileContent={tileContent}
         />
       </div>
     </div>

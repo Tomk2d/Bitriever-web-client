@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { clearUser } from '@/store/slices/authSlice';
+import { clearUser, setUser } from '@/store/slices/authSlice';
 import { authService } from '@/features/auth/services/authService';
 import './Navigation.css';
 
@@ -17,6 +17,39 @@ export default function Navigation() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // 앱 초기화 시 localStorage의 토큰 확인 및 사용자 정보 가져오기
+  useEffect(() => {
+    const initializeAuth = async () => {
+      if (isInitialized) return;
+      
+      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      
+      if (accessToken && !isAuthenticated) {
+        try {
+          const userData = await authService.getCurrentUser();
+          dispatch(setUser({
+            userId: userData.userId,
+            email: userData.email,
+            nickname: userData.nickname,
+          }));
+        } catch (error) {
+          console.error('사용자 정보 가져오기 실패:', error);
+          // 토큰이 유효하지 않으면 제거
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          }
+          dispatch(clearUser());
+        }
+      }
+      
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
+  }, [dispatch, isAuthenticated, isInitialized]);
 
   // 테마 변경 시 html에 클래스 적용
   useEffect(() => {
@@ -151,13 +184,13 @@ export default function Navigation() {
                     >
                       설정
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
+              <button
+                type="button"
+                onClick={handleLogout}
                       className="profile-dropdown-item profile-dropdown-item-danger"
-                    >
+              >
                       로그아웃
-                    </button>
+              </button>
                   </div>
                 )}
               </div>
