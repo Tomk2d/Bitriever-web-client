@@ -1,0 +1,119 @@
+.button {
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.button-primary {
+  background-color: var(--main-color);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(2, 162, 98, 0.2);
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: #03d67a;
+  box-shadow: 0 4px 8px rgba(2, 162, 98, 0.4);
+}
+
+.button-primary:disabled {
+  background-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.button-secondary {
+  background-color: #6b7280;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+  box-shadow: 0 4px 8px rgba(107, 114, 128, 0.4);
+}
+
+.button-secondary:disabled {
+  background-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.button-outline {
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  color: var(--foreground);
+}
+
+.button-outline:hover:not(:disabled) {
+  background-color: #f9fafb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-outline:disabled {
+  background-color: transparent;
+  border-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.button-size-sm {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.button-size-md {
+  padding: 8px 16px;
+  font-size: 16px;
+}
+
+.button-size-lg {
+  padding: 12px 24px;
+  font-size: 18px;
+}
+
+/* 다크 모드 */
+.dark .button-primary {
+  background-color: var(--main-color);
+  color: #ffffff;
+}
+
+.dark .button-primary:hover:not(:disabled) {
+  background-color: #03d67a;
+  box-shadow: 0 4px 8px rgba(2, 162, 98, 0.4);
+}
+
+.dark .button-primary:disabled {
+  background-color: #4b5563;
+  color: #6b7280;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.dark .button-outline {
+  border-color: #4b5563;
+  color: var(--foreground);
+}
+
+.dark .button-outline:hover:not(:disabled) {
+  background-color: #1f2937;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark .button-outline:disabled {
+  background-color: transparent;
+  border-color: #4b5563;
+  color: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+

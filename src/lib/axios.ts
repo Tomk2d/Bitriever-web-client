@@ -13,7 +13,13 @@ export const apiClient = axios.create({
 // 요청 인터셉터
 apiClient.interceptors.request.use(
   (config) => {
-    // 토큰이 필요한 경우 여기서 추가
+    // 로컬 스토리지에서 토큰 가져오기
+    if (typeof window !== 'undefined') {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    }
     return config;
   },
   (error) => {
@@ -27,9 +33,15 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // 401 에러 처리 등
+    // 401 에러 처리
     if (error.response?.status === 401) {
-      // 인증 실패 처리
+      // 인증 실패 시 토큰 제거
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        // 로그인 페이지로 리다이렉트
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

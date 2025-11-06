@@ -1,6 +1,6 @@
 .navigation {
   width: 100%;
-  height: 88px;
+  height: 70px;
   background-color: #ffffff;
   border-bottom: none;
 }
@@ -57,7 +57,7 @@
   font-weight: 700;
   font-size: 24px;
   line-height: 29px;
-  color: #02a262;
+  color: var(--main-color);
 }
 
 /* 메인 네비게이션 메뉴 */
@@ -174,13 +174,21 @@
   font-weight: 700;
   font-size: 16px;
   line-height: 19.5px;
-  color: #333d4b;
+  color: #ffffff;
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  background: var(--main-color);
+  border: 1px solid var(--main-color);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(2, 162, 98, 0.2);
 }
 
 .login-button:hover {
-  opacity: 0.7;
+  background-color: #03d67a;
+  border-color: #03d67a;
+  box-shadow: 0 4px 8px rgba(2, 162, 98, 0.4);
 }
 
 /* 다크 모드 스타일 */
@@ -214,11 +222,212 @@
 }
 
 .dark .login-button {
+  color: #ffffff;
+  background: var(--main-color);
+  border-color: var(--main-color);
+}
+
+.dark .login-button:hover {
+  background-color: #03d67a;
+  border-color: #03d67a;
+  box-shadow: 0 4px 8px rgba(2, 162, 98, 0.4);
+}
+
+/* 프로필 메뉴 */
+.profile-menu-container {
+  position: relative;
+}
+
+.profile-button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.profile-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .profile-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--main-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: #f8f9fa;
+}
+
+.profile-dropdown-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--main-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.profile-dropdown-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-dropdown-name {
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #333d4b;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-dropdown-email {
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #79838c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-dropdown-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.1);
+  margin: 8px 0;
+}
+
+.profile-dropdown-item {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #333d4b;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.profile-dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.profile-dropdown-item-danger {
+  color: #dc3545;
+}
+
+.profile-dropdown-item-danger:hover {
+  background-color: #fff5f5;
+  color: #c82333;
+}
+
+/* 다크 모드 프로필 메뉴 */
+.dark .profile-dropdown {
+  background-color: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .profile-dropdown-header {
+  background-color: #1f1f1f;
+}
+
+.dark .profile-dropdown-name {
   color: #ededed;
 }
 
+.dark .profile-dropdown-email {
+  color: #a0a0a0;
+}
+
+.dark .profile-dropdown-divider {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .profile-dropdown-item {
+  color: #ededed;
+}
+
+.dark .profile-dropdown-item:hover {
+  background-color: #333333;
+}
+
+.dark .profile-dropdown-item-danger {
+  color: #ff6b6b;
+}
+
+.dark .profile-dropdown-item-danger:hover {
+  background-color: #3a1f1f;
+  color: #ff5252;
+}
+
 .dark .logo-brand {
-  color: #02a262;
+  color: var(--main-color);
 }
 
 .dark .theme-toggle {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function POST(
   request: NextRequest,
@@ -9,32 +9,56 @@ export async function POST(
   try {
     const { path: pathArray } = await params;
     const path = pathArray.join('/');
-    const body = await request.json();
+    
+    // Authorization 헤더 가져오기
+    const authHeader = request.headers.get('Authorization');
+    
+    // 요청 바디 읽기 (logout의 경우 body가 없을 수 있음)
+    let body: any = null;
+    const contentType = request.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        body = await request.json();
+      } catch {
+        // body가 없는 경우 무시
+        body = null;
+      }
+    }
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/${path}`, {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
+    const fetchOptions: RequestInit = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+      headers,
+    };
+
+    if (body) {
+      fetchOptions.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/${path}`, fetchOptions);
 
     const data = await response.json();
 
     if (response.ok) {
-      // httpOnly 쿠키 설정 (백엔드에서 설정하거나 여기서 설정)
       const nextResponse = NextResponse.json(data);
-      
-      // 백엔드에서 토큰을 받아서 쿠키에 저장하는 로직 추가
-      // 예: nextResponse.cookies.set('authToken', data.token, { httpOnly: true, secure: true });
-      
       return nextResponse;
     }
 
     return NextResponse.json(data, { status: response.status });
-  } catch {
+  } catch (error) {
+    console.error('API route error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -49,7 +73,14 @@ export async function GET(
     const path = pathArray.join('/');
     const token = request.cookies.get('authToken')?.value;
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/${path}`, {
+    // Query parameter 추출
+    const searchParams = request.nextUrl.searchParams;
+    const queryString = searchParams.toString();
+    const url = queryString 
+      ? `${BACKEND_URL}/api/auth/${path}?${queryString}`
+      : `${BACKEND_URL}/api/auth/${path}`;
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -58,10 +89,19 @@ export async function GET(
     });
 
     const data = await response.json();
+
+    if (response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
+
     return NextResponse.json(data, { status: response.status });
-  } catch {
+  } catch (error) {
+    console.error('API route error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

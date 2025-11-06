@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
   user: {
-    id: string | null;
+    userId: string | null;
     email: string | null;
     nickname: string | null;
   } | null;
@@ -26,9 +26,17 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+    setUserFromAuthResponse: (state, action: PayloadAction<{ userId: string; email: string; nickname: string }>) => {
+      state.user = {
+        userId: action.payload.userId,
+        email: action.payload.email,
+        nickname: action.payload.nickname,
+      };
+      state.isAuthenticated = true;
+    },
   },
 });
 
-export const { setUser, clearUser } = authSlice.actions;
+export const { setUser, clearUser, setUserFromAuthResponse } = authSlice.actions;
 export default authSlice.reducer;
 
