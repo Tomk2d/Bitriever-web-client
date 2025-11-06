@@ -54,7 +54,7 @@
 .logo-brand {
   font-family: 'Product Sans', 'Pretendard', sans-serif;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   font-size: 24px;
   line-height: 29px;
   color: #02a262;
@@ -66,14 +66,14 @@
   align-items: center;
   gap: 30px;
   justify-content: flex-start;
-  padding: 0 4px;
+  padding: 0 12px;
   flex-shrink: 0;
 }
 
 .nav-item {
   font-family: 'Product Sans', 'Pretendard', sans-serif;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   font-size: 16px;
   line-height: 19.5px;
   color: #79838c;
@@ -171,7 +171,7 @@
 .login-button {
   font-family: 'Product Sans', 'Pretendard', sans-serif;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   font-size: 16px;
   line-height: 19.5px;
   color: #333d4b;
