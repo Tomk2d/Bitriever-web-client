@@ -66,6 +66,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --main-color: #02a262;
+  --sub-color: #4dd4a0;
 }
 
 @theme inline {

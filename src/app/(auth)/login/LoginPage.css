@@ -1,0 +1,289 @@
+.login-page {
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: var(--background);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-box {
+  width: 100%;
+  background-color: var(--background);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.login-title {
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 38px;
+  color: var(--foreground);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-actions {
+  margin-top: 32px;
+}
+
+.login-submit-button {
+  width: 100%;
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.signup-button {
+  width: 100%;
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-weight: 700;
+  background-color: var(--sub-color) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(77, 212, 160, 0.2) !important;
+}
+
+.signup-button:hover {
+  background-color: #3bc490 !important;
+  box-shadow: 0 4px 8px rgba(77, 212, 160, 0.4) !important;
+}
+
+.nickname-input-group {
+  width: 100%;
+}
+
+.nickname-input-group > label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.nickname-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nickname-input-wrapper > input.nickname-input {
+  flex: 1;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.nickname-check-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: 100px;
+  background-color: var(--sub-color) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(77, 212, 160, 0.2) !important;
+  height: 38px;
+}
+
+.nickname-check-button:hover {
+  background-color: #3bc490 !important;
+  box-shadow: 0 4px 8px rgba(77, 212, 160, 0.4) !important;
+}
+
+.error-message {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 14px;
+  text-align: center;
+}
+
+.dark .error-message {
+  background-color: #7f1d1d;
+  border-color: #991b1b;
+  color: #fca5a5;
+}
+
+.nickname-success-message {
+  color: #16a34a;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.dark .nickname-success-message {
+  color: #4ade80;
+}
+
+.social-login {
+  margin-top: 32px;
+}
+
+.social-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0;
+  color: #9e9ea4;
+  font-size: 14px;
+}
+
+.social-divider::before,
+.social-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.social-divider span {
+  padding: 0 16px;
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: center;
+}
+
+.social-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Product Sans', 'Pretendard', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-button:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.social-icon {
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kakao-button {
+  background-color: #fee500;
+  border-color: #fee500;
+  color: #000000;
+}
+
+.kakao-button:hover {
+  background-color: #fdd835;
+  border-color: #fdd835;
+}
+
+.naver-button {
+  background-color: #03c75a;
+  border-color: #03c75a;
+  color: #ffffff;
+}
+
+.naver-button:hover {
+  background-color: #02b350;
+  border-color: #02b350;
+}
+
+.google-button {
+  background-color: #ffffff;
+  border-color: #dadce0;
+  color: #3c4043;
+}
+
+.google-button:hover {
+  background-color: #f8f9fa;
+  border-color: #dadce0;
+}
+
+/* 다크 모드 스타일 */
+.dark .login-box {
+  background-color: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .login-title {
+  color: var(--foreground);
+}
+
+.dark .social-button {
+  background-color: #2a2a2a;
+  border-color: #4b5563;
+  color: var(--foreground);
+}
+
+.dark .social-button:hover {
+  background-color: #3a3a3a;
+  border-color: #6b7280;
+}
+
+.dark .social-divider {
+  color: #6b7280;
+}
+
+.dark .social-divider::before,
+.dark .social-divider::after {
+  border-color: #4b5563;
+}
+
+.dark .kakao-button {
+  background-color: #fee500;
+  border-color: #fee500;
+  color: #000000;
+}
+
+.dark .kakao-button:hover {
+  background-color: #fdd835;
+  border-color: #fdd835;
+}
+
+.dark .naver-button {
+  background-color: #03c75a;
+  border-color: #03c75a;
+  color: #ffffff;
+}
+
+.dark .naver-button:hover {
+  background-color: #02b350;
+  border-color: #02b350;
+}
+
+.dark .google-button {
+  background-color: #2a2a2a;
+  border-color: #4b5563;
+  color: var(--foreground);
+}
+
+.dark .google-button:hover {
+  background-color: #3a3a3a;
+  border-color: #6b7280;
+}
+
