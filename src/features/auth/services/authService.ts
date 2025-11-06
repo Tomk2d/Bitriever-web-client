@@ -30,19 +30,19 @@ export const authService = {
     });
 
     const result = await response.json();
-
+    
     if (!response.ok) {
       throw new Error(result.message || result.error?.message || '로그인에 실패했습니다.');
     }
 
     const authData = result.data;
-
+    
     // JWT 토큰을 로컬 스토리지에 저장
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', authData.accessToken);
       localStorage.setItem('refreshToken', authData.refreshToken);
     }
-
+    
     return authData;
   },
 
@@ -78,7 +78,7 @@ export const authService = {
     if (!response.ok) {
       throw new Error(result.message || result.error?.message || '로그아웃에 실패했습니다.');
     }
-
+    
     // 로컬 스토리지에서 토큰 제거
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
@@ -87,8 +87,23 @@ export const authService = {
   },
 
   getCurrentUser: async () => {
-    const response = await apiClient.get('/api/auth/me');
-    return response.data.data;
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    
+    const response = await fetch('/api/auth/me', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || result.error?.message || '사용자 정보를 가져오는데 실패했습니다.');
+    }
+
+    return result.data;
   },
 };
 

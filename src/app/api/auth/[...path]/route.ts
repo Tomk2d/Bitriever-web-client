@@ -80,12 +80,22 @@ export async function GET(
       ? `${BACKEND_URL}/api/auth/${path}?${queryString}`
       : `${BACKEND_URL}/api/auth/${path}`;
 
+    // Authorization 헤더 가져오기 (쿠키보다 우선)
+    const authHeader = request.headers.get('Authorization');
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    } else if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
+      headers,
     });
 
     const data = await response.json();
