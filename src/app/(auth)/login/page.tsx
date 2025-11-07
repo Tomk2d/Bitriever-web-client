@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { Input, Button } from '@/shared/components/ui';
 import { authService } from '@/features/auth/services/authService';
+import { assetService } from '@/features/asset/services/assetService';
 import { setUserFromAuthResponse } from '@/store/slices/authSlice';
 import './LoginPage.css';
 
@@ -75,6 +76,12 @@ export default function LoginPage() {
         email: response.email,
         nickname: response.nickname,
       }));
+      
+      // 자산 동기화 API 호출 (비동기, 백그라운드에서 실행)
+      assetService.syncAssets().catch((error) => {
+        // 에러는 조용히 처리 (로그인 플로우에는 영향 없음)
+        console.error('자산 동기화 실패:', error);
+      });
       
       // 로그인 성공 시 대시보드로 이동
       router.push('/dashboard');

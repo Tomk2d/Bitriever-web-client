@@ -89,11 +89,15 @@ export const authService = {
   getCurrentUser: async () => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     
+    if (!accessToken) {
+      throw new Error('로그인이 필요합니다.');
+    }
+    
     const response = await fetch('/api/auth/me', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 

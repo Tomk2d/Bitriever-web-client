@@ -26,7 +26,14 @@ export default function Navigation() {
       
       const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
       
-      if (accessToken && !isAuthenticated) {
+      // 토큰이 없으면 초기화만 완료
+      if (!accessToken) {
+        setIsInitialized(true);
+        return;
+      }
+      
+      // 토큰이 있고 인증되지 않은 상태일 때만 API 호출
+      if (!isAuthenticated) {
         try {
           const userData = await authService.getCurrentUser();
           dispatch(setUser({
@@ -35,7 +42,7 @@ export default function Navigation() {
             nickname: userData.nickname,
           }));
         } catch (error) {
-          console.error('사용자 정보 가져오기 실패:', error);
+          // 에러 발생 시 조용히 처리 (로그인되지 않은 상태로 유지)
           // 토큰이 유효하지 않으면 제거
           if (typeof window !== 'undefined') {
             localStorage.removeItem('accessToken');
@@ -182,7 +189,7 @@ export default function Navigation() {
                       onClick={handleSettings}
                       className="profile-dropdown-item"
                     >
-                      설정
+                      계정 설정
                     </button>
               <button
                 type="button"

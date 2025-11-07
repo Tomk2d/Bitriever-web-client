@@ -1,0 +1,514 @@
+.right-sidebar {
+  position: fixed;
+  top: 70px; /* Navigation 높이만큼 */
+  right: 0;
+  width: var(--right-sidebar-width);
+  height: calc(100vh - 70px); /* 전체 높이에서 navigation 높이 제외 */
+  background-color: var(--sidebar-bg, #ffffff);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px 0;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.sidebar-top {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.sidebar-bottom {
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-bottom: 16px;
+}
+
+.sidebar-menu-item {
+  width: 100%;
+  height: 54px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.sidebar-icon {
+  font-family: 'TossFace', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-size: 20px;
+  line-height: 1;
+  display: block;
+  filter: grayscale(100%);
+  opacity: 0.8;
+}
+
+.sidebar-text {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  display: block;
+}
+
+.sidebar-menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-menu-item.active {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--foreground);
+}
+
+.sidebar-menu-item.active:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 왼쪽 패널 */
+.sidebar-panel {
+  position: fixed;
+  top: 70px; /* Navigation 높이만큼 */
+  right: var(--right-sidebar-width); /* 사이드바 오른쪽에 위치 */
+  width: 400px;
+  height: calc(100vh - 70px);
+  background-color: var(--sidebar-bg, #ffffff);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 998;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: none;
+}
+
+.sidebar-panel-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-panel-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.wallet-refresh-button {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.wallet-refresh-button:hover:not(.disabled) {
+  background-color: transparent;
+}
+
+.wallet-refresh-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wallet-refresh-button.disabled .wallet-refresh-icon {
+  color: var(--main-color, #02a262);
+  opacity: 0.5;
+}
+
+/* 비활성화 상태에서 툴팁 즉시 표시 */
+.wallet-refresh-button.disabled[title] {
+  position: relative;
+}
+
+.wallet-refresh-button.disabled[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: 100%;
+  left: 10px;
+  margin-top: 0px;
+  padding: 4px 4px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #ffffff;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1000;
+  animation: fadeIn 0s;
+}
+
+.wallet-refresh-button.disabled[title]:hover::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 8px;
+  margin-top: -4px;
+  border: 4px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wallet-refresh-icon {
+  font-family: 'TossFace', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  display: block;
+  filter: none;
+  opacity: 1;
+  color: var(--main-color, #02a262);
+}
+
+.sidebar-panel-close {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar-panel-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 자산 요약 카드 */
+.wallet-summary-cards {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.wallet-card {
+  flex: 1;
+  width: 144px;
+  height: 110px;
+  background-color: rgba(2, 32, 71, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.wallet-card-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12.3px;
+  font-weight: 500;
+  color: rgba(0, 19, 43, 0.58);
+  line-height: 17.4px;
+}
+
+.wallet-card-value {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(0, 12, 30, 0.8);
+  line-height: 20.3px;
+  margin-bottom: 11px;
+}
+
+.wallet-card-value-large {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #000000;
+  line-height: 20.3px;
+  margin-bottom: 11px;
+}
+
+.wallet-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0px;
+}
+
+.wallet-card-label-small {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: rgba(0, 19, 43, 0.58);
+  line-height: 17.4px;
+}
+
+.wallet-card-value-small {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(0, 12, 30, 0.8);
+  line-height: 20.3px;
+}
+
+.wallet-card-value-small.profit {
+  color: #f04452;
+}
+
+.sidebar-panel-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  color: var(--foreground);
+}
+
+/* 보유 자산 리스트 */
+.wallet-content-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 16px;
+}
+
+.wallet-loading {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+  text-align: center;
+  padding: 20px;
+}
+
+.wallet-asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+  margin-left: -16px;
+  margin-right: -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.wallet-asset-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.wallet-asset-list-empty {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.6;
+}
+
+.wallet-asset-item {
+  background-color: rgba(2, 32, 71, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wallet-asset-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wallet-asset-name-korean {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.wallet-asset-name-symbol {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 19, 43, 0.6);
+}
+
+.wallet-asset-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wallet-asset-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wallet-asset-detail-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 19, 43, 0.58);
+}
+
+.wallet-asset-detail-value {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* 다크 모드 보유 자산 리스트 스타일 */
+.dark .wallet-asset-item {
+  background-color: rgba(2, 32, 71, 0.05);
+}
+
+.dark .wallet-asset-name-symbol {
+  color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .wallet-asset-detail-label {
+  color: rgba(237, 237, 237, 0.58);
+}
+
+.dark .wallet-asset-detail-value {
+  color: var(--foreground);
+}
+
+/* 다크 모드 스타일 */
+.dark .right-sidebar {
+  background-color: var(--sidebar-bg, #17171c); /* RGB(23, 23, 28) */
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .sidebar-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .sidebar-menu-item.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--foreground);
+}
+
+.dark .sidebar-menu-item.active:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .sidebar-panel {
+  background-color: var(--sidebar-bg, #17171c); /* RGB(23, 23, 28) */
+  border-left-color: rgba(255, 255, 255, 0.1);
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .sidebar-panel-header {
+  border-bottom: none;
+}
+
+.dark .sidebar-panel-close:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .wallet-refresh-button:hover:not(.disabled) {
+  background-color: transparent;
+}
+
+.dark .wallet-refresh-button.disabled[title]:hover::after {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000000;
+}
+
+.dark .wallet-refresh-button.disabled[title]:hover::before {
+  border-bottom-color: rgba(255, 255, 255, 0.9);
+}
+
+/* 다크 모드 자산 카드 스타일 */
+.dark .wallet-card {
+  background-color: rgba(2, 32, 71, 0.05);
+}
+
+.dark .wallet-card-label {
+  color: rgba(237, 237, 237, 0.58);
+}
+
+.dark .wallet-card-value {
+  color: rgba(237, 237, 237, 0.8);
+}
+
+.dark .wallet-card-value-large {
+  color: #ededed;
+}
+
+.dark .wallet-card-label-small {
+  color: rgba(237, 237, 237, 0.58);
+}
+
+.dark .wallet-card-value-small {
+  color: rgba(237, 237, 237, 0.8);
+}
+
+.dark .wallet-card-value-small.profit {
+  color: #f04452;
+}

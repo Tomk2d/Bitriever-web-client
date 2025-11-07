@@ -1,4 +1,12 @@
 @font-face {
+  font-family: 'TossFace';
+  src: url('/assets/emojis/TossFaceFontMac.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Pretendard';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2') format('woff2');
   font-weight: 100;
@@ -68,6 +76,8 @@
   --foreground: #171717;
   --main-color: #02a262;
   --sub-color: #4dd4a0;
+  --right-sidebar-width: 60px; /* 오른쪽 사이드바 너비 */
+  --sidebar-bg: #f6f7f9; /* 라이트 모드 사이드바 배경 RGB(246, 247, 249) */
 }
 
 @theme inline {
@@ -80,8 +90,10 @@
 
 /* 다크 모드 스타일 */
 .dark {
-  --background: #0a0a0a;
+  --background:  #232328; /* RGB(35, 35, 40) - 네비게이션 배경 */
   --foreground: #ededed;
+  --navigation-bg: #232328; /* RGB(35, 35, 40) - 네비게이션 배경 */
+  --sidebar-bg: #17171c; /* RGB(23, 23, 28) - 사이드바 배경 */
 }
 
 /* 전역 Pretendard 폰트 적용 */
@@ -94,4 +106,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* Navigation이 fixed이므로 body에 상단 패딩 추가 */
+body {
+  padding-top: 70px;
+  padding-right: var(--right-sidebar-width); /* 오른쪽 사이드바 너비만큼 */
 }

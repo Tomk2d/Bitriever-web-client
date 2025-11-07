@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import Navigation from "@/shared/components/layout/Navigation";
 import Footer from "@/shared/components/layout/Footer";
+import RightSidebar from "@/shared/components/layout/RightSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <Navigation />
           <main className="flex-1">{children}</main>
           <Footer />
+          <RightSidebar />
         </Providers>
       </body>
     </html>

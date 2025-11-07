@@ -241,6 +241,15 @@
   background-color: #f5f5f5;
 }
 
+/* 다크 모드 네비게이션 버튼 스타일 */
+.dark .diary-calendar .react-calendar__navigation button {
+  color: #ffffff !important;
+}
+
+.dark .diary-calendar .react-calendar__navigation button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* 네비게이션 라벨 버튼 좌우 간격 및 크기 줄이기 */
 .diary-calendar .react-calendar__navigation__label {
   padding-left: 12px !important;
@@ -248,6 +257,11 @@
   flex-grow: 0 !important;
   flex-shrink: 0 !important;
   min-width: 140px !important;
+}
+
+/* 다크 모드 네비게이션 라벨 스타일 */
+.dark .diary-calendar .react-calendar__navigation__label {
+  color: #ffffff !important;
 }
 
 /* 요일 wrapper */
