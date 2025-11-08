@@ -13,10 +13,8 @@ const handleUnauthorized = async () => {
     console.error('로그아웃 처리 중 에러:', error);
   }
   
-  // 토큰 제거 (이미 logout에서 처리되지만 확실히 하기 위해)
+  // 로그인 페이지로 리다이렉트 (logout에서 이미 토큰 제거 및 Redux 클리어 처리됨)
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     window.location.href = '/login';
   }
 };
@@ -44,14 +42,14 @@ export const assetService = {
           },
         });
 
-        const result = await response.json();
-
         // 401 에러 발생 시 로그아웃 처리 및 로그인 페이지로 리다이렉트
         if (response.status === 401) {
           console.warn('자산 동기화: 인증 실패 (401) - 로그아웃 처리');
           await handleUnauthorized();
           return false;
         }
+
+        const result = await response.json();
 
         if (!response.ok) {
           throw new Error(result.message || result.error?.message || '자산 동기화에 실패했습니다.');
@@ -93,14 +91,14 @@ export const assetService = {
       },
     });
 
-    const result = await response.json();
-
     // 401 에러 발생 시 로그아웃 처리 및 로그인 페이지로 리다이렉트
     if (response.status === 401) {
       console.warn('자산 조회: 인증 실패 (401) - 로그아웃 처리');
       await handleUnauthorized();
       throw new Error('인증에 실패했습니다.');
     }
+
+    const result = await response.json();
 
     if (!response.ok) {
       throw new Error(result.message || result.error?.message || '자산 조회에 실패했습니다.');

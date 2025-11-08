@@ -112,4 +112,5 @@ body {
 body {
   padding-top: 70px;
   padding-right: var(--right-sidebar-width); /* 오른쪽 사이드바 너비만큼 */
+  padding-left: var(--left-sidebar-width, 0); /* 왼쪽 사이드바 너비만큼 (기본값 0) */
 }

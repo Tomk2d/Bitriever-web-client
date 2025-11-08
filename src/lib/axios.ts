@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authService } from '@/features/auth/services/authService';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
@@ -32,14 +33,17 @@ apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
     // 401 에러 처리
     if (error.response?.status === 401) {
-      // 인증 실패 시 토큰 제거
+      console.warn('API 요청: 인증 실패 (401) - 로그아웃 처리');
+      try {
+        await authService.logout();
+      } catch (logoutError) {
+        console.error('로그아웃 처리 중 에러:', logoutError);
+      }
+      // 로그인 페이지로 리다이렉트
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        // 로그인 페이지로 리다이렉트
         window.location.href = '/login';
       }
     }

@@ -7,8 +7,17 @@ import './MonthlyCalendar.css';
 import { useTradingHistories } from '@/features/trading/hooks/useTradingHistories';
 import { getDateKey } from '@/shared/utils/dateUtils';
 import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
+import TradingHistorySidebar from './TradingHistorySidebar';
 
-export default function MonthlyCalendar() {
+interface MonthlyCalendarProps {
+  activeStartDate?: Date | null;
+  onActiveStartDateChange?: (activeStartDate: Date | null) => void;
+}
+
+export default function MonthlyCalendar({ 
+  activeStartDate: externalActiveStartDate,
+  onActiveStartDateChange 
+}: MonthlyCalendarProps = {}) {
   const today = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
@@ -16,8 +25,12 @@ export default function MonthlyCalendar() {
   }, []);
 
   const [value, setValue] = useState<Date>(today);
-  const [activeStartDate, setActiveStartDate] = useState<Date | null>(today);
+  const [internalActiveStartDate, setInternalActiveStartDate] = useState<Date | null>(today);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  
+  // 외부에서 전달된 activeStartDate가 있으면 사용, 없으면 내부 상태 사용
+  const activeStartDate = externalActiveStartDate !== undefined ? externalActiveStartDate : internalActiveStartDate;
 
   const { data: tradingHistories = [], isLoading, error } = useTradingHistories(activeStartDate);
 
@@ -29,20 +42,6 @@ export default function MonthlyCalendar() {
       activeStartDate: activeStartDate?.toISOString(),
     });
   }, [tradingHistories, isLoading, error, activeStartDate]);
-
-  const handleChange = (val: any) => {
-    if (val instanceof Date) {
-      const date = new Date(val);
-      date.setHours(0, 0, 0, 0);
-      setValue(date);
-    }
-  };
-
-  const handleActiveStartDateChange = ({ activeStartDate }: { activeStartDate: Date | null }) => {
-    if (activeStartDate) {
-      setActiveStartDate(activeStartDate);
-    }
-  };
 
   const tradingHistoriesByDate = useMemo(() => {
     const grouped: Record<string, TradingHistoryResponse[]> = {};
@@ -59,6 +58,46 @@ export default function MonthlyCalendar() {
 
     return grouped;
   }, [tradingHistories]);
+
+  const handleChange = (val: any) => {
+    if (val instanceof Date) {
+      const date = new Date(val);
+      date.setHours(0, 0, 0, 0);
+      setValue(date);
+      
+      // 날짜 클릭 시 선택된 날짜 설정
+      const dateKey = getDateKey(date);
+      const histories = tradingHistoriesByDate[dateKey] || [];
+      if (histories.length > 0) {
+        setSelectedDate(date);
+      } else {
+        setSelectedDate(null);
+      }
+    }
+  };
+  
+  const handleCloseSidebar = () => {
+    setSelectedDate(null);
+  };
+  
+  // 선택된 날짜의 매매 기록 필터링
+  const selectedDateHistories = useMemo(() => {
+    if (!selectedDate) {
+      return [];
+    }
+    const dateKey = getDateKey(selectedDate);
+    return tradingHistoriesByDate[dateKey] || [];
+  }, [selectedDate, tradingHistoriesByDate]);
+
+  const handleActiveStartDateChange = ({ activeStartDate }: { activeStartDate: Date | null }) => {
+    if (activeStartDate) {
+      if (onActiveStartDateChange) {
+        onActiveStartDateChange(activeStartDate);
+      } else {
+        setInternalActiveStartDate(activeStartDate);
+      }
+    }
+  };
 
   const tileContent = useCallback(({ date, view }: { date: Date; view: string }) => {
     if (view !== 'month') {
@@ -151,6 +190,7 @@ export default function MonthlyCalendar() {
   }, [value]); // value가 변경될 때마다 실행 (월 변경 시)
 
   return (
+    <>
     <div className="monthly-calendar">
       <div className="calendar-wrapper" ref={calendarRef}>
         <Calendar
@@ -160,10 +200,16 @@ export default function MonthlyCalendar() {
           locale="ko-KR"
           formatDay={(locale, date) => date.getDate().toString()}
           defaultActiveStartDate={today}
-          onActiveStartDateChange={handleActiveStartDateChange}
-          tileContent={tileContent}
+            onActiveStartDateChange={handleActiveStartDateChange}
+            tileContent={tileContent}
         />
       </div>
     </div>
+      <TradingHistorySidebar
+        selectedDate={selectedDate}
+        tradingHistories={selectedDateHistories}
+        onClose={handleCloseSidebar}
+      />
+    </>
   );
 }

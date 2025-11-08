@@ -43,3 +43,17 @@ export const formatNumber = (value: number): string => {
   }).format(value);
 };
 
+export const formatQuantity = (value: number): string => {
+  return new Intl.NumberFormat('ko-KR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 8,
+  }).format(value);
+};
+
+export const truncateIfLong = (text: string, maxLength: number = 17): string => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.slice(0, maxLength - 3) + '...';
+};
+

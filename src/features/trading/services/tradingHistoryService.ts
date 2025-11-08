@@ -55,6 +55,17 @@ export const tradingHistoryService = {
 
     console.log('[tradingHistoryService] Response status:', response.status);
 
+    // 401 에러 발생 시 로그아웃 처리
+    if (response.status === 401) {
+      console.warn('매매 내역 조회: 인증 실패 (401) - 로그아웃 처리');
+      const { authService } = await import('@/features/auth/services/authService');
+      await authService.logout();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('인증에 실패했습니다.');
+    }
+
     const result = await response.json();
 
     if (!response.ok) {
