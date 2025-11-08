@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 import { authService } from '@/features/auth/services/authService';
@@ -12,6 +13,7 @@ export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const theme = useAppSelector((state) => state.ui.theme);
   const user = useAppSelector((state) => state.auth.user);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -37,9 +39,10 @@ export default function Navigation() {
         try {
           const userData = await authService.getCurrentUser();
           dispatch(setUser({
-            userId: userData.userId,
+            userId: userData.id,
             email: userData.email,
             nickname: userData.nickname,
+            connectedExchanges: userData.connectedExchanges || [],
           }));
         } catch (error) {
           // 에러 발생 시 조용히 처리 (로그인되지 않은 상태로 유지)
@@ -85,7 +88,7 @@ export default function Navigation() {
     { label: '홈', path: '/dashboard' },
     { label: '마켓', path: '/coins' },
     { label: '매매일지', path: '/diaries' },
-    { label: '내 정보', path: '/profile' },
+    { label: '자산 분석', path: '/profile' },
   ];
 
   const isActive = (path: string) => {
@@ -98,13 +101,16 @@ export default function Navigation() {
   const handleLogout = async () => {
     try {
       await authService.logout();
-      dispatch(clearUser());
+      // authService.logout() 내부에서 Redux와 React Query 캐시를 이미 클리어함
       setIsDropdownOpen(false);
       router.push('/login');
     } catch (error) {
       console.error('로그아웃 실패:', error);
       // 에러가 발생해도 로컬 상태는 클리어
+      // authService.logout()이 실패했을 수도 있으므로 직접 클리어
       dispatch(clearUser());
+      // React Query 캐시도 클리어
+      queryClient.clear();
       setIsDropdownOpen(false);
       router.push('/login');
     }

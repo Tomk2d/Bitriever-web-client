@@ -1,4 +1,8 @@
 import { apiClient } from '@/lib/axios';
+import { queryClient } from '@/lib/react-query';
+import { store } from '@/lib/redux';
+import { clearUser } from '@/store/slices/authSlice';
+import type { UserResponse } from '../types';
 
 export interface LoginRequest {
   email: string;
@@ -84,9 +88,15 @@ export const authService = {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     }
+
+    // Redux store의 유저 관련 state 초기화
+    store.dispatch(clearUser());
+    
+    // React Query 캐시 모두 클리어
+    queryClient.clear();
   },
 
-  getCurrentUser: async () => {
+  getCurrentUser: async (): Promise<UserResponse> => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     
     if (!accessToken) {

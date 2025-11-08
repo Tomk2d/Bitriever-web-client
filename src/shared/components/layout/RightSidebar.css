@@ -105,6 +105,7 @@
   display: flex;
   flex-direction: column;
   animation: slideInRight 0.3s ease;
+  margin-bottom: 0; /* 하단 마진 제거 */
 }
 
 @keyframes slideInRight {
@@ -246,7 +247,7 @@
   display: flex;
   flex-direction: row;
   gap: 2px;
-  padding: 16px;
+  padding: 0 16px; /* 위아래 패딩 제거 */
   align-items: flex-start;
 }
 
@@ -254,7 +255,7 @@
   flex: 1;
   width: 144px;
   height: 110px;
-  background-color: rgba(2, 32, 71, 0.05);
+  background-color: rgba(2, 32, 71, 0.035); /* 중간값 조정 (0.05와 0.02의 중간) */
   border-radius: 8px;
   padding: 12px 16px;
   display: flex;
@@ -297,7 +298,7 @@
 
 .wallet-card-label-small {
   font-family: 'Pretendard', sans-serif;
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 500;
   color: rgba(0, 19, 43, 0.58);
   line-height: 17.4px;
@@ -305,7 +306,7 @@
 
 .wallet-card-value-small {
   font-family: 'Pretendard', sans-serif;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 700;
   color: rgba(0, 12, 30, 0.8);
   line-height: 20.3px;
@@ -317,9 +318,22 @@
 
 .sidebar-panel-content {
   flex: 1;
-  padding: 16px;
-  overflow-y: auto;
+  padding: 30px 16px 0 16px; /* 위 패딩, 하단 패딩 0 */
+  overflow-y: scroll; /* 항상 스크롤바 공간 확보 */
   color: var(--foreground);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  min-height: 0; /* flex 컨테이너 내에서 올바른 스크롤 동작 보장 */
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-panel-content > *:last-child {
+  margin-bottom: 0; /* 마지막 자식 요소의 하단 마진 제거 */
+}
+
+.sidebar-panel-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* 보유 자산 리스트 */
@@ -329,6 +343,122 @@
   font-weight: 600;
   color: var(--foreground);
   margin-bottom: 16px;
+}
+
+.wallet-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.wallet-summary-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 12px;
+  gap: 12px;
+}
+
+.wallet-summary-vertical-line {
+  position: absolute;
+  left: 0;
+  width: 2px;
+  background-color: var(--main-color, #02a262);
+}
+
+.wallet-summary-row:first-child .wallet-summary-vertical-line {
+  top: 25%;
+  bottom: -50%;
+}
+
+.wallet-summary-row:last-child:not(:first-child) .wallet-summary-vertical-line {
+  top: -50%;
+  bottom: 25%;
+}
+
+.wallet-summary-row:not(:first-child):not(:last-child) .wallet-summary-vertical-line {
+  top: -50%;
+  bottom: -50%;
+}
+
+.wallet-summary-row:only-child .wallet-summary-vertical-line {
+  top: 25%;
+  bottom: 25%;
+}
+
+.wallet-summary-content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex: 1;
+  padding: 1px 0;
+  gap: 20px;
+}
+
+/* 거래소 선택 및 정렬 셀렉트 박스 */
+.wallet-filter-controls {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.wallet-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 0.5;
+}
+
+.wallet-filter-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 19, 43, 0.58);
+}
+
+.wallet-filter-select {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--foreground);
+  background-color: var(--background);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%23000' d='M4 6L1 2h6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 8px;
+  padding-right: 20px;
+  line-height: 1.3;
+  height: 20px;
+}
+
+.wallet-filter-select:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.wallet-filter-select:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+  box-shadow: 0 0 0 2px rgba(2, 162, 98, 0.1);
+}
+
+.dark .wallet-filter-select {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%23fff' d='M4 6L1 2h6z'/%3E%3C/svg%3E");
+}
+
+.dark .wallet-filter-select:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .wallet-filter-select:focus {
+  border-color: var(--main-color, #02a262);
 }
 
 .wallet-loading {
@@ -342,15 +472,22 @@
 .wallet-asset-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: calc(100vh - 400px);
+  gap: 6px; 
+  flex: 1; /* 남은 공간 모두 차지 */
   overflow-y: auto;
   margin-left: -16px;
   margin-right: -16px;
   padding-left: 16px;
   padding-right: 16px;
+  padding-bottom: 0; /* 하단 패딩 제거 */
+  margin-bottom: 0; /* 하단 마진 제거 */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+  min-height: 0; /* flex 컨테이너 내에서 올바른 스크롤 동작 보장 */
+}
+
+.wallet-asset-list > .wallet-asset-item:last-child {
+  margin-bottom: 0; /* 마지막 아이템 하단 마진 제거 */
 }
 
 .wallet-asset-list::-webkit-scrollbar {
@@ -367,18 +504,20 @@
 }
 
 .wallet-asset-item {
-  background-color: rgba(2, 32, 71, 0.05);
+  background-color: rgba(2, 32, 71, 0.035); /* 중간값 조정 (0.05와 0.02의 중간) */
   border-radius: 8px;
-  padding: 16px;
+  padding: 14px 14px; /* 상하 패딩 감소 (16px -> 12px) */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px; /* 간격 증가 */
 }
 
 .wallet-asset-name {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 가로로 반으로 나눔, 선 제거 */
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
 }
 
 .wallet-asset-name-korean {
@@ -386,6 +525,10 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--foreground);
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 간격 0 */
 }
 
 .wallet-asset-name-symbol {
@@ -395,16 +538,57 @@
   color: rgba(0, 19, 43, 0.6);
 }
 
-.wallet-asset-details {
+.wallet-asset-name-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px; /* 간격 감소 */
+  justify-content: flex-start;
+  grid-column: 2;
+}
+
+.wallet-asset-details {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr; /* 가로로 반으로 나눔, 중간에 선 */
+  gap: 6px; 
+  position: relative;
+}
+
+.wallet-asset-details::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .wallet-asset-detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.wallet-asset-detail-row:nth-child(1) {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.wallet-asset-detail-row:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.wallet-asset-detail-row:nth-child(3) {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.wallet-asset-detail-row:nth-child(4) {
+  grid-column: 3;
+  grid-row: 2;
 }
 
 .wallet-asset-detail-label {
@@ -423,7 +607,7 @@
 
 /* 다크 모드 보유 자산 리스트 스타일 */
 .dark .wallet-asset-item {
-  background-color: rgba(2, 32, 71, 0.05);
+  background-color: rgba(255, 255, 255, 0.1); /* 다크모드에서도 라이트 모드와 비슷한 밝기 */
 }
 
 .dark .wallet-asset-name-symbol {
@@ -436,6 +620,19 @@
 
 .dark .wallet-asset-detail-value {
   color: var(--foreground);
+}
+
+.dark .wallet-asset-details::after {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+.dark .wallet-summary-vertical-line {
+  background-color: var(--main-color, #02a262);
+}
+
+.dark .wallet-summary-row-line {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* 다크 모드 스타일 */
@@ -486,7 +683,7 @@
 
 /* 다크 모드 자산 카드 스타일 */
 .dark .wallet-card {
-  background-color: rgba(2, 32, 71, 0.05);
+  background-color: rgba(255, 255, 255, 0.1); /* 다크모드에서도 라이트 모드와 비슷한 밝기 */
 }
 
 .dark .wallet-card-label {

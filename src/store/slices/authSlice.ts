@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { ExchangeTypeInfo } from '@/features/auth/types';
 
 interface AuthState {
   user: {
     userId: string | null;
     email: string | null;
     nickname: string | null;
+    connectedExchanges: ExchangeTypeInfo[];
   } | null;
   isAuthenticated: boolean;
 }
@@ -31,6 +33,7 @@ const authSlice = createSlice({
         userId: action.payload.userId,
         email: action.payload.email,
         nickname: action.payload.nickname,
+        connectedExchanges: [],
       };
       state.isAuthenticated = true;
     },

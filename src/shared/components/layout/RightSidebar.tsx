@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useAppSelector } from '@/store/hooks';
 import { useAssets } from '@/features/asset/hooks/useAssets';
 import { assetService } from '@/features/asset/services/assetService';
 import {
   getKRWAsset,
+  getUSDTAsset,
+  getBTCAsset,
   getTotalCoinAssets,
   getTotalAssets,
   formatCurrency,
@@ -15,16 +18,39 @@ import './RightSidebar.css';
 
 type MenuType = 'wallet' | 'watchlist' | 'chatbot' | 'faq' | 'settings' | null;
 
+type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
+
 export default function RightSidebar() {
   const [selectedMenu, setSelectedMenu] = useState<MenuType>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isRefreshDisabled, setIsRefreshDisabled] = useState(false);
   const [refreshCountdown, setRefreshCountdown] = useState(0);
+  const [selectedExchangeCode, setSelectedExchangeCode] = useState<number | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>('holdings');
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Redux에서 유저 정보 가져오기
+  const user = useAppSelector((state) => state.auth.user);
   
   // 자산 데이터 가져오기 (wallet 메뉴 선택 시에만 활성화)
   const shouldFetchAssets = selectedMenu === 'wallet' && isPanelOpen;
   const { data: assets = [], isLoading: isAssetsLoading, refetch } = useAssets(shouldFetchAssets);
+  
+  // 거래소 목록 (code 순으로 정렬)
+  const exchangeOptions = useMemo(() => {
+    if (!user?.connectedExchanges || user.connectedExchanges.length === 0) {
+      return [];
+    }
+    return [...user.connectedExchanges].sort((a, b) => a.code - b.code);
+  }, [user?.connectedExchanges]);
+  
+  // 필터링된 자산 (거래소 선택 시)
+  const filteredAssets = useMemo(() => {
+    if (selectedExchangeCode === null) {
+      return assets;
+    }
+    return assets.filter((asset) => asset.exchangeCode === selectedExchangeCode);
+  }, [assets, selectedExchangeCode]);
 
   const handleMenuClick = (menu: MenuType) => {
     if (selectedMenu === menu && isPanelOpen) {
@@ -177,15 +203,15 @@ export default function RightSidebar() {
                       {formatCurrency(getKRWAsset(assets)?.quantity || 0)}
                     </div>
                     <div className="wallet-card-row">
-                      <span className="wallet-card-label-small">총 매수</span>
+                      <span className="wallet-card-label-small">USDT</span>
                       <span className="wallet-card-value-small">
-                        {formatCurrency(getTotalCoinAssets(assets))}
+                        {formatNumber((getUSDTAsset(assets)?.quantity || 0) * (getUSDTAsset(assets)?.avgBuyPrice || 0))}
                       </span>
                     </div>
                     <div className="wallet-card-row">
-                      <span className="wallet-card-label-small">총 평가</span>
+                      <span className="wallet-card-label-small">BTC</span>
                       <span className="wallet-card-value-small">
-                        {formatCurrency(getTotalCoinAssets(assets))}
+                        {formatNumber((getBTCAsset(assets)?.quantity || 0) * (getBTCAsset(assets)?.avgBuyPrice || 0))}
                       </span>
                     </div>
                   </div>
@@ -196,13 +222,13 @@ export default function RightSidebar() {
                       {formatCurrency(getTotalAssets(assets))}
                     </div>
                     <div className="wallet-card-row">
-                      <span className="wallet-card-label-small">평가손익</span>
+                      <span className="wallet-card-label-small">총 평가손익</span>
                       <span className="wallet-card-value-small profit">
-                        {formatCurrency(getTotalAssets(assets))}
+                        {formatNumber(getTotalAssets(assets))}
                       </span>
                     </div>
                     <div className="wallet-card-row">
-                      <span className="wallet-card-label-small">수익률</span>
+                      <span className="wallet-card-label-small">총 수익률</span>
                       <span className="wallet-card-value-small profit">0%</span>
                     </div>
                   </div>
@@ -217,7 +243,60 @@ export default function RightSidebar() {
                 {isAssetsLoading ? (
                   <div className="wallet-loading">로딩 중...</div>
                 ) : (
-                  <WalletAssetList assets={assets} />
+                  <>
+                    <div className="wallet-summary-rows">
+                      <div className="wallet-summary-row">
+                        <div className="wallet-summary-vertical-line"></div>
+                        <div className="wallet-summary-content">
+                          <span className="wallet-card-label-small">총 매수</span>
+                          <span className="wallet-card-value-small">
+                            {formatCurrency(getTotalCoinAssets(filteredAssets))}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="wallet-summary-row">
+                        <div className="wallet-summary-vertical-line"></div>
+                        <div className="wallet-summary-content">
+                          <span className="wallet-card-label-small">총 평가</span>
+                          <span className="wallet-card-value-small">
+                            {formatCurrency(getTotalCoinAssets(filteredAssets))}
+                          </span>
+                        </div>
+                        {/* 거래소 선택 및 정렬 셀렉트 박스 */}
+                        <div className="wallet-filter-controls">
+                          <div className="wallet-filter-group">
+                            <select
+                              id="exchange-select"
+                              className="wallet-filter-select"
+                              value={selectedExchangeCode ?? ''}
+                              onChange={(e) => setSelectedExchangeCode(e.target.value ? Number(e.target.value) : null)}
+                            >
+                              <option value="">거래소 전체</option>
+                              {exchangeOptions.map((exchange) => (
+                                <option key={exchange.code} value={exchange.code}>
+                                  {exchange.koreanName}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="wallet-filter-group">
+                            <select
+                              id="sort-select"
+                              className="wallet-filter-select"
+                              value={sortOption}
+                              onChange={(e) => setSortOption(e.target.value as SortOption)}
+                            >
+                              <option value="holdings">보유금액순</option>
+                              <option value="profit-high">높은수익률</option>
+                              <option value="profit-low">낮은수익률</option>
+                              <option value="name">가나다순</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <WalletAssetList assets={filteredAssets} sortOption={sortOption} />
+                  </>
                 )}
               </>
             )}

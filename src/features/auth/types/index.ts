@@ -9,3 +9,20 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
+export interface ExchangeTypeInfo {
+  code: number;
+  name: string;
+  koreanName: string;
+}
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  nickname: string;
+  signupType: number | null;
+  createdAt: string;
+  isActive: boolean | null;
+  isConnectExchange: boolean | null;
+  connectedExchanges: ExchangeTypeInfo[];
+}
+

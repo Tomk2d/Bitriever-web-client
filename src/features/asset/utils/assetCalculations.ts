@@ -4,6 +4,14 @@ export const getKRWAsset = (assets: AssetResponse[]): AssetResponse | null => {
   return assets.find((asset) => asset.symbol === 'KRW') || null;
 };
 
+export const getUSDTAsset = (assets: AssetResponse[]): AssetResponse | null => {
+  return assets.find((asset) => asset.symbol === 'USDT') || null;
+};
+
+export const getBTCAsset = (assets: AssetResponse[]): AssetResponse | null => {
+  return assets.find((asset) => asset.symbol === 'BTC') || null;
+};
+
 export const getTotalCoinAssets = (assets: AssetResponse[]): number => {
   return assets
     .filter((asset) => asset.symbol !== 'KRW')
@@ -25,10 +33,13 @@ export const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('ko-KR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value) + '원';
+  }).format(value) + ' 원';
 };
 
 export const formatNumber = (value: number): string => {
-  return new Intl.NumberFormat('ko-KR').format(value);
+  return new Intl.NumberFormat('ko-KR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 };
 

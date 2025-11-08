@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { Input, Button } from '@/shared/components/ui';
 import { authService } from '@/features/auth/services/authService';
 import { assetService } from '@/features/asset/services/assetService';
-import { setUserFromAuthResponse } from '@/store/slices/authSlice';
+import { setUser, setUserFromAuthResponse } from '@/store/slices/authSlice';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -70,12 +70,28 @@ export default function LoginPage() {
       
       const response = await authService.login({ email: trimmedEmail, password: trimmedPassword });
       
-      // Redux에 사용자 정보 저장
+      // Redux에 사용자 정보 저장 (로그인 응답에서)
       dispatch(setUserFromAuthResponse({
         userId: response.userId,
         email: response.email,
         nickname: response.nickname,
       }));
+      
+      // /api/auth/me 호출하여 전체 사용자 정보 가져오기
+      try {
+        const userData = await authService.getCurrentUser();
+        
+        // Redux에 전체 사용자 정보 저장
+        dispatch(setUser({
+          userId: userData.id,
+          email: userData.email,
+          nickname: userData.nickname,
+          connectedExchanges: userData.connectedExchanges || [],
+        }));
+      } catch (error) {
+        // getCurrentUser 실패 시에도 로그인은 성공한 상태이므로 계속 진행
+        console.error('사용자 정보 조회 실패:', error);
+      }
       
       // 자산 동기화 API 호출 (비동기, 백그라운드에서 실행)
       assetService.syncAssets().catch((error) => {
@@ -330,7 +346,7 @@ export default function LoginPage() {
                     onClick={handleSwitchToSignup}
                   >
                     회원가입
-                  </Button>
+              </Button>
             </div>
           </form>
           
