@@ -25,6 +25,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  margin-right: 30px;
 }
 
 .diaries-summary-row {
@@ -130,5 +131,10 @@
 
 .diaries-help-icon:hover::before {
   opacity: 1;
+}
+
+/* 다크 모드 스타일 */
+.dark .diaries-summary-label {
+  color: #ffffff;
 }
  

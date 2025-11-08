@@ -65,14 +65,8 @@ export default function MonthlyCalendar({
       date.setHours(0, 0, 0, 0);
       setValue(date);
       
-      // 날짜 클릭 시 선택된 날짜 설정
-      const dateKey = getDateKey(date);
-      const histories = tradingHistoriesByDate[dateKey] || [];
-      if (histories.length > 0) {
-        setSelectedDate(date);
-      } else {
-        setSelectedDate(null);
-      }
+      // 날짜 클릭 시 선택된 날짜 설정 (거래 내역이 없어도 패널 열기)
+      setSelectedDate(date);
     }
   };
   

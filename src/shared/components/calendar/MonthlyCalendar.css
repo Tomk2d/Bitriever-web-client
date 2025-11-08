@@ -348,3 +348,22 @@
 .dark .event-remaining-count {
   color: #999;
 }
+
+/* 다크 모드 날짜 호버 스타일 */
+.dark .diary-calendar .react-calendar__tile:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .diary-calendar .react-calendar__tile--now:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .diary-calendar .react-calendar__tile--active:hover {
+  background-color: rgba(135, 206, 250, 0.2) !important;
+  border: 2px solid rgba(135, 206, 250, 1) !important;
+}
+
+.dark .diary-calendar .react-calendar__tile--now.react-calendar__tile--active:hover {
+  background-color: rgba(135, 206, 250, 0.2) !important;
+  border: 2px solid rgba(135, 206, 250, 1) !important;
+}

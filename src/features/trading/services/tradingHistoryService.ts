@@ -22,6 +22,8 @@ export interface TradingHistoryResponse {
   totalPrice: number;
   fee: number;
   tradeTime: string;
+  profitLossRate: number | null;
+  avgBuyPrice: number | null;
   createdAt: string;
   coin: CoinResponse | null;
 }

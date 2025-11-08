@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { MonthlyCalendar } from '@/shared/components/calendar';
 import { useTradingHistories } from '@/features/trading/hooks/useTradingHistories';
-import { formatCurrency } from '@/features/asset/utils/assetCalculations';
+import AnimatedCurrency from '@/shared/components/AnimatedCurrency';
 import './page.css';
 
 export default function DiariesPage() {
@@ -42,14 +42,18 @@ export default function DiariesPage() {
               <div className="diaries-summary-vertical-line"></div>
               <div className="diaries-summary-content">
                 <span className="diaries-summary-label">월총매수</span>
-                <span className="diaries-summary-value">{formatCurrency(monthlyBuy)}</span>
+                <span className="diaries-summary-value">
+                  <AnimatedCurrency value={monthlyBuy} duration={500} delayPerDigit={80} />
+                </span>
               </div>
             </div>
             <div className="diaries-summary-row">
               <div className="diaries-summary-vertical-line"></div>
               <div className="diaries-summary-content">
                 <span className="diaries-summary-label">월총매도</span>
-                <span className="diaries-summary-value">{formatCurrency(monthlySell)}</span>
+                <span className="diaries-summary-value">
+                  <AnimatedCurrency value={monthlySell} duration={500} delayPerDigit={80} />
+                </span>
               </div>
             </div>
           </div>

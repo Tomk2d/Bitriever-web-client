@@ -50,10 +50,30 @@ export const formatQuantity = (value: number): string => {
   }).format(value);
 };
 
-export const truncateIfLong = (text: string, maxLength: number = 17): string => {
+export const truncateIfLong = (text: string, maxLength: number = 20): string => {
   if (text.length <= maxLength) {
     return text;
   }
   return text.slice(0, maxLength - 3) + '...';
+};
+
+export const truncateNumberWithUnit = (text: string, maxLength: number = 20): string => {
+  // 숫자와 단위를 분리 (마지막 공백 이후가 단위)
+  const lastSpaceIndex = text.lastIndexOf(' ');
+  
+  if (lastSpaceIndex === -1) {
+    // 단위가 없으면 기존 로직 사용
+    return truncateIfLong(text, maxLength);
+  }
+  
+  const numberPart = text.slice(0, lastSpaceIndex);
+  const unitPart = text.slice(lastSpaceIndex); // 공백 포함
+  
+  // 숫자 부분만 제한
+  if (numberPart.length <= maxLength) {
+    return text;
+  }
+  
+  return numberPart.slice(0, maxLength - 3) + '...' + unitPart;
 };
 

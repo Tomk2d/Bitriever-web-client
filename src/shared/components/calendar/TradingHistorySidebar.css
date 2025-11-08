@@ -196,7 +196,7 @@
   font-size: 14px;
   color: var(--foreground);
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px 0;
   opacity: 0.6;
 }
 
@@ -224,10 +224,10 @@
 .trading-history-item {
   background-color: rgba(2, 32, 71, 0.035);
   border-radius: 8px;
-  padding: 12px 12px;
+  padding: 12px 12px 5px 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .trading-history-item-header {
@@ -235,6 +235,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 0;
+}
+
+.trading-history-item-details + .trading-history-detail-value {
+  margin-top: 5px;
+  color: rgba(0, 19, 43, 0.58);
+  font-weight: 500;
+  font-size: 10px;
 }
 
 .trading-history-coin-info {
@@ -257,6 +265,14 @@
   color: rgba(0, 19, 43, 0.6);
 }
 
+.trading-history-trade-type-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  flex-shrink: 0;
+}
+
 .trading-history-trade-type {
   font-family: 'Pretendard', sans-serif;
   font-size: 12px;
@@ -274,12 +290,29 @@
 .trading-history-trade-type.sell {
   background-color: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+  padding: 3px 8px;
+}
+
+.trading-history-profit-loss-rate {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.trading-history-profit-loss-rate.positive {
+  color: #ef4444;
+}
+
+.trading-history-profit-loss-rate.negative {
+  color: #3b82f6;
 }
 
 .trading-history-item-details {
   display: flex;
   flex-direction: column;
   gap: 0px; /* 상세 정보 간격 0 */
+  margin-top: 12px;
 }
 
 .trading-history-detail-row {
@@ -332,6 +365,10 @@
 }
 
 .dark .trading-history-detail-label {
+  color: rgba(237, 237, 237, 0.58);
+}
+
+.dark .trading-history-item-details + .trading-history-detail-value {
   color: rgba(237, 237, 237, 0.58);
 }
 

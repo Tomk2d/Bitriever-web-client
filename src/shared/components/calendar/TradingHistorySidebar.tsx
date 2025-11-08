@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
-import { formatCurrency, formatNumber, formatQuantity, truncateIfLong } from '@/features/asset/utils/assetCalculations';
+import { formatCurrency, formatNumber, formatQuantity, truncateIfLong, truncateNumberWithUnit } from '@/features/asset/utils/assetCalculations';
 import './TradingHistorySidebar.css';
 
 type SortOption = 'latest' | 'oldest' | 'amount' | 'name';
@@ -114,7 +114,7 @@ export default function TradingHistorySidebar({
           </div>
           <div className="trading-history-sidebar-content">
             <div className="trading-history-empty">
-              해당 날짜에 매매 기록이 없습니다.
+              해당 날짜에 매매 내역이 없습니다.
             </div>
           </div>
         </div>
@@ -206,21 +206,29 @@ export default function TradingHistorySidebar({
                   <div className="trading-history-item-header">
                     <div className="trading-history-coin-info">
                       <div className="trading-history-coin-name">{koreanName}</div>
-                      <div className="trading-history-coin-symbol">{coin?.symbol || ''}</div>
+                      <div className="trading-history-coin-symbol">{coin?.marketCode || '-'}</div>
                     </div>
-                    <div className={`trading-history-trade-type ${isBuy ? 'buy' : 'sell'}`}>
-                      {tradeType}
+                    <div className="trading-history-trade-type-wrapper">
+                      <div className={`trading-history-trade-type ${isBuy ? 'buy' : 'sell'}`}>
+                        {tradeType}
+                      </div>
+                      {!isBuy && (() => {
+                        const profitLossRate = history.profitLossRate ?? 0;
+                        const isPositive = profitLossRate >= 0;
+                        const sign = isPositive ? '+' : '';
+                        return (
+                          <div className={`trading-history-profit-loss-rate ${isPositive ? 'positive' : 'negative'}`}>
+                            {sign}{profitLossRate.toFixed(2)}%
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div className="trading-history-item-details">
                     <div className="trading-history-detail-row">
-                      <span className="trading-history-detail-label">거래방식</span>
-                      <span className="trading-history-detail-value">{coin?.quoteCurrency || '-'}</span>
-                    </div>
-                    <div className="trading-history-detail-row">
                       <span className="trading-history-detail-label">거래수량</span>
                       <span className="trading-history-detail-value">
-                        {truncateIfLong(`${formatQuantity(quantity)} ${coin?.symbol || ''}`)}
+                        {truncateNumberWithUnit(`${formatQuantity(quantity)} ${coin?.symbol || ''}`)}
                       </span>
                     </div>
                     <div className="trading-history-detail-row">
@@ -232,6 +240,16 @@ export default function TradingHistorySidebar({
                       <span className="trading-history-detail-value">{truncateIfLong(formatCurrency(totalPrice))}</span>
                     </div>
                   </div>
+                  <span className="trading-history-detail-value">
+                    {history.tradeTime 
+                      ? `${new Date(history.tradeTime).toLocaleTimeString('ko-KR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          hour12: false,
+                        })} KST`
+                      : '-'}
+                  </span>
                 </div>
               );
             })}
