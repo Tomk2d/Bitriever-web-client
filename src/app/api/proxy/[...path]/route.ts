@@ -175,20 +175,55 @@ export async function PUT(
     const body = await request.json();
     const token = request.cookies.get('authToken')?.value;
 
+    // Authorization 헤더 가져오기 (쿠키보다 우선)
+    const authHeader = request.headers.get('Authorization');
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    } else if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${BACKEND_URL}/api/${path}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
+      headers,
       body: JSON.stringify(body),
     });
 
+    const responseContentType = response.headers.get('content-type');
+    
+    if (!responseContentType || !responseContentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response (PUT):', {
+        status: response.status,
+        contentType: responseContentType,
+        url: `${BACKEND_URL}/api/${path}`,
+        hasAuth: !!(authHeader || token),
+        text: text.substring(0, 500),
+      });
+      return NextResponse.json(
+        { 
+          error: 'Invalid response format',
+          message: `Expected JSON but received ${responseContentType}`,
+          status: response.status
+        },
+        { status: response.status || 500 }
+      );
+    }
+
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch {
+  } catch (error) {
+    console.error('API route error (PUT):', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

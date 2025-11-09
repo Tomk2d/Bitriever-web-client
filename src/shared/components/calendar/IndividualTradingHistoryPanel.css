@@ -19,6 +19,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .individual-trading-history-panel-header {
@@ -34,6 +35,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.individual-trading-history-panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0px;
 }
 
 .individual-trading-history-panel-title {
@@ -245,6 +252,7 @@
   flex-direction: column;
   gap: 12px;
   margin-top: 40px;
+  padding-left: 8px;
 }
 
 .individual-trading-history-diary-item {
@@ -254,7 +262,7 @@
 }
 
 .individual-trading-history-diary-mind-wrapper {
-  padding: 4px;
+  padding: 0;
 }
 
 .individual-trading-history-diary-label {
@@ -270,6 +278,11 @@
   font-weight: 400;
   color: rgba(0, 19, 43, 0.7);
   line-height: 1.5;
+}
+
+.individual-trading-history-diary-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .individual-trading-history-diary-value-mind {
@@ -372,5 +385,168 @@
 
 .dark .individual-trading-history-diary-value {
   color: rgba(237, 237, 237, 0.7);
+}
+
+.individual-trading-history-write-button-header {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-family: 'TossFace', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 0;
+  filter: grayscale(100%);
+}
+
+.individual-trading-history-write-button-header:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .individual-trading-history-write-button-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.individual-trading-history-diary-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 50px;
+}
+
+.individual-trading-history-diary-edit-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.individual-trading-history-diary-edit-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.individual-trading-history-diary-edit-select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 19, 43, 0.2);
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+  background-color: var(--background);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.individual-trading-history-diary-edit-select:hover {
+  border-color: rgba(0, 19, 43, 0.3);
+}
+
+.individual-trading-history-diary-edit-select:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+}
+
+.individual-trading-history-diary-edit-textarea {
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 19, 43, 0.2);
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+  background-color: var(--background);
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.2s ease;
+}
+
+.individual-trading-history-diary-edit-textarea:hover {
+  border-color: rgba(0, 19, 43, 0.3);
+}
+
+.individual-trading-history-diary-edit-textarea:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+}
+
+.individual-trading-history-diary-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.individual-trading-history-diary-edit-cancel,
+.individual-trading-history-diary-edit-save {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.individual-trading-history-diary-edit-cancel {
+  background-color: rgba(0, 19, 43, 0.1);
+  color: var(--foreground);
+}
+
+.individual-trading-history-diary-edit-cancel:hover {
+  background-color: rgba(0, 19, 43, 0.15);
+}
+
+.individual-trading-history-diary-edit-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.individual-trading-history-diary-edit-save {
+  background-color: var(--main-color, #02a262);
+  color: #ffffff;
+}
+
+.individual-trading-history-diary-edit-save:hover {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.individual-trading-history-diary-edit-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .individual-trading-history-diary-edit-select {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--background);
+}
+
+.dark .individual-trading-history-diary-edit-select:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .individual-trading-history-diary-edit-textarea {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--background);
+}
+
+.dark .individual-trading-history-diary-edit-textarea:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .individual-trading-history-diary-edit-cancel {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.dark .individual-trading-history-diary-edit-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
