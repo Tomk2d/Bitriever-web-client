@@ -105,22 +105,39 @@ export default function MonthlyCalendar({
       return null;
     }
 
-    // 첫 번째 거래만 선택
-    const firstHistory = histories[0];
-    const coin = firstHistory.coin;
-    const coinSymbol = coin?.symbol || `코인 ${firstHistory.coinId}`;
-    const isBuy = firstHistory.tradeType === 0;
-    const remainingCount = histories.length - 1;
+    // 이미지 URL 구성 (public 폴더는 루트 경로로 제공됨)
+    const imageBasePath = process.env.NEXT_PUBLIC_IMAGE_BASE_PATH || '';
+    
+    // 최대 3개까지 이미지 표시
+    const maxImages = 3;
+    const displayHistories = histories.slice(0, maxImages);
+    const remainingCount = histories.length - maxImages;
 
     return (
       <div className="calendar-event-indicator">
         <div className="event-content">
-          <div className={`event-coin-block ${isBuy ? 'event-buy' : 'event-sell'}`}>
-            <span className="event-coin-name">{coinSymbol}</span>
+          <div className="event-coin-images">
+            {displayHistories.map((history, index) => {
+              const coin = history.coin;
+              const imageUrl = coin?.imgUrl ? `${imageBasePath}${coin.imgUrl}` : null;
+              const isBuy = history.tradeType === 0;
+              
+              return (
+                <img
+                  key={`${history.id}-${index}`}
+                  src={imageUrl || ''}
+                  alt={coin?.symbol || `코인 ${history.coinId}`}
+                  className={`event-coin-image ${isBuy ? 'event-buy' : 'event-sell'}`}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              );
+            })}
           </div>
           {remainingCount > 0 && (
             <div className="event-remaining-count">
-              외 {remainingCount}개의 거래
+              + {remainingCount}개의 거래
             </div>
           )}
         </div>

@@ -228,6 +228,19 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+.trading-history-item:hover {
+  background-color: rgba(2, 32, 71, 0.08);
+}
+
+.trading-history-item.selected {
+  background-color: rgba(2, 162, 98, 0.1);
+  border: 1px solid rgba(2, 162, 98, 0.3);
 }
 
 .trading-history-item-header {
@@ -236,6 +249,18 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 0;
+}
+
+.trading-history-trade-time {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.trading-history-trade-time .trading-history-detail-value {
+  color: rgba(0, 19, 43, 0.58);
+  font-weight: 500;
+  font-size: 10px;
 }
 
 .trading-history-item-details + .trading-history-detail-value {
@@ -283,13 +308,13 @@
 }
 
 .trading-history-trade-type.buy {
-  background-color: rgba(2, 162, 98, 0.1);
-  color: #02a262;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 .trading-history-trade-type.sell {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
   padding: 3px 8px;
 }
 
@@ -360,6 +385,15 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.dark .trading-history-item:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.dark .trading-history-item.selected {
+  background-color: rgba(2, 162, 98, 0.2);
+  border: 1px solid rgba(2, 162, 98, 0.4);
+}
+
 .dark .trading-history-coin-symbol {
   color: rgba(237, 237, 237, 0.6);
 }
@@ -368,18 +402,22 @@
   color: rgba(237, 237, 237, 0.58);
 }
 
+.dark .trading-history-trade-time .trading-history-detail-value {
+  color: rgba(237, 237, 237, 0.58);
+}
+
 .dark .trading-history-item-details + .trading-history-detail-value {
   color: rgba(237, 237, 237, 0.58);
 }
 
 .dark .trading-history-trade-type.buy {
-  background-color: rgba(2, 162, 98, 0.2);
-  color: #02a262;
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
 }
 
 .dark .trading-history-trade-type.sell {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
 }
 
 .dark .trading-history-summary-vertical-line {

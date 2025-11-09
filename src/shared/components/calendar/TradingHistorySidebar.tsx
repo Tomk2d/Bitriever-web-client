@@ -3,9 +3,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
 import { formatCurrency, formatNumber, formatQuantity, truncateIfLong, truncateNumberWithUnit } from '@/features/asset/utils/assetCalculations';
+import IndividualTradingHistoryPanel from './IndividualTradingHistoryPanel';
 import './TradingHistorySidebar.css';
 
-type SortOption = 'latest' | 'oldest' | 'amount' | 'name';
+type SortOption = 'latest' | 'oldest' | 'amount' | 'name' | 'profitHigh' | 'profitLow';
 
 interface TradingHistorySidebarProps {
   selectedDate: Date | null;
@@ -20,6 +21,12 @@ export default function TradingHistorySidebar({
 }: TradingHistorySidebarProps) {
   const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('latest');
+  const [selectedTradingHistory, setSelectedTradingHistory] = useState<TradingHistoryResponse | null>(null);
+
+  // selectedDate가 변경되면 선택된 거래 내역 초기화
+  useEffect(() => {
+    setSelectedTradingHistory(null);
+  }, [selectedDate]);
 
   // 패널이 열릴 때 body에 padding-left 추가
   useEffect(() => {
@@ -78,6 +85,24 @@ export default function TradingHistorySidebar({
           const nameA = (a.coin?.koreanName || a.coin?.symbol || '').toLowerCase();
           const nameB = (b.coin?.koreanName || b.coin?.symbol || '').toLowerCase();
           return nameA.localeCompare(nameB, 'ko');
+        case 'profitHigh':
+          // 매도 거래만 수익률이 있음, 매도 거래를 우선하고 수익률 높은 순으로 정렬
+          const profitA = a.profitLossRate ?? (a.tradeType === 1 ? -Infinity : -Infinity - 1);
+          const profitB = b.profitLossRate ?? (b.tradeType === 1 ? -Infinity : -Infinity - 1);
+          // 매도 거래를 먼저 배치
+          if (a.tradeType === 1 && b.tradeType === 0) return -1;
+          if (a.tradeType === 0 && b.tradeType === 1) return 1;
+          // 둘 다 매도 거래면 수익률 높은 순
+          return profitB - profitA;
+        case 'profitLow':
+          // 매도 거래만 수익률이 있음, 매도 거래를 우선하고 수익률 낮은 순으로 정렬
+          const profitALow = a.profitLossRate ?? (a.tradeType === 1 ? Infinity : Infinity + 1);
+          const profitBLow = b.profitLossRate ?? (b.tradeType === 1 ? Infinity : Infinity + 1);
+          // 매도 거래를 먼저 배치
+          if (a.tradeType === 1 && b.tradeType === 0) return -1;
+          if (a.tradeType === 0 && b.tradeType === 1) return 1;
+          // 둘 다 매도 거래면 수익률 낮은 순
+          return profitALow - profitBLow;
         default:
           return 0;
       }
@@ -106,7 +131,10 @@ export default function TradingHistorySidebar({
             </div>
             <button
               className="trading-history-sidebar-close"
-              onClick={onClose}
+              onClick={() => {
+                setSelectedTradingHistory(null);
+                onClose();
+              }}
               aria-label="패널 닫기"
             >
               ×
@@ -131,7 +159,10 @@ export default function TradingHistorySidebar({
           </div>
           <button
             className="trading-history-sidebar-close"
-            onClick={onClose}
+            onClick={() => {
+              setSelectedTradingHistory(null);
+              onClose();
+            }}
             aria-label="패널 닫기"
           >
             ×
@@ -186,6 +217,8 @@ export default function TradingHistorySidebar({
                 <option value="oldest">오래된순</option>
                 <option value="amount">거래금액순</option>
                 <option value="name">가나다순</option>
+                <option value="profitHigh">수익률 높은순</option>
+                <option value="profitLow">수익률 낮은순</option>
               </select>
             </div>
           </div>
@@ -201,8 +234,20 @@ export default function TradingHistorySidebar({
               const price = history.price || 0;
               const totalPrice = history.totalPrice || 0;
 
+              const isSelected = selectedTradingHistory?.id === history.id;
+
               return (
-                <div key={history.id} className="trading-history-item">
+                <div 
+                  key={history.id} 
+                  className={`trading-history-item ${isSelected ? 'selected' : ''}`}
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedTradingHistory(null);
+                    } else {
+                      setSelectedTradingHistory(history);
+                    }
+                  }}
+                >
                   <div className="trading-history-item-header">
                     <div className="trading-history-coin-info">
                       <div className="trading-history-coin-name">{koreanName}</div>
@@ -212,7 +257,7 @@ export default function TradingHistorySidebar({
                       <div className={`trading-history-trade-type ${isBuy ? 'buy' : 'sell'}`}>
                         {tradeType}
                       </div>
-                      {!isBuy && (() => {
+                      {!isBuy ? (() => {
                         const profitLossRate = history.profitLossRate ?? 0;
                         const isPositive = profitLossRate >= 0;
                         const sign = isPositive ? '+' : '';
@@ -221,7 +266,11 @@ export default function TradingHistorySidebar({
                             {sign}{profitLossRate.toFixed(2)}%
                           </div>
                         );
-                      })()}
+                      })() : (
+                        <div className="trading-history-profit-loss-rate" style={{ visibility: 'hidden' }}>
+                          +0.00%
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="trading-history-item-details">
@@ -240,22 +289,30 @@ export default function TradingHistorySidebar({
                       <span className="trading-history-detail-value">{truncateIfLong(formatCurrency(totalPrice))}</span>
                     </div>
                   </div>
-                  <span className="trading-history-detail-value">
-                    {history.tradeTime 
-                      ? `${new Date(history.tradeTime).toLocaleTimeString('ko-KR', {
+                  {history.tradeTime && (
+                    <div className="trading-history-trade-time">
+                      <span className="trading-history-detail-value">
+                        {`${new Date(history.tradeTime).toLocaleTimeString('ko-KR', {
                           hour: '2-digit',
                           minute: '2-digit',
                           second: '2-digit',
                           hour12: false,
-                        })} KST`
-                      : '-'}
-                  </span>
+                        })} KST`}
+                      </span>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
       </div>
+      {selectedTradingHistory && (
+        <IndividualTradingHistoryPanel
+          tradingHistory={selectedTradingHistory}
+          onClose={() => setSelectedTradingHistory(null)}
+        />
+      )}
     </div>
   );
 }
