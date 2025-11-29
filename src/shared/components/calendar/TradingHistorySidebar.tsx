@@ -282,11 +282,11 @@ export default function TradingHistorySidebar({
                     </div>
                     <div className="trading-history-detail-row">
                       <span className="trading-history-detail-label">거래단가</span>
-                      <span className="trading-history-detail-value">{truncateIfLong(formatCurrency(price))}</span>
+                      <span className="trading-history-detail-value">{truncateIfLong(formatCurrency(price, coin?.quoteCurrency))}</span>
                     </div>
                     <div className="trading-history-detail-row">
                       <span className="trading-history-detail-label">총거래금액</span>
-                      <span className="trading-history-detail-value">{truncateIfLong(formatCurrency(totalPrice))}</span>
+                      <span className="trading-history-detail-value">{truncateIfLong(formatCurrency(totalPrice, coin?.quoteCurrency))}</span>
                     </div>
                   </div>
                   {history.tradeTime && (

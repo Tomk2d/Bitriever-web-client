@@ -33,3 +33,47 @@ export const getDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+export interface DateRange {
+  startDate: string;
+  endDate: string;
+}
+
+export const calculateChartDateRange = (selectedDate: string, monthsRange: number = 6): DateRange => {
+  const selected = new Date(selectedDate);
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  
+  const selectedDateOnly = new Date(selected);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  
+  const todayDateOnly = new Date(today);
+  todayDateOnly.setHours(0, 0, 0, 0);
+  
+  const halfRangeMonths = Math.floor(monthsRange / 2);
+  
+  let startDate = new Date(selectedDateOnly);
+  startDate.setMonth(startDate.getMonth() - halfRangeMonths);
+  startDate.setHours(0, 0, 0, 0);
+  
+  let endDate = new Date(selectedDateOnly);
+  endDate.setMonth(endDate.getMonth() + halfRangeMonths);
+  endDate.setHours(23, 59, 59, 999);
+  
+  const isSelectedDateTodayOrFuture = selectedDateOnly >= todayDateOnly;
+  const isEndDateAfterToday = endDate > today;
+  
+  if (isSelectedDateTodayOrFuture || isEndDateAfterToday) {
+    endDate = new Date(today);
+    endDate.setHours(23, 59, 59, 999);
+    
+    startDate = new Date(endDate);
+    startDate.setMonth(startDate.getMonth() - monthsRange);
+    startDate.setHours(0, 0, 0, 0);
+  }
+  
+  return {
+    startDate: formatDateToISO8601(startDate),
+    endDate: formatDateToISO8601(endDate),
+  };
+};
+
