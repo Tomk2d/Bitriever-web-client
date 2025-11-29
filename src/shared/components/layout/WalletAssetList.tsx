@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import type { AssetResponse } from '@/features/asset/types';
-import { formatCurrency, formatNumber } from '@/features/asset/utils/assetCalculations';
+import { formatCurrency, formatNumber, formatQuantity } from '@/features/asset/utils/assetCalculations';
 import './RightSidebar.css';
 
 type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
@@ -69,7 +69,9 @@ export default function WalletAssetList({ assets, sortOption = 'holdings' }: Wal
                 >
                   {(asset.coin?.koreanName || asset.symbol).slice(0, 14)}
                 </span>
-                <span className="wallet-asset-name-symbol">{asset.symbol}</span>
+                <span className="wallet-asset-name-symbol">
+                  {asset.coin?.marketCode || `${asset.tradeBySymbol}-${asset.symbol}`}
+                </span>
               </div>
               <div className="wallet-asset-name-details">
                 <div className="wallet-asset-detail-row">
@@ -86,7 +88,7 @@ export default function WalletAssetList({ assets, sortOption = 'holdings' }: Wal
               <div className="wallet-asset-detail-row">
                 <span className="wallet-asset-detail-label">보유 수량</span>
                 <span className="wallet-asset-detail-value">
-                  {formatNumber(asset.quantity || 0)} {asset.symbol}
+                  {formatQuantity(asset.quantity || 0)} {asset.symbol}
                 </span>
               </div>
               <div className="wallet-asset-detail-row">

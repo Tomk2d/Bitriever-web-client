@@ -29,11 +29,19 @@ export const getTotalAssets = (assets: AssetResponse[]): number => {
   return krwValue + coinValue;
 };
 
-export const formatCurrency = (value: number): string => {
+export const formatCurrency = (value: number, quoteCurrency?: string | null): string => {
+  const unit = quoteCurrency === 'BTC' ? 'BTC' : quoteCurrency === 'USDT' ? 'USDT' : '원';
+  
+  if (Math.abs(value) < 100) {
+    return new Intl.NumberFormat('ko-KR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 8,
+    }).format(value) + ` ${unit}`;
+  }
   return new Intl.NumberFormat('ko-KR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value) + ' 원';
+  }).format(value) + ` ${unit}`;
 };
 
 export const formatNumber = (value: number): string => {

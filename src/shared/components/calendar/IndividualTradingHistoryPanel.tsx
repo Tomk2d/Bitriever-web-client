@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
 import { formatCurrency, formatQuantity } from '@/features/asset/utils/assetCalculations';
 import { diaryService, type DiaryResponse } from '@/features/diary/services/diaryService';
+import CoinPriceLineChart from '@/shared/components/charts/CoinPriceLineChart';
+import CoinPriceCandleChart from '@/shared/components/charts/CoinPriceCandleChart';
 import './IndividualTradingHistoryPanel.css';
 
 interface IndividualTradingHistoryPanelProps {
@@ -62,6 +64,7 @@ export default function IndividualTradingHistoryPanel({
   const [formTradingMind, setFormTradingMind] = useState<number | null>(null);
   const [formContent, setFormContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
 
   // tradingMind를 한국어로 변환
   const getTradingMindText = (mindCode: number | null | undefined): string => {
@@ -285,7 +288,40 @@ export default function IndividualTradingHistoryPanel({
                 </div>
               </div>
               
-              <div className="individual-trading-history-chart"></div>
+              <div className="individual-trading-history-chart-controls">
+                <button
+                  className={`individual-trading-history-chart-type-button ${chartType === 'candle' ? 'active' : ''}`}
+                  onClick={() => setChartType('candle')}
+                >
+                  캔들
+                </button>
+                <button
+                  className={`individual-trading-history-chart-type-button ${chartType === 'line' ? 'active' : ''}`}
+                  onClick={() => setChartType('line')}
+                >
+                  라인
+                </button>
+              </div>
+              
+              {chartType === 'line' ? (
+                <CoinPriceLineChart
+                  coinId={tradingHistory.coinId}
+                  selectedDate={tradingHistory.tradeTime}
+                  tradingPrice={tradingHistory.price}
+                  isBuy={isBuy}
+                  avgBuyPrice={tradingHistory.avgBuyPrice}
+                  containerClassName="individual-trading-history-chart"
+                />
+              ) : (
+                <CoinPriceCandleChart
+                  coinId={tradingHistory.coinId}
+                  selectedDate={tradingHistory.tradeTime}
+                  tradingPrice={tradingHistory.price}
+                  isBuy={isBuy}
+                  avgBuyPrice={tradingHistory.avgBuyPrice}
+                  containerClassName="individual-trading-history-chart"
+                />
+              )}
               
               <div className="individual-trading-history-details">
                 <div className="individual-trading-history-details-left">
@@ -293,8 +329,8 @@ export default function IndividualTradingHistoryPanel({
                     <span className="individual-trading-history-detail-label">매수평균가</span>
                     <span className="individual-trading-history-detail-value">
                       {isBuy 
-                        ? formatCurrency(tradingHistory.price)
-                        : (tradingHistory.avgBuyPrice !== null ? formatCurrency(tradingHistory.avgBuyPrice) : '-')
+                        ? formatCurrency(tradingHistory.price, coin?.quoteCurrency)
+                        : (tradingHistory.avgBuyPrice !== null ? formatCurrency(tradingHistory.avgBuyPrice, coin?.quoteCurrency) : '-')
                       }
                     </span>
                   </div>
@@ -302,7 +338,7 @@ export default function IndividualTradingHistoryPanel({
                   <div className="individual-trading-history-detail-row">
                     <span className="individual-trading-history-detail-label">매도평균가</span>
                     <span className="individual-trading-history-detail-value">
-                      {!isBuy ? formatCurrency(tradingHistory.price) : '-'}
+                      {!isBuy ? formatCurrency(tradingHistory.price, coin?.quoteCurrency) : '-'}
                     </span>
                   </div>
                   
@@ -318,7 +354,7 @@ export default function IndividualTradingHistoryPanel({
                   <div className="individual-trading-history-detail-row">
                     <span className="individual-trading-history-detail-label">총거래금액</span>
                     <span className="individual-trading-history-detail-value">
-                      {formatCurrency(tradingHistory.totalPrice)}
+                      {formatCurrency(tradingHistory.totalPrice, coin?.quoteCurrency)}
                     </span>
                   </div>
                   
@@ -332,7 +368,7 @@ export default function IndividualTradingHistoryPanel({
                   <div className="individual-trading-history-detail-row">
                     <span className="individual-trading-history-detail-label">총수익금</span>
                     <span className={`individual-trading-history-detail-value ${profitLoss !== null && profitLoss >= 0 ? 'positive' : 'negative'}`}>
-                      {profitLoss !== null ? `${profitLoss >= 0 ? '+' : ''}${formatCurrency(profitLoss)}` : '-'}
+                      {profitLoss !== null ? `${profitLoss >= 0 ? '+' : ''}${formatCurrency(profitLoss, coin?.quoteCurrency)}` : '-'}
                     </span>
                   </div>
                 </div>
@@ -355,7 +391,7 @@ export default function IndividualTradingHistoryPanel({
                   <div className="individual-trading-history-additional-item">
                     <span className="individual-trading-history-detail-label">수수료</span>
                     <span className="individual-trading-history-detail-value">
-                      {formatCurrency(tradingHistory.fee)}
+                      {formatCurrency(tradingHistory.fee, coin?.quoteCurrency)}
                     </span>
                   </div>
                 </div>
@@ -411,52 +447,69 @@ export default function IndividualTradingHistoryPanel({
               </div>
             </div>
           ) : (
-            hasDiaryContent && (
-              <div className="individual-trading-history-diary">
-                {tradingMindText !== null && tradingMindText !== '' && (
-                  <div className="individual-trading-history-diary-item">
-                    <div className="individual-trading-history-diary-mind-wrapper">
-                      <h3 className="individual-trading-history-diary-value individual-trading-history-diary-value-mind">
-                        <span 
-                          className="individual-trading-history-diary-mind-text"
-                          style={{ color: tradingMindColor }}
-                        >
-                          {tradingMindText}
-                        </span>의 마인드로 진행한 거래에요.
-                      </h3>
-                    </div>
-                  </div>
-                )}
-                {diary && diary.content !== null && diary.content !== undefined && diary.content.trim() !== '' && (() => {
-                  // content가 JSON 형식이면 파싱해서 표시
-                  let displayContent = diary.content;
-                  try {
-                    const parsed = JSON.parse(diary.content);
-                    if (parsed.blocks && Array.isArray(parsed.blocks) && parsed.blocks.length > 0) {
-                      displayContent = parsed.blocks.map((block: any) => block.content || '').join('\n');
-                    }
-                  } catch {
-                    // JSON이 아니면 그대로 사용
-                  }
-                  return (
+            <div className="individual-trading-history-diary">
+              {hasDiaryContent ? (
+                <>
+                  {tradingMindText !== null && tradingMindText !== '' && (
                     <div className="individual-trading-history-diary-item">
-                      <span className="individual-trading-history-diary-label">매매근거 & 고려사항</span>
-                      <span className="individual-trading-history-diary-value individual-trading-history-diary-content">
-                        {displayContent}
+                      <div className="individual-trading-history-diary-mind-wrapper">
+                        <h3 className="individual-trading-history-diary-value individual-trading-history-diary-value-mind">
+                          <span 
+                            className="individual-trading-history-diary-mind-text"
+                            style={{ color: tradingMindColor }}
+                          >
+                            {tradingMindText}
+                          </span>의 마인드로 진행한 거래에요.
+                        </h3>
+                      </div>
+                    </div>
+                  )}
+                  {diary && diary.content !== null && diary.content !== undefined && diary.content.trim() !== '' && (() => {
+                    // content가 JSON 형식이면 파싱해서 표시
+                    let displayContent = diary.content;
+                    try {
+                      const parsed = JSON.parse(diary.content);
+                      if (parsed.blocks && Array.isArray(parsed.blocks) && parsed.blocks.length > 0) {
+                        displayContent = parsed.blocks.map((block: any) => block.content || '').join('\n');
+                      }
+                    } catch {
+                      // JSON이 아니면 그대로 사용
+                    }
+                    return (
+                      <div className="individual-trading-history-diary-item">
+                        <span className="individual-trading-history-diary-label">매매근거 & 고려사항</span>
+                        <span className="individual-trading-history-diary-value individual-trading-history-diary-content">
+                          {displayContent}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  {diary && diary.tags !== null && diary.tags !== undefined && diary.tags.length > 0 && (
+                    <div className="individual-trading-history-diary-item">
+                      <span className="individual-trading-history-diary-label">태그</span>
+                      <span className="individual-trading-history-diary-value">
+                        {diary.tags.join(', ')}
                       </span>
                     </div>
-                  );
-                })()}
-                {diary && diary.tags !== null && diary.tags !== undefined && diary.tags.length > 0 && (
-                  <div className="individual-trading-history-diary-item">
-                    <span className="individual-trading-history-diary-label">태그</span>
-                    <span className="individual-trading-history-diary-value">
-                      {diary.tags.join(', ')}
-                    </span>
+                  )}
+                </>
+              ) : (
+                <div className="individual-trading-history-diary-item">
+                  <div className="individual-trading-history-diary-mind-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 className="individual-trading-history-diary-value individual-trading-history-diary-value-mind">
+                      매매일지를 작성해보세요!
+                    </h3>
+                    <button
+                      className="individual-trading-history-write-button-header"
+                      onClick={handleEditClick}
+                      aria-label="작성하기"
+                    >
+                      📝
+                    </button>
                   </div>
-                )}
-              </div>
-            )
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
