@@ -1,0 +1,17 @@
+.coins-page {
+  width: 100%;
+  height: calc(100vh - 70px);
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-left: 32px; /* Navigation의 왼쪽 패딩과 동일 */
+  padding-right: calc(var(--right-sidebar-width) / 2); /* 오른쪽 사이드바 너비의 절반 (30px) */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.coins-page::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
