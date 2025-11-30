@@ -1,0 +1,206 @@
+.coin-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 49.75px;
+  background-color: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  margin: 0 0 1px 0;
+  padding: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.coin-item:hover {
+  background-color: rgba(209, 209, 253, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.coin-item-section {
+  display: flex;
+  align-items: center;
+  height: calc(100% - 8px);
+  margin: 4px 2px 4px 2px;
+  padding: 0 12px;
+  background-color: transparent;
+  border-radius: 6px;
+  transition: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.coin-item-section:first-child {
+  margin-left: 0;
+}
+
+.coin-item-section:last-child {
+  margin-right: 0;
+  padding-right: 0;
+}
+
+.coin-item-info {
+  flex: 1 1 20%;
+  min-width: 220px;
+  gap: 12px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.coin-item-favorite {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.coin-item-favorite:hover {
+  transform: scale(1.1);
+}
+
+.coin-item-favorite.active {
+  transform: scale(1.1);
+}
+
+.coin-item-rank {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.89;
+  min-width: 20px;
+  text-align: left;
+}
+
+.coin-item-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.coin-item:hover .coin-item-logo {
+  transform: scale(1.05);
+}
+
+.coin-item-logo-placeholder {
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background-color: rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.coin-item-name-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.coin-item-name {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14.1px;
+  font-weight: 700;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+.coin-item-market-code {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.coin-item-price {
+  flex: 1 1 12%;
+  min-width: 100px;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.coin-item-price-value {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-align: right;
+}
+
+.coin-item-change {
+  flex: 1 1 12%;
+  min-width: 100px;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.coin-item-change-value {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14.8px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.coin-item-volume {
+  flex: 1 1 12%;
+  min-width: 100px;
+  justify-content: flex-end;
+}
+
+.coin-item-volume-value {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 14.9px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-align: right;
+}
+
+
+/* 다크 모드 */
+.dark .coin-item {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .coin-item:hover {
+  background-color: rgba(209, 209, 253, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .coin-item-section {
+  background-color: transparent;
+}
+
+
+.dark .coin-item-logo-placeholder {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+

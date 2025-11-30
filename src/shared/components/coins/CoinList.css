@@ -1,0 +1,312 @@
+.coin-list-container {
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.coin-list-market-indicators-wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coin-list-market-indicator-schedule {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.7;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 16px 16px 0 16px;
+}
+
+.coin-list-market-indicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 0 16px 0;
+  margin: 0;
+  animation: slide-infinite 10s linear infinite;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+@keyframes slide-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.coin-list-market-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 250px;
+  flex-shrink: 0;
+}
+
+
+.coin-list-market-indicator-chart {
+  width: 100%;
+  height: 90px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.coin-list-market-indicator-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.coin-list-market-indicator-label {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.coin-list-market-indicator-value {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.coin-list-market-indicator-change {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.coin-list-market-indicator-change.positive {
+  color: var(--main-color);
+}
+
+.coin-list-market-indicator-change.negative {
+  color: #ff4444;
+}
+
+.dark .coin-list-market-indicators-wrapper {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .coin-list-market-indicator-chart {
+  background-color: #3a3a3a;
+}
+
+.coin-list-currency-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 0 0 0;
+  margin: 0;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  background-color: var(--background);
+  z-index: 10;
+}
+
+.coin-list-currency-tabs-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coin-list-currency-tabs-right {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.coin-list-search {
+  width: 160px;
+  height: 35px;
+  background-color: #f5f5f5;
+  border: 1px solid rgba(217, 217, 255, 0.11);
+  border-radius: 8.75px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.coin-list-search-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  color: #333d4b;
+}
+
+.coin-list-search-input::placeholder {
+  color: #9e9ea4;
+}
+
+.dark .coin-list-currency-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .coin-list-search {
+  background-color: #2d2f35;
+  border-color: rgba(217, 217, 255, 0.2);
+}
+
+.dark .coin-list-search-input {
+  color: #ededed;
+}
+
+.dark .coin-list-search-input::placeholder {
+  color: #666666;
+}
+
+.coin-list-currency-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 620;
+  color: var(--foreground);
+  opacity: 0.6;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  position: relative;
+}
+
+.coin-list-currency-tab:hover {
+  opacity: 0.8;
+}
+
+.coin-list-currency-tab.active {
+  opacity: 1;
+  font-weight: 620;
+  color: var(--main-color);
+  border-bottom: 2px solid var(--main-color);
+}
+
+.dark .coin-list-currency-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .coin-list-currency-tab.active {
+  color: var(--main-color);
+  border-bottom-color: var(--main-color);
+}
+
+.coin-list-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+  background-color: var(--background);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: sticky;
+  top: 48px;
+  z-index: 9;
+}
+
+.coin-list-header-section {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.coin-list-header-info {
+  flex: 1 1 20%;
+  min-width: 220px;
+  padding-left: 16px;
+  padding-right: 16px;
+  justify-content: center;
+}
+
+.coin-list-header-price {
+  flex: 1 1 12%;
+  min-width: 100px;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.coin-list-header-change {
+  flex: 1 1 12%;
+  min-width: 100px;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.coin-list-header-volume {
+  flex: 1 1 12%;
+  min-width: 100px;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.coin-list-header-label {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.coin-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2px;
+  padding: 4px 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.coin-list-loading,
+.coin-list-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+}
+
+.coin-list-error {
+  color: #f04251;
+}
+
