@@ -7,9 +7,11 @@ import './CoinItem.css';
 interface CoinItemProps {
   coin: CoinResponse;
   rank: number;
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
-export default function CoinItem({ coin, rank }: CoinItemProps) {
+export default function CoinItem({ coin, rank, isSelected = false, onClick }: CoinItemProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   // 일단 가격, 등락율, 거래대금은 0으로 설정
@@ -47,7 +49,11 @@ export default function CoinItem({ coin, rank }: CoinItemProps) {
   const changeRateColor = changeRate > 0 ? '#f04251' : changeRate < 0 ? '#449bff' : 'var(--foreground)';
 
   return (
-    <div className="coin-item">
+    <div 
+      className={`coin-item ${isSelected ? 'selected' : ''}`} 
+      onClick={onClick} 
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
       <div className="coin-item-section coin-item-info">
         <button
           className={`coin-item-favorite ${isFavorite ? 'active' : ''}`}

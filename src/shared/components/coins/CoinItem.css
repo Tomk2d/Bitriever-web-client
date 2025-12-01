@@ -19,6 +19,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.coin-item.selected {
+  background-color: rgba(209, 209, 253, 0.15);
+}
+
 .coin-item-section {
   display: flex;
   align-items: center;
@@ -193,6 +197,10 @@
 .dark .coin-item:hover {
   background-color: rgba(209, 209, 253, 0.08);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .coin-item.selected {
+  background-color: rgba(209, 209, 253, 0.15);
 }
 
 .dark .coin-item-section {
