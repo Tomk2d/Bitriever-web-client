@@ -23,6 +23,22 @@
   background-color: rgba(209, 209, 253, 0.15);
 }
 
+/* 가격 업데이트 애니메이션: 아래에서 올라오는 효과 */
+.coin-item.price-updated {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .coin-item-section {
   display: flex;
   align-items: center;
@@ -154,8 +170,8 @@
 
 .coin-item-price-value {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 500;
   color: var(--foreground);
   text-align: right;
 }
@@ -169,8 +185,8 @@
 
 .coin-item-change-value {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 14.8px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 500;
   text-align: right;
 }
 
@@ -182,8 +198,8 @@
 
 .coin-item-volume-value {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 14.9px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 500;
   color: var(--foreground);
   text-align: right;
 }

@@ -310,6 +310,8 @@
   font-weight: 700;
   color: rgba(0, 12, 30, 0.8);
   line-height: 20.3px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .wallet-card-value-small.profit {
@@ -389,9 +391,9 @@
 
 .wallet-summary-content {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
-  flex: 1;
+  width: 180px;
   padding: 1px 0;
   gap: 20px;
 }

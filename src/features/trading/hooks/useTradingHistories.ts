@@ -13,19 +13,11 @@ export const useTradingHistories = (activeStartDate: Date | null) => {
     queryKey: ['trading-histories', year, month],
     queryFn: async () => {
       if (!activeStartDate) {
-        console.log('[useTradingHistories] activeStartDate is null, returning empty array');
         return [];
       }
 
       const startDate = getMonthStartDate(activeStartDate);
       const endDate = getMonthEndDate(activeStartDate);
-
-      console.log('[useTradingHistories] Fetching trading histories:', {
-        year,
-        month,
-        startDate,
-        endDate,
-      });
 
       return tradingHistoryService.getByDateRange(startDate, endDate);
     },

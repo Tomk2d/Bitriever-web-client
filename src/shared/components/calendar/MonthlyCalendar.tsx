@@ -34,15 +34,6 @@ export default function MonthlyCalendar({
 
   const { data: tradingHistories = [], isLoading, error } = useTradingHistories(activeStartDate);
 
-  useEffect(() => {
-    console.log('[MonthlyCalendar] Trading histories state:', {
-      count: tradingHistories.length,
-      isLoading,
-      hasError: !!error,
-      activeStartDate: activeStartDate?.toISOString(),
-    });
-  }, [tradingHistories, isLoading, error, activeStartDate]);
-
   const tradingHistoriesByDate = useMemo(() => {
     const grouped: Record<string, TradingHistoryResponse[]> = {};
     
