@@ -149,6 +149,12 @@
   display: flex;
   align-items: center;
   padding: 0 12px;
+  transition: border-color 0.2s ease, border-width 0.2s ease;
+}
+
+.coin-list-search:focus-within {
+  border-color: var(--main-color, #02a262);
+  border-width: 1.5px;
 }
 
 .coin-list-search-input {
@@ -176,6 +182,11 @@
 .dark .coin-list-search {
   background-color: #2d2f35;
   border-color: rgba(217, 217, 255, 0.2);
+}
+
+.dark .coin-list-search:focus-within {
+  border-color: var(--main-color, #02a262);
+  border-width: 1.5px;
 }
 
 .dark .coin-list-search-input {

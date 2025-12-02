@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authSlice from '@/store/slices/authSlice';
 import uiSlice from '@/store/slices/uiSlice';
+import coinPriceSlice from '@/store/slices/coinPriceSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authSlice,
     ui: uiSlice,
+    coinPrice: coinPriceSlice,
   },
 });
 

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.10.0",
+    "@stomp/stompjs": "^7.2.1",
     "@tanstack/react-query": "^5.90.6",
     "axios": "^1.13.1",
     "date-fns": "^4.1.0",
@@ -19,6 +20,7 @@
     "react-calendar": "^6.0.0",
     "react-dom": "19.2.0",
     "react-redux": "^9.2.0",
+    "sockjs-client": "^1.6.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -26,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sockjs-client": "^1.5.4",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",

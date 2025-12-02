@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppSelector } from '@/store/hooks';
+import { selectAllPrices } from '@/store/slices/coinPriceSlice';
 import { useAssets } from '@/features/asset/hooks/useAssets';
 import { assetService } from '@/features/asset/services/assetService';
 import {
@@ -31,6 +32,9 @@ export default function RightSidebar() {
   
   // Redux에서 유저 정보 가져오기
   const user = useAppSelector((state) => state.auth.user);
+  
+  // Redux에서 가격 데이터 가져오기
+  const priceData = useAppSelector(selectAllPrices);
   
   // 자산 데이터 가져오기 (wallet 메뉴 선택 시에만 활성화)
   const shouldFetchAssets = selectedMenu === 'wallet' && isPanelOpen;
@@ -216,22 +220,61 @@ export default function RightSidebar() {
                     </div>
                   </div>
                   {/* 총 보유자산 카드 */}
-                  <div className="wallet-card">
-                    <div className="wallet-card-label">총 보유자산</div>
-                    <div className="wallet-card-value-large">
-                      {formatCurrency(getTotalAssets(assets))}
-                    </div>
-                    <div className="wallet-card-row">
-                      <span className="wallet-card-label-small">총 평가손익</span>
-                      <span className="wallet-card-value-small profit">
-                        {formatNumber(getTotalAssets(assets))}
-                      </span>
-                    </div>
-                    <div className="wallet-card-row">
-                      <span className="wallet-card-label-small">총 수익률</span>
-                      <span className="wallet-card-value-small profit">0%</span>
-                    </div>
-                  </div>
+                  {(() => {
+                    // 모든 코인 자산의 현재 평가금액 합계 (현재가 * 보유수량)
+                    const totalEvaluationAmount = assets
+                      .filter((asset) => asset.symbol !== 'KRW')
+                      .reduce((total, asset) => {
+                        const marketCode = asset.coin?.marketCode;
+                        if (!marketCode) return total;
+                        const currentPrice = priceData[marketCode]?.tradePrice || 0;
+                        return total + (currentPrice * (asset.quantity || 0));
+                      }, 0);
+                    
+                    // KRW 자산 추가
+                    const krwAsset = getKRWAsset(assets);
+                    const krwValue = krwAsset ? (krwAsset.quantity || 0) : 0;
+                    const totalAssetsValue = krwValue + totalEvaluationAmount;
+                    
+                    // 총 매수금액 (매수평균가 * 보유수량)
+                    const totalBuyAmount = getTotalCoinAssets(assets);
+                    const totalBuyAmountWithKRW = krwValue + totalBuyAmount;
+                    
+                    // 총 평가손익 = 총 평가금액 - 총 매수금액
+                    const totalProfitLoss = totalAssetsValue - totalBuyAmountWithKRW;
+                    
+                    // 총 수익률 = (총 평가금액 - 총 매수금액) / 총 매수금액 * 100
+                    const totalProfitRate = totalBuyAmountWithKRW > 0 
+                      ? ((totalAssetsValue - totalBuyAmountWithKRW) / totalBuyAmountWithKRW) * 100 
+                      : 0;
+                    
+                    return (
+                      <div className="wallet-card">
+                        <div className="wallet-card-label">총 보유자산</div>
+                        <div className="wallet-card-value-large">
+                          {formatCurrency(totalAssetsValue)}
+                        </div>
+                        <div className="wallet-card-row">
+                          <span className="wallet-card-label-small">총 평가손익</span>
+                          <span 
+                            className="wallet-card-value-small"
+                            style={{ color: totalProfitRate >= 0 ? '#f04251' : '#449bff' }}
+                          >
+                            {formatNumber(totalProfitLoss)}
+                          </span>
+                        </div>
+                        <div className="wallet-card-row">
+                          <span className="wallet-card-label-small">총 수익률</span>
+                          <span 
+                            className="wallet-card-value-small"
+                            style={{ color: totalProfitRate >= 0 ? '#f04251' : '#449bff' }}
+                          >
+                            {totalProfitRate.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </>
               )}
             </div>
@@ -258,8 +301,50 @@ export default function RightSidebar() {
                         <div className="wallet-summary-vertical-line"></div>
                         <div className="wallet-summary-content">
                           <span className="wallet-card-label-small">총 평가</span>
-                          <span className="wallet-card-value-small">
-                            {formatCurrency(getTotalCoinAssets(filteredAssets))}
+                          <span 
+                            className="wallet-card-value-small"
+                            style={{
+                              color: (() => {
+                                // 모든 코인 자산의 현재 평가금액 합계 (현재가 * 보유수량)
+                                const totalEvaluationAmount = filteredAssets
+                                  .filter((asset) => asset.symbol !== 'KRW')
+                                  .reduce((total, asset) => {
+                                    const marketCode = asset.coin?.marketCode;
+                                    if (!marketCode) return total;
+                                    const currentPrice = priceData[marketCode]?.tradePrice || 0;
+                                    return total + (currentPrice * (asset.quantity || 0));
+                                  }, 0);
+                                
+                                // KRW 자산 추가
+                                const krwAsset = getKRWAsset(filteredAssets);
+                                const krwValue = krwAsset ? (krwAsset.quantity || 0) : 0;
+                                const totalAssetsValue = krwValue + totalEvaluationAmount;
+                                
+                                // 총 매수금액
+                                const totalBuyAmount = getTotalCoinAssets(filteredAssets);
+                                const totalBuyAmountWithKRW = krwValue + totalBuyAmount;
+                                
+                                // 총 수익률 계산
+                                const totalProfitRate = totalBuyAmountWithKRW > 0 
+                                  ? ((totalAssetsValue - totalBuyAmountWithKRW) / totalBuyAmountWithKRW) * 100 
+                                  : 0;
+                                
+                                return totalProfitRate >= 0 ? '#f04251' : '#449bff';
+                              })()
+                            }}
+                          >
+                            {(() => {
+                              // 모든 코인 자산의 현재 평가금액 합계 (현재가 * 보유수량)
+                              const totalEvaluationAmount = filteredAssets
+                                .filter((asset) => asset.symbol !== 'KRW')
+                                .reduce((total, asset) => {
+                                  const marketCode = asset.coin?.marketCode;
+                                  if (!marketCode) return total;
+                                  const currentPrice = priceData[marketCode]?.tradePrice || 0;
+                                  return total + (currentPrice * (asset.quantity || 0));
+                                }, 0);
+                              return formatCurrency(totalEvaluationAmount);
+                            })()}
                           </span>
                         </div>
                         {/* 거래소 선택 및 정렬 셀렉트 박스 */}

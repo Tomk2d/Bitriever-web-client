@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo, memo, useRef } from 'react';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useCoins } from '@/features/coins/hooks/useCoins';
+import { useAppSelector } from '@/store/hooks';
+import { selectAllPrices } from '@/store/slices/coinPriceSlice';
 import CoinItem from './CoinItem';
 import CoinDetailSidebar from './CoinDetailSidebar';
 import './CoinList.css';
@@ -104,12 +106,37 @@ export default function CoinList() {
   const [selectedCoin, setSelectedCoin] = useState<CoinResponse | null>(null);
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
   const [sortField, setSortField] = useState<SortField>('volume'); // 기본값: 거래대금
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc'); // 기본값: 오름차순
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc'); // 기본값: 내림차순
+  const [searchQuery, setSearchQuery] = useState<string>(''); // 입력값
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>(''); // debounce된 검색어
   const indicatorsRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // React Query를 사용한 코인 데이터 캐싱
   const { data: coins = [], isLoading: loading, error } = useCoins(selectedCurrency);
+  
+  // Redux에서 가격 데이터 가져오기
+  const priceData = useAppSelector(selectAllPrices);
+
+  // 검색어 debounce 처리 (300ms 지연)
+  useEffect(() => {
+    // 이전 타이머가 있으면 취소
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // 300ms 후에 debouncedSearchQuery 업데이트
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    // cleanup 함수
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchQuery]);
 
   // 사이드바가 열릴 때 body에 padding-left 추가
   useEffect(() => {
@@ -126,53 +153,57 @@ export default function CoinList() {
     };
   }, [selectedCoin]);
 
-  // 정렬 핸들러 (3단계: 오름차순 → 내림차순 → 해제)
+  // 정렬 핸들러 (3단계: 내림차순 → 오름차순 → 해제)
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // 같은 필드를 클릭하면 정렬 순서 토글
-      if (sortOrder === 'asc') {
-        setSortOrder('desc');
-      } else if (sortOrder === 'desc') {
-        // 내림차순에서 다시 클릭하면 정렬 해제
+      if (sortOrder === 'desc') {
+        setSortOrder('asc');
+      } else if (sortOrder === 'asc') {
+        // 오름차순에서 다시 클릭하면 정렬 해제
         setSortField(null);
         setSortOrder(null);
       }
     } else {
-      // 다른 필드를 클릭하면 오름차순으로 시작
+      // 다른 필드를 클릭하면 내림차순으로 시작
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder('desc');
     }
   };
 
-  // 검색 필터링된 코인 목록
+  // 검색 필터링된 코인 목록 (debouncedSearchQuery 사용)
   const filteredCoins = useMemo(() => {
-    if (!searchQuery.trim()) return coins;
+    if (!debouncedSearchQuery.trim()) return coins;
 
-    const query = searchQuery.trim();
+    const query = debouncedSearchQuery.trim().toLowerCase();
     const isInitialOnly = isOnlyInitialConsonants(query);
 
     return coins.filter(coin => {
       const koreanName = coin.koreanName || '';
       const englishName = coin.englishName || '';
+      const symbol = coin.symbol || '';
 
       if (isInitialOnly) {
         // 한글 자음만 입력된 경우
         const koreanInitials = extractInitials(koreanName);
         return koreanInitials.includes(query);
       } else {
-        // 일반 검색 (한글 전체 또는 영어)
+        // 일반 검색 (한글명, 영어명, 심볼 검색)
         // 한글명 검색
-        const koreanMatch = koreanName.toLowerCase().includes(query.toLowerCase());
+        const koreanMatch = koreanName.toLowerCase().includes(query);
         
-        // 영어명 검색 (대소문자 구분 없음, 마켓 코드 제외)
+        // 영어명 검색
         const englishMatch = englishName 
-          ? englishName.toLowerCase().includes(query.toLowerCase())
+          ? englishName.toLowerCase().includes(query)
           : false;
 
-        return koreanMatch || englishMatch;
+        // 심볼 검색
+        const symbolMatch = symbol.toLowerCase().includes(query);
+
+        return koreanMatch || englishMatch || symbolMatch;
       }
     });
-  }, [coins, searchQuery]);
+  }, [coins, debouncedSearchQuery]);
 
   // 정렬된 코인 목록
   const sortedCoins = useMemo(() => {
@@ -188,19 +219,29 @@ export default function CoinList() {
           bValue = (b.koreanName || b.marketCode || '').toLowerCase();
           break;
         case 'price':
-          // 현재는 데이터가 없으므로 0으로 처리
-          aValue = 0;
-          bValue = 0;
+          // Redux에서 가격 데이터 가져오기
+          const aPriceData = priceData[a.marketCode];
+          const bPriceData = priceData[b.marketCode];
+          aValue = aPriceData?.tradePrice || 0;
+          bValue = bPriceData?.tradePrice || 0;
           break;
         case 'changeRate':
-          // 현재는 데이터가 없으므로 0으로 처리
-          aValue = 0;
-          bValue = 0;
+          // Redux에서 등락율 데이터 가져오기 (signedChangeRate 우선 사용)
+          const aChangeData = priceData[a.marketCode];
+          const bChangeData = priceData[b.marketCode];
+          aValue = aChangeData?.signedChangeRate !== undefined && aChangeData?.signedChangeRate !== null
+            ? aChangeData.signedChangeRate
+            : (aChangeData?.changeRate || 0);
+          bValue = bChangeData?.signedChangeRate !== undefined && bChangeData?.signedChangeRate !== null
+            ? bChangeData.signedChangeRate
+            : (bChangeData?.changeRate || 0);
           break;
         case 'volume':
-          // 현재는 데이터가 없으므로 0으로 처리
-          aValue = 0;
-          bValue = 0;
+          // Redux에서 거래대금 데이터 가져오기
+          const aVolumeData = priceData[a.marketCode];
+          const bVolumeData = priceData[b.marketCode];
+          aValue = aVolumeData?.accTradePrice24h || 0;
+          bValue = bVolumeData?.accTradePrice24h || 0;
           break;
       }
 
@@ -216,7 +257,7 @@ export default function CoinList() {
     });
 
     return sorted;
-  }, [filteredCoins, sortField, sortOrder]);
+  }, [filteredCoins, sortField, sortOrder, priceData]);
 
   // 마켓 인디케이터 무한 스크롤
   useEffect(() => {
@@ -282,6 +323,7 @@ export default function CoinList() {
             coin={coin} 
             rank={index + 1}
             isSelected={selectedCoin?.id === coin.id}
+            selectedCurrency={selectedCurrency}
             onClick={() => {
               // 같은 코인을 다시 클릭하면 선택 해제
               if (selectedCoin?.id === coin.id) {
@@ -353,14 +395,14 @@ export default function CoinList() {
               <div className="coin-list-header-sort-icons">
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-up ${
-                    sortField === 'name' && sortOrder === 'asc' ? 'active' : ''
+                    sortField === 'name' && sortOrder === 'desc' ? 'active' : ''
                   }`}
                 >
                   ▲
                 </span>
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-down ${
-                    sortField === 'name' && sortOrder === 'desc' ? 'active' : ''
+                    sortField === 'name' && sortOrder === 'asc' ? 'active' : ''
                   }`}
                 >
                   ▼
@@ -375,14 +417,14 @@ export default function CoinList() {
               <div className="coin-list-header-sort-icons">
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-up ${
-                    sortField === 'price' && sortOrder === 'asc' ? 'active' : ''
+                    sortField === 'price' && sortOrder === 'desc' ? 'active' : ''
                   }`}
                 >
                   ▲
                 </span>
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-down ${
-                    sortField === 'price' && sortOrder === 'desc' ? 'active' : ''
+                    sortField === 'price' && sortOrder === 'asc' ? 'active' : ''
                   }`}
                 >
                   ▼
@@ -397,14 +439,14 @@ export default function CoinList() {
               <div className="coin-list-header-sort-icons">
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-up ${
-                    sortField === 'changeRate' && sortOrder === 'asc' ? 'active' : ''
+                    sortField === 'changeRate' && sortOrder === 'desc' ? 'active' : ''
                   }`}
                 >
                   ▲
                 </span>
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-down ${
-                    sortField === 'changeRate' && sortOrder === 'desc' ? 'active' : ''
+                    sortField === 'changeRate' && sortOrder === 'asc' ? 'active' : ''
                   }`}
                 >
                   ▼
@@ -419,14 +461,14 @@ export default function CoinList() {
               <div className="coin-list-header-sort-icons">
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-up ${
-                    sortField === 'volume' && sortOrder === 'asc' ? 'active' : ''
+                    sortField === 'volume' && sortOrder === 'desc' ? 'active' : ''
                   }`}
                 >
                   ▲
                 </span>
                 <span 
                   className={`coin-list-header-sort-icon coin-list-header-sort-down ${
-                    sortField === 'volume' && sortOrder === 'desc' ? 'active' : ''
+                    sortField === 'volume' && sortOrder === 'asc' ? 'active' : ''
                   }`}
                 >
                   ▼

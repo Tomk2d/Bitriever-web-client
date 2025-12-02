@@ -25,7 +25,40 @@ export interface CoinPriceDayResponse {
   updatedAt: string;
 }
 
+// WebSocket에서 받는 코인 현재가 데이터 타입
+export interface CoinTickerPriceDto {
+  market: string;
+  tradePrice: number;
+  timestamp: number;
+  changePrice: number; // 전일 종가 대비 가격 변화
+  changeRate: number; // 전일 종가 대비 가격 변화율 (절댓값)
+  signedChangeRate: number; // 전일 종가 대비 가격 변화율 (부호 포함, 음수 가능)
+  accTradePrice24h: number; // 24시간 누적 거래 금액
+  [key: string]: any;
+}
+
 export const coinPriceService = {
+  /**
+   * 전체 코인 현재가 조회 (최초 연결 시 사용)
+   * 서버에서 관리하는 모든 코인의 현재 가격을 조회
+   */
+  getAllTickerPrices: async (): Promise<CoinTickerPriceDto[]> => {
+    const response = await fetch('/api/proxy/coin-prices/ticker/all', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: '코인 가격 조회에 실패했습니다.' }));
+      throw new Error(error.message || error.error?.message || '코인 가격 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  },
+
   getByDateRange: async (
     coinId: number,
     startDate: string,
