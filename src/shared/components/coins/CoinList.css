@@ -356,6 +356,6 @@
 }
 
 .coin-list-error {
-  color: #f04251;
+  color: var(--price-up);
 }
 

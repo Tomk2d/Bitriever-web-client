@@ -107,7 +107,7 @@ export default function WalletAssetList({ assets, sortOption = 'holdings' }: Wal
                   <span className="wallet-asset-detail-label">평가 손익</span>
                   <span 
                     className="wallet-asset-detail-value"
-                    style={{ color: profitRate >= 0 ? '#f04251' : '#449bff' }}
+                    style={{ color: profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
                   >
                     {formatCurrency(profitLoss)}
                   </span>
@@ -116,7 +116,7 @@ export default function WalletAssetList({ assets, sortOption = 'holdings' }: Wal
                   <span className="wallet-asset-detail-label">수익률</span>
                   <span 
                     className="wallet-asset-detail-value"
-                    style={{ color: profitRate >= 0 ? '#f04251' : '#449bff' }}
+                    style={{ color: profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
                   >
                     {profitRate.toFixed(2)}%
                   </span>
@@ -140,7 +140,7 @@ export default function WalletAssetList({ assets, sortOption = 'holdings' }: Wal
                 <span className="wallet-asset-detail-label">평가금액</span>
                 <span 
                   className="wallet-asset-detail-value"
-                  style={{ color: profitRate >= 0 ? '#f04251' : '#449bff' }}
+                  style={{ color: profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
                 >
                   {evaluationAmount > 0 ? formatCurrency(evaluationAmount) : '-'}
                 </span>
