@@ -78,6 +78,8 @@
   --sub-color: #4dd4a0;
   --right-sidebar-width: 60px; /* 오른쪽 사이드바 너비 */
   --sidebar-bg: #fafbfc; /* 라이트 모드 사이드바 배경 - 더 밝게 조정 RGB(250, 251, 252) */
+  --price-up: #dd3c44; /* 상승 색상 */
+  --price-down: #1375ec; /* 하락 색상 */
 }
 
 @theme inline {

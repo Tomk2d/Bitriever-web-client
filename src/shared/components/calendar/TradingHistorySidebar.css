@@ -326,11 +326,11 @@
 }
 
 .trading-history-profit-loss-rate.positive {
-  color: #f04251;
+  color: var(--price-up);
 }
 
 .trading-history-profit-loss-rate.negative {
-  color: #449bff;
+  color: var(--price-down);
 }
 
 .trading-history-item-details {

@@ -258,7 +258,7 @@ export default function RightSidebar() {
                           <span className="wallet-card-label-small">총 평가손익</span>
                           <span 
                             className="wallet-card-value-small"
-                            style={{ color: totalProfitRate >= 0 ? '#f04251' : '#449bff' }}
+                            style={{ color: totalProfitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
                           >
                             {formatNumber(totalProfitLoss)}
                           </span>
@@ -267,7 +267,7 @@ export default function RightSidebar() {
                           <span className="wallet-card-label-small">총 수익률</span>
                           <span 
                             className="wallet-card-value-small"
-                            style={{ color: totalProfitRate >= 0 ? '#f04251' : '#449bff' }}
+                            style={{ color: totalProfitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
                           >
                             {totalProfitRate.toFixed(2)}%
                           </span>
@@ -329,7 +329,7 @@ export default function RightSidebar() {
                                   ? ((totalAssetsValue - totalBuyAmountWithKRW) / totalBuyAmountWithKRW) * 100 
                                   : 0;
                                 
-                                return totalProfitRate >= 0 ? '#f04251' : '#449bff';
+                                return totalProfitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)';
                               })()
                             }}
                           >

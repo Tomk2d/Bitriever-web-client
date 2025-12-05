@@ -124,8 +124,8 @@ function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 
   const changeRateColor = changeRate === null 
     ? 'var(--foreground)' 
     : changeRate >= 0 
-      ? '#f04251' 
-      : '#449bff';
+      ? 'var(--price-up)' 
+      : 'var(--price-down)';
 
   return (
     <div 
@@ -161,8 +161,8 @@ function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 
         </div>
       </div>
       <div className="coin-item-section coin-item-price">
-        <span className="coin-item-price-value">
-          {price !== null ? `${formatPrice(price)}원` : '-'}
+        <span className="coin-item-price-value" style={{ color: changeRateColor }}>
+          {price !== null ? `${formatPrice(price)}${selectedCurrency === 'KRW' ? '원' : selectedCurrency}` : '-'}
         </span>
       </div>
       <div className="coin-item-section coin-item-change">
