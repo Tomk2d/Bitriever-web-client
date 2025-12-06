@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
@@ -19,10 +19,31 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
   const [detailTab, setDetailTab] = useState<'detail' | 'memo'>('detail');
   const [selectedDateData, setSelectedDateData] = useState<CoinPriceDayResponse | null>(null);
+  const [isPriceChanged, setIsPriceChanged] = useState(false);
+  const prevPriceRef = useRef<number | null>(null);
   
   // Hooks 규칙: early return 전에 모든 hooks 호출
   // coin이 null일 수 있으므로 안전하게 처리
   const priceData = useAppSelector(selectPriceByMarket(coin?.marketCode || ''));
+  
+  // 가격 변동 감지
+  useEffect(() => {
+    if (priceData?.tradePrice !== undefined && priceData.tradePrice !== null) {
+      const currentPrice = priceData.tradePrice;
+      
+      if (prevPriceRef.current !== null && prevPriceRef.current !== currentPrice) {
+        // 가격이 변경되었을 때 깜빡임 효과 트리거
+        setIsPriceChanged(true);
+        const timer = setTimeout(() => {
+          setIsPriceChanged(false);
+        }, 500); // 0.5초 후 애니메이션 제거
+        
+        return () => clearTimeout(timer);
+      }
+      
+      prevPriceRef.current = currentPrice;
+    }
+  }, [priceData?.tradePrice]);
   
   if (!coin) return null;
 
@@ -102,6 +123,13 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
       ? 'var(--price-up)' 
       : 'var(--price-down)';
 
+  // 배경색: 텍스트 색상에 맞춘 연한 색상
+  const getBackgroundColor = () => {
+    if (changeRate === null) return 'rgba(0, 0, 0, 0.05)';
+    if (changeRate >= 0) return 'rgba(221, 60, 68, 0.1)'; // price-up 연한 버전
+    return 'rgba(19, 117, 236, 0.1)'; // price-down 연한 버전
+  };
+
   return (
     <div className="coin-detail-sidebar">
       <div className="coin-detail-sidebar-content">
@@ -120,7 +148,10 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
             <div className="coin-detail-coin-name">{koreanName}</div>
             <div className="coin-detail-market-code">{marketCode}</div>
           </div>
-          <div className="coin-detail-price-info">
+          <div 
+            className={`coin-detail-price-info ${isPriceChanged ? 'price-changed' : ''}`}
+            style={isPriceChanged ? { backgroundColor: getBackgroundColor() } : {}}
+          >
             <div className="coin-detail-price-value" style={{ color: changeRateColor }}>
               {price !== null ? `${formatPrice(price)}원` : '-'}
             </div>
