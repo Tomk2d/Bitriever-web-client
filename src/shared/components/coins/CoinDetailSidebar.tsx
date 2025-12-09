@@ -5,6 +5,7 @@ import { CoinResponse } from '@/features/coins/services/coinService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
 import { CoinPriceDayResponse } from '@/features/coins/services/coinPriceService';
+import { fearGreedService, FearGreedResponse } from '@/features/feargreed/services/fearGreedService';
 import CoinDetailCandleChart from '@/shared/components/charts/CoinDetailCandleChart';
 import CoinDetailLineChart from '@/shared/components/charts/CoinDetailLineChart';
 import './CoinDetailSidebar.css';
@@ -19,8 +20,21 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
   const [detailTab, setDetailTab] = useState<'detail' | 'memo'>('detail');
   const [selectedDateData, setSelectedDateData] = useState<CoinPriceDayResponse | null>(null);
+  const [fearGreedData, setFearGreedData] = useState<FearGreedResponse | null>(null);
+  const [isLoadingFearGreed, setIsLoadingFearGreed] = useState(false);
   const [isPriceChanged, setIsPriceChanged] = useState(false);
   const prevPriceRef = useRef<number | null>(null);
+  const [gradientColors, setGradientColors] = useState({ start: '#1375ec', end: '#dd3c44' });
+  
+  // CSS 변수 값 가져오기
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const priceDownColor = rootStyle.getPropertyValue('--price-down').trim() || '#1375ec';
+      const priceUpColor = rootStyle.getPropertyValue('--price-up').trim() || '#dd3c44';
+      setGradientColors({ start: priceDownColor, end: priceUpColor });
+    }
+  }, []);
   
   // Hooks 규칙: early return 전에 모든 hooks 호출
   // coin이 null일 수 있으므로 안전하게 처리
@@ -44,6 +58,36 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
       prevPriceRef.current = currentPrice;
     }
   }, [priceData?.tradePrice]);
+
+  // 공포/탐욕 지수 조회
+  useEffect(() => {
+    const fetchFearGreed = async () => {
+      if (!selectedDateData) {
+        setFearGreedData(null);
+        return;
+      }
+
+      try {
+        setIsLoadingFearGreed(true);
+        // candleDateTimeKst에서 날짜 추출 (yyyy-MM-dd 형식)
+        const date = new Date(selectedDateData.candleDateTimeKst);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        
+        const data = await fearGreedService.getByDate(dateString);
+        setFearGreedData(data);
+      } catch (error) {
+        console.error('[CoinDetailSidebar] 공포/탐욕 지수 조회 실패:', error);
+        setFearGreedData(null);
+      } finally {
+        setIsLoadingFearGreed(false);
+      }
+    };
+
+    fetchFearGreed();
+  }, [selectedDateData]);
   
   if (!coin) return null;
 
@@ -128,6 +172,41 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
     if (changeRate === null) return 'rgba(0, 0, 0, 0.05)';
     if (changeRate >= 0) return 'rgba(221, 60, 68, 0.1)'; // price-up 연한 버전
     return 'rgba(19, 117, 236, 0.1)'; // price-down 연한 버전
+  };
+
+  // 공포/탐욕 지수 범위에 따른 색상 계산 (0-100 값을 파란색에서 빨간색으로 그라데이션)
+  const getRangeColor = (value: number) => {
+    if (typeof window === 'undefined') return '#171717';
+    
+    // CSS 변수 값 가져오기
+    const rootStyle = getComputedStyle(document.documentElement);
+    const priceDownColor = rootStyle.getPropertyValue('--price-down').trim() || '#1375ec';
+    const priceUpColor = rootStyle.getPropertyValue('--price-up').trim() || '#dd3c44';
+    
+    // RGB 값 추출
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    };
+    
+    const startRgb = hexToRgb(priceDownColor);
+    const endRgb = hexToRgb(priceUpColor);
+    
+    if (!startRgb || !endRgb) return '#171717';
+    
+    // 0-100 값을 0-1로 정규화
+    const ratio = value / 100;
+    
+    // 그라데이션 계산
+    const r = Math.round(startRgb.r + (endRgb.r - startRgb.r) * ratio);
+    const g = Math.round(startRgb.g + (endRgb.g - startRgb.g) * ratio);
+    const b = Math.round(startRgb.b + (endRgb.b - startRgb.b) * ratio);
+    
+    return `rgb(${r}, ${g}, ${b})`;
   };
 
   return (
@@ -332,6 +411,77 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
               )}
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="coin-detail-fear-greed-gauge">
+            <div className="coin-detail-fear-greed-gauge-container">
+              <div className="coin-detail-fear-greed-gauge-label">공포/탐욕 지수</div>
+              {isLoadingFearGreed ? (
+                <div className="coin-detail-fear-greed-gauge-loading">로딩 중...</div>
+              ) : fearGreedData ? (
+                <div className="coin-detail-fear-greed-gauge-wrapper">
+                  <div className="coin-detail-fear-greed-gauge-semicircle">
+                    <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                      {/* 반원형 배경 그라데이션 */}
+                      <defs>
+                        <linearGradient id="fearGreedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor={gradientColors.start} />
+                          <stop offset="100%" stopColor={gradientColors.end} />
+                        </linearGradient>
+                      </defs>
+                      {/* 반원형 게이지 배경 */}
+                      <path
+                        d="M 20 100 A 80 80 0 0 1 180 100"
+                        fill="none"
+                        stroke="url(#fearGreedGradient)"
+                        strokeWidth="12"
+                        strokeLinecap="round"
+                      />
+                      {/* 바늘 */}
+                      <g
+                        transform={`rotate(${(fearGreedData.value / 100) * 180 - 90} 100 100)`}
+                        style={{ color: 'var(--foreground)' }}
+                      >
+                        <line
+                          x1="100"
+                          y1="100"
+                          x2="100"
+                          y2="20"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                        />
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="6"
+                          fill="currentColor"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                  <div className="coin-detail-fear-greed-gauge-scale">
+                    <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                    <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                  </div>
+                  <div className="coin-detail-fear-greed-gauge-value">{fearGreedData.value}</div>
+                  <div 
+                    className="coin-detail-fear-greed-gauge-range"
+                    style={{
+                      color: getRangeColor(fearGreedData.value)
+                    }}
+                  >
+                    {fearGreedData.value <= 24 && '극단적 공포'}
+                    {fearGreedData.value >= 25 && fearGreedData.value <= 44 && '공포'}
+                    {fearGreedData.value >= 45 && fearGreedData.value <= 54 && '중립'}
+                    {fearGreedData.value >= 55 && fearGreedData.value <= 74 && '탐욕'}
+                    {fearGreedData.value >= 75 && '극단적 탐욕'}
+                  </div>
+                </div>
+              ) : (
+                <div className="coin-detail-fear-greed-gauge-no-data">차트에서 일자를 선택하세요.</div>
+              )}
             </div>
           </div>
 
