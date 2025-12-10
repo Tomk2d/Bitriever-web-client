@@ -15,6 +15,9 @@ interface CoinItemProps {
 }
 
 function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 'KRW' }: CoinItemProps) {
+  // 이미지 URL 구성
+  const imageBasePath = process.env.NEXT_PUBLIC_IMAGE_BASE_PATH || '';
+  const imageUrl = coin.imgUrl ? `${imageBasePath}${coin.imgUrl}` : null;
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const prevPriceDataRef = useRef<number | null>(null);
@@ -142,9 +145,9 @@ function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 
           {isFavorite ? '❤️' : '🤍'}
         </button>
         <div className="coin-item-rank">{rank}</div>
-        {coin.imgUrl ? (
+        {imageUrl ? (
           <img
-            src={coin.imgUrl}
+            src={imageUrl}
             alt={coin.koreanName || coin.marketCode}
             className="coin-item-logo"
           />
