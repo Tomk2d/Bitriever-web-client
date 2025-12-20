@@ -32,8 +32,13 @@ export interface CoinTickerPriceDto {
   timestamp: number;
   changePrice: number; // 전일 종가 대비 가격 변화
   changeRate: number; // 전일 종가 대비 가격 변화율 (절댓값)
-  signedChangeRate: number; // 전일 종가 대비 가격 변화율 (부호 포함, 음수 가능)
+  signedChangeRate?: number; // 전일 종가 대비 가격 변화율 (부호 포함, 음수 가능)
+  signedChangePrice?: number; // 전일 종가 대비 가격 변화 (부호 포함)
   accTradePrice24h: number; // 24시간 누적 거래 금액
+  accTradeVolume24h?: number; // 24시간 누적 거래량
+  highPrice?: number; // 고가
+  lowPrice?: number; // 저가
+  prevClosingPrice?: number; // 전일 종가
   [key: string]: any;
 }
 

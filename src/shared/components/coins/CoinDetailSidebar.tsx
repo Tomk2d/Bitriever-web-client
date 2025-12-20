@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
 import { CoinPriceDayResponse } from '@/features/coins/services/coinPriceService';
-import { fearGreedService, FearGreedResponse } from '@/features/feargreed/services/fearGreedService';
+import { useFearGreedByDate, useFearGreedToday } from '@/features/feargreed/hooks/useFearGreed';
+import { FearGreedResponse } from '@/features/feargreed/services/fearGreedService';
+import { useLongShort } from '@/features/longshort/hooks/useLongShort';
+import { LongShortPeriod } from '@/features/longshort/services/longShortService';
 import CoinDetailCandleChart from '@/shared/components/charts/CoinDetailCandleChart';
 import CoinDetailLineChart from '@/shared/components/charts/CoinDetailLineChart';
 import './CoinDetailSidebar.css';
@@ -20,11 +23,45 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
   const [detailTab, setDetailTab] = useState<'detail' | 'memo'>('detail');
   const [selectedDateData, setSelectedDateData] = useState<CoinPriceDayResponse | null>(null);
-  const [fearGreedData, setFearGreedData] = useState<FearGreedResponse | null>(null);
-  const [isLoadingFearGreed, setIsLoadingFearGreed] = useState(false);
+  const [longShortPeriod, setLongShortPeriod] = useState<LongShortPeriod>('1h');
   const [isPriceChanged, setIsPriceChanged] = useState(false);
   const prevPriceRef = useRef<number | null>(null);
   const [gradientColors, setGradientColors] = useState({ start: '#1375ec', end: '#dd3c44' });
+  const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  
+  const dateString = useMemo(() => {
+    if (!selectedDateData) return null;
+    const date = new Date(selectedDateData.candleDateTimeKst);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, [selectedDateData]);
+
+  // 2018년 2월 1일 이전 날짜인지 확인
+  const isDateBeforeMinDate = useMemo(() => {
+    if (!selectedDateData) return false;
+    try {
+      const selectedDate = new Date(selectedDateData.candleDateTimeKst);
+      const minDate = new Date('2018-02-01');
+      return selectedDate < minDate;
+    } catch {
+      return false;
+    }
+  }, [selectedDateData]);
+  
+  const { data: fearGreedData, isLoading: isLoadingFearGreed } = useFearGreedByDate(dateString);
+  const { data: fearGreedTodayData } = useFearGreedToday();
+  const lastDisplayedDataRef = useRef<FearGreedResponse | null>(null);
+  
+  useEffect(() => {
+    if (fearGreedData) {
+      lastDisplayedDataRef.current = fearGreedData;
+    }
+  }, [fearGreedData]);
+  
+  const displayFearGreedData = fearGreedData || lastDisplayedDataRef.current;
   
   // CSS 변수 값 가져오기
   useEffect(() => {
@@ -59,35 +96,21 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
     }
   }, [priceData?.tradePrice]);
 
-  // 공포/탐욕 지수 조회
+  // 차트 클릭 핸들러: 날짜 선택
+  const handleDateClick = (dateData: CoinPriceDayResponse | null) => {
+    setSelectedDateData(dateData);
+  };
+
+  // 선택한 코인이 달라지거나 탭이 꺼질 때 초기화
   useEffect(() => {
-    const fetchFearGreed = async () => {
-      if (!selectedDateData) {
-        setFearGreedData(null);
-        return;
-      }
+    // 코인이 변경되거나 사이드바가 닫힐 때
+    setSelectedDateData(null);
+    setDetailTab('detail'); // 현재 데이터 탭이 default
+  }, [coin?.id, isClosing]);
 
-      try {
-        setIsLoadingFearGreed(true);
-        // candleDateTimeKst에서 날짜 추출 (yyyy-MM-dd 형식)
-        const date = new Date(selectedDateData.candleDateTimeKst);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const dateString = `${year}-${month}-${day}`;
-        
-        const data = await fearGreedService.getByDate(dateString);
-        setFearGreedData(data);
-      } catch (error) {
-        console.error('[CoinDetailSidebar] 공포/탐욕 지수 조회 실패:', error);
-        setFearGreedData(null);
-      } finally {
-        setIsLoadingFearGreed(false);
-      }
-    };
-
-    fetchFearGreed();
-  }, [selectedDateData]);
+  // 롱/숏 비율 데이터 조회 (early return 전에 호출해야 함)
+  const coinSymbol = coin?.symbol || null;
+  const { data: longShortData = [], isLoading: isLoadingLongShort } = useLongShort(coinSymbol, longShortPeriod);
   
   if (!coin) return null;
 
@@ -131,6 +154,15 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}년 ${month}월 ${day}일`;
+  };
+
+  // 오늘 날짜 포맷팅 (YYYY년 MM월 DD일 (오늘))
+  const formatTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}년 ${month}월 ${day}일 (오늘)`;
   };
 
   // 등락율 포맷팅
@@ -269,7 +301,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
               coinId={coin.id}
               marketCode={coin.marketCode}
               containerClassName="coin-detail-chart"
-              onDateClick={setSelectedDateData}
+              onDateClick={handleDateClick}
             />
           ) : (
             <CoinDetailCandleChart
@@ -277,7 +309,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
               coinId={coin.id}
               marketCode={coin.marketCode}
               containerClassName="coin-detail-chart"
-              onDateClick={setSelectedDateData}
+              onDateClick={handleDateClick}
             />
           )}
 
@@ -287,7 +319,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                 className={`coin-detail-info-tab-button ${detailTab === 'detail' ? 'active' : ''}`}
                 onClick={() => setDetailTab('detail')}
               >
-                상세내용
+                상세 내용
               </button>
               <button
                 className={`coin-detail-info-tab-button ${detailTab === 'memo' ? 'active' : ''}`}
@@ -298,198 +330,661 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
             </div>
 
             <div className="coin-detail-info-wrapper">
-              {!selectedDateData && (
-                <div className="coin-detail-info-placeholder">
-                  차트에서 일자를 선택하세요.
-                </div>
-              )}
-              <div className={`coin-detail-info-details ${!selectedDateData ? 'blurred' : ''}`}>
-                <div className="coin-detail-info-headline">
-                  {selectedDateData ? formatDate(selectedDateData.candleDateTimeKst) : '0000년 00월 00일'}
-                </div>
-                <div className="coin-detail-info-details-content">
-                {selectedDateData ? (
+              {detailTab === 'detail' ? (
+                // 상세 내용 탭: 날짜 선택 여부에 따라 현재 데이터 또는 선택된 날짜 데이터 표시
                 <>
-                  <div className="coin-detail-info-details-left">
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">전날 대비 가격 변화율</span>
-                      <span className={`coin-detail-info-detail-value ${(selectedDateData.changeRate || 0) >= 0 ? 'positive' : 'negative'}`}>
-                        {formatChangeRate(selectedDateData.changeRate)}
-                      </span>
+                  {selectedDateData ? (
+                    // 선택된 날짜 데이터 표시
+                    <>
+                    <div className="coin-detail-info-details">
+                    <div className="coin-detail-info-headline">
+                          {formatDate(selectedDateData.candleDateTimeKst)}
                     </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">전날 대비 가격 변화액</span>
-                      <span className={`coin-detail-info-detail-value ${(selectedDateData.changePrice || 0) >= 0 ? 'positive' : 'negative'}`}>
-                        {(selectedDateData.changePrice || 0) >= 0 ? '+' : ''}{formatPrice(selectedDateData.changePrice)}원
-                      </span>
+                    <div className="coin-detail-info-details-content">
+                          <div className="coin-detail-info-details-left">
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">전날 대비 가격 변화율</span>
+                              <span className={`coin-detail-info-detail-value ${(selectedDateData.changeRate || 0) >= 0 ? 'positive' : 'negative'}`}>
+                                {formatChangeRate(selectedDateData.changeRate)}
+                              </span>
+                            </div>
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">전날 대비 가격 변화액</span>
+                              <span className={`coin-detail-info-detail-value ${(selectedDateData.changePrice || 0) >= 0 ? 'positive' : 'negative'}`}>
+                                {(selectedDateData.changePrice || 0) >= 0 ? '+' : ''}{formatPrice(selectedDateData.changePrice)}원
+                              </span>
+                            </div>
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">누적 거래량</span>
+                              <span className="coin-detail-info-detail-value">{formatPrice(selectedDateData.candleAccTradeVolume)} {marketCode.split('-')[1]}</span>
+                            </div>
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">누적 거래액</span>
+                              <span className="coin-detail-info-detail-value">{formatPrice(selectedDateData.candleAccTradePrice)}원</span>
+                            </div>
+                          </div>
+                          <div className="coin-detail-info-details-right">
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label"></span>
+                              <span className="coin-detail-info-detail-value">-</span>
+                            </div>
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">일일 변동율</span>
+                              <span className="coin-detail-info-detail-value">
+                                {(() => {
+                                  const rangeRate = calculateRangeRate(selectedDateData.highPrice, selectedDateData.lowPrice, selectedDateData.prevClosingPrice);
+                                  return rangeRate !== null ? `${rangeRate.toFixed(2)}%` : '-';
+                                })()}
+                              </span>
+                            </div>
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">일일 변동액</span>
+                              <span className="coin-detail-info-detail-value">
+                                {formatPrice(calculateDailyRange(selectedDateData.highPrice, selectedDateData.lowPrice))}원
+                              </span>
+                            </div>
+                            <div className="coin-detail-info-detail-row">
+                              <span className="coin-detail-info-detail-label">일일 평균 거래 단가</span>
+                              <span className="coin-detail-info-detail-value">
+                                {(() => {
+                                  const avgPrice = calculateAvgTradePrice(selectedDateData.candleAccTradePrice, selectedDateData.candleAccTradeVolume);
+                                  return avgPrice !== null ? `${formatPrice(avgPrice)}원` : '-';
+                                })()}
+                              </span>
+                            </div>
+                          </div>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                    // 현재 데이터 표시 (웹소켓 실시간 데이터)
+                    <>
+                      {!hasData || !priceData ? (
+                        <div className="coin-detail-info-placeholder">
+                          데이터가 없습니다.
                     </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">누적 거래량</span>
-                      <span className="coin-detail-info-detail-value">{formatPrice(selectedDateData.candleAccTradeVolume)} {marketCode.split('-')[1]}</span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">누적 거래액</span>
-                      <span className="coin-detail-info-detail-value">{formatPrice(selectedDateData.candleAccTradePrice)}원</span>
-                    </div>
+                      ) : (
+                        <div className="coin-detail-info-details">
+                          <div className="coin-detail-info-headline">{formatTodayDate()}</div>
+                          <div className="coin-detail-info-details-content">
+                            <div className="coin-detail-info-details-left">
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">전날 대비 가격 변화율</span>
+                                <span className={`coin-detail-info-detail-value ${(priceData.signedChangeRate !== undefined ? priceData.signedChangeRate : priceData.changeRate || 0) >= 0 ? 'positive' : 'negative'}`}>
+                                  {formatChangeRate(priceData.signedChangeRate !== undefined ? priceData.signedChangeRate : priceData.changeRate)}
+                                </span>
                   </div>
-                  <div className="coin-detail-info-details-right">
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label"></span>
-                      <span className="coin-detail-info-detail-value">-</span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">일일 변동율</span>
-                      <span className="coin-detail-info-detail-value">
-                        {(() => {
-                          const rangeRate = calculateRangeRate(selectedDateData.highPrice, selectedDateData.lowPrice, selectedDateData.prevClosingPrice);
-                          return rangeRate !== null ? `${rangeRate.toFixed(2)}%` : '-';
-                        })()}
-                      </span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">일일 변동액</span>
-                      <span className="coin-detail-info-detail-value">
-                        {formatPrice(calculateDailyRange(selectedDateData.highPrice, selectedDateData.lowPrice))}원
-                      </span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">일일 평균 거래 단가</span>
-                      <span className="coin-detail-info-detail-value">
-                        {(() => {
-                          const avgPrice = calculateAvgTradePrice(selectedDateData.candleAccTradePrice, selectedDateData.candleAccTradeVolume);
-                          return avgPrice !== null ? `${formatPrice(avgPrice)}원` : '-';
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              ) : hasData && priceData ? (
-                <>
-                  <div className="coin-detail-info-details-left">
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">전날 대비 가격 변화율</span>
-                      <span className={`coin-detail-info-detail-value ${(priceData.signedChangeRate !== undefined ? priceData.signedChangeRate : priceData.changeRate || 0) >= 0 ? 'positive' : 'negative'}`}>
-                        {formatChangeRate(priceData.signedChangeRate !== undefined ? priceData.signedChangeRate : priceData.changeRate)}
-                      </span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">전날 대비 가격 변화액</span>
-                      <span className={`coin-detail-info-detail-value ${(priceData.changePrice || 0) >= 0 ? 'positive' : 'negative'}`}>
-                        {(priceData.changePrice || 0) >= 0 ? '+' : ''}{formatPrice(priceData.changePrice)}원
-                      </span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">누적 거래량</span>
-                      <span className="coin-detail-info-detail-value">-</span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">누적 거래액</span>
-                      <span className="coin-detail-info-detail-value">{formatPrice(priceData.accTradePrice24h)}원</span>
-                    </div>
-                  </div>
-                  <div className="coin-detail-info-details-right">
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label"></span>
-                      <span className="coin-detail-info-detail-value">-</span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">일일 변동율</span>
-                      <span className="coin-detail-info-detail-value">-</span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">일일 변동액</span>
-                      <span className="coin-detail-info-detail-value">-</span>
-                    </div>
-                    <div className="coin-detail-info-detail-row">
-                      <span className="coin-detail-info-detail-label">일일 평균 거래 단가</span>
-                      <span className="coin-detail-info-detail-value">-</span>
-                    </div>
-                  </div>
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">전날 대비 가격 변화액</span>
+                                <span className={`coin-detail-info-detail-value ${(priceData.changePrice || 0) >= 0 ? 'positive' : 'negative'}`}>
+                                  {(priceData.changePrice || 0) >= 0 ? '+' : ''}{formatPrice(priceData.changePrice)}원
+                                </span>
+                              </div>
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">누적 거래량</span>
+                                <span className="coin-detail-info-detail-value">
+                                  {priceData.accTradeVolume24h !== null && priceData.accTradeVolume24h !== undefined
+                                    ? `${formatPrice(priceData.accTradeVolume24h)} ${marketCode.split('-')[1]}`
+                                    : '-'}
+                                </span>
+                              </div>
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">누적 거래액</span>
+                                <span className="coin-detail-info-detail-value">{formatPrice(priceData.accTradePrice24h)}원</span>
+                              </div>
+                            </div>
+                            <div className="coin-detail-info-details-right">
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label"></span>
+                                <span className="coin-detail-info-detail-value">-</span>
+                              </div>
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">일일 변동율</span>
+                                <span className="coin-detail-info-detail-value">
+                                  {(() => {
+                                    const rangeRate = calculateRangeRate(
+                                      priceData.highPrice ?? null,
+                                      priceData.lowPrice ?? null,
+                                      priceData.prevClosingPrice ?? null
+                                    );
+                                    return rangeRate !== null ? `${rangeRate.toFixed(2)}%` : '-';
+                                  })()}
+                                </span>
+                              </div>
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">일일 변동액</span>
+                                <span className="coin-detail-info-detail-value">
+                                  {(() => {
+                                    const dailyRange = calculateDailyRange(
+                                      priceData.highPrice ?? null,
+                                      priceData.lowPrice ?? null
+                                    );
+                                    return dailyRange !== null ? `${formatPrice(dailyRange)}원` : '-';
+                                  })()}
+                                </span>
+                              </div>
+                              <div className="coin-detail-info-detail-row">
+                                <span className="coin-detail-info-detail-label">일일 평균 거래 단가</span>
+                                <span className="coin-detail-info-detail-value">
+                                  {(() => {
+                                    const avgPrice = calculateAvgTradePrice(
+                                      priceData.accTradePrice24h ?? null,
+                                      priceData.accTradeVolume24h ?? null
+                                    );
+                                    return avgPrice !== null ? `${formatPrice(avgPrice)}원` : '-';
+                                  })()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </>
               ) : (
-                <div className="coin-detail-info-no-data">데이터가 없습니다.</div>
+                // 뉴스 탭: 빈칸
+                <div className="coin-detail-info-placeholder">
+                  {/* 뉴스 내용은 추후 추가 예정 */}
+                </div>
               )}
+            </div>
+          </div>
+
+          {/* 공포/탐욕 지수: 상세 내용 탭 */}
+          {detailTab === 'detail' && (
+            <div className="coin-detail-fear-greed-gauge">
+              <div className="coin-detail-fear-greed-gauge-container">
+                <div className="coin-detail-fear-greed-gauge-label">공포/탐욕 지수</div>
+                <div className="coin-detail-fear-greed-gauge-content">
+                  {selectedDateData ? (
+                    // 선택된 날짜의 Fear & Greed 데이터 표시
+                    isDateBeforeMinDate ? (
+                      // 2018년 2월 1일 이전 날짜: 블라인드 처리 및 메시지 표시
+                      <>
+                        <div className="coin-detail-fear-greed-gauge-placeholder">
+                          해당 날짜의 공포/탐욕 지수가 존재하지 않습니다.
+                        </div>
+                        <div className="coin-detail-fear-greed-gauge-wrapper blurred">
+                          <div className="coin-detail-fear-greed-gauge-semicircle">
+                            <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                              <defs>
+                                <linearGradient id="fearGreedGradientSelected" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor={gradientColors.start} />
+                                  <stop offset="100%" stopColor={gradientColors.end} />
+                                </linearGradient>
+                              </defs>
+                              <path
+                                d="M 20 100 A 80 80 0 0 1 180 100"
+                                fill="none"
+                                stroke="url(#fearGreedGradientSelected)"
+                                strokeWidth="12"
+                                strokeLinecap="round"
+                              />
+                              <g
+                                transform="rotate(-90 100 100)"
+                                style={{ color: 'var(--foreground)' }}
+                              >
+                                <line
+                                  x1="100"
+                                  y1="100"
+                                  x2="100"
+                                  y2="20"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                />
+                                <circle
+                                  cx="100"
+                                  cy="100"
+                                  r="6"
+                                  fill="currentColor"
+                                />
+                              </g>
+                            </svg>
+                          </div>
+                          <div className="coin-detail-fear-greed-gauge-scale">
+                            <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                            <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                          </div>
+                          <div className="coin-detail-fear-greed-gauge-value">-</div>
+                          <div className="coin-detail-fear-greed-gauge-range">-</div>
+                        </div>
+                      </>
+                    ) : !isLoadingFearGreed && !fearGreedData ? (
+                      // 데이터가 없을 때 블라인드 처리 및 메시지 표시
+                      <>
+                        <div className="coin-detail-fear-greed-gauge-placeholder">
+                          해당 날짜의 공포/탐욕 지수가 존재하지 않습니다.
+                        </div>
+                        <div className="coin-detail-fear-greed-gauge-wrapper blurred">
+                          <div className="coin-detail-fear-greed-gauge-semicircle">
+                            <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                              <defs>
+                                <linearGradient id="fearGreedGradientSelected" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor={gradientColors.start} />
+                                  <stop offset="100%" stopColor={gradientColors.end} />
+                                </linearGradient>
+                              </defs>
+                              <path
+                                d="M 20 100 A 80 80 0 0 1 180 100"
+                                fill="none"
+                                stroke="url(#fearGreedGradientSelected)"
+                                strokeWidth="12"
+                                strokeLinecap="round"
+                              />
+                              <g
+                                transform="rotate(-90 100 100)"
+                                style={{ color: 'var(--foreground)' }}
+                              >
+                                <line
+                                  x1="100"
+                                  y1="100"
+                                  x2="100"
+                                  y2="20"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                />
+                                <circle
+                                  cx="100"
+                                  cy="100"
+                                  r="6"
+                                  fill="currentColor"
+                                />
+                              </g>
+                            </svg>
+                          </div>
+                          <div className="coin-detail-fear-greed-gauge-scale">
+                            <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                            <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                          </div>
+                          <div className="coin-detail-fear-greed-gauge-value">-</div>
+                          <div className="coin-detail-fear-greed-gauge-range">-</div>
+                        </div>
+                      </>
+                    ) : displayFearGreedData ? (
+                      <div className="coin-detail-fear-greed-gauge-wrapper">
+                        <div className="coin-detail-fear-greed-gauge-semicircle">
+                          <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                            <defs>
+                              <linearGradient id="fearGreedGradientSelected" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor={gradientColors.start} />
+                                <stop offset="100%" stopColor={gradientColors.end} />
+                              </linearGradient>
+                            </defs>
+                            <path
+                              d="M 20 100 A 80 80 0 0 1 180 100"
+                              fill="none"
+                              stroke="url(#fearGreedGradientSelected)"
+                              strokeWidth="12"
+                              strokeLinecap="round"
+                            />
+                            <g
+                              transform={`rotate(${(displayFearGreedData.value / 100) * 180 - 90} 100 100)`}
+                              style={{ color: 'var(--foreground)' }}
+                            >
+                              <line
+                                x1="100"
+                                y1="100"
+                                x2="100"
+                                y2="20"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                              />
+                              <circle
+                                cx="100"
+                                cy="100"
+                                r="6"
+                                fill="currentColor"
+                              />
+                            </g>
+                          </svg>
+                        </div>
+                        <div className="coin-detail-fear-greed-gauge-scale">
+                          <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                          <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                        </div>
+                        <div className="coin-detail-fear-greed-gauge-value">{displayFearGreedData.value}</div>
+                        <div 
+                          className="coin-detail-fear-greed-gauge-range"
+                          style={{
+                            color: getRangeColor(displayFearGreedData.value)
+                          }}
+                        >
+                          {displayFearGreedData.value <= 24 && '극단적 공포'}
+                          {displayFearGreedData.value >= 25 && displayFearGreedData.value <= 44 && '공포'}
+                          {displayFearGreedData.value >= 45 && displayFearGreedData.value <= 54 && '중립'}
+                          {displayFearGreedData.value >= 55 && displayFearGreedData.value <= 74 && '탐욕'}
+                          {displayFearGreedData.value >= 75 && '극단적 탐욕'}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="coin-detail-fear-greed-gauge-wrapper">
+                        <div className="coin-detail-fear-greed-gauge-semicircle">
+                          <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                            <defs>
+                              <linearGradient id="fearGreedGradientSelected" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor={gradientColors.start} />
+                                <stop offset="100%" stopColor={gradientColors.end} />
+                              </linearGradient>
+                            </defs>
+                            <path
+                              d="M 20 100 A 80 80 0 0 1 180 100"
+                              fill="none"
+                              stroke="url(#fearGreedGradientSelected)"
+                              strokeWidth="12"
+                              strokeLinecap="round"
+                            />
+                            <g
+                              transform="rotate(-90 100 100)"
+                              style={{ color: 'var(--foreground)' }}
+                            >
+                              <line
+                                x1="100"
+                                y1="100"
+                                x2="100"
+                                y2="20"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                              />
+                              <circle
+                                cx="100"
+                                cy="100"
+                                r="6"
+                                fill="currentColor"
+                              />
+                            </g>
+                          </svg>
+                        </div>
+                        <div className="coin-detail-fear-greed-gauge-scale">
+                          <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                          <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                        </div>
+                        <div className="coin-detail-fear-greed-gauge-value">-</div>
+                        <div className="coin-detail-fear-greed-gauge-range">-</div>
+                      </div>
+                    )
+                  ) : fearGreedTodayData ? (
+                    // 현재 데이터의 Fear & Greed 표시
+                  <div className="coin-detail-fear-greed-gauge-wrapper">
+                    <div className="coin-detail-fear-greed-gauge-semicircle">
+                      <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                        {/* 반원형 배경 그라데이션 */}
+                        <defs>
+                            <linearGradient id="fearGreedGradientToday" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor={gradientColors.start} />
+                            <stop offset="100%" stopColor={gradientColors.end} />
+                          </linearGradient>
+                        </defs>
+                        {/* 반원형 게이지 배경 */}
+                        <path
+                          d="M 20 100 A 80 80 0 0 1 180 100"
+                          fill="none"
+                            stroke="url(#fearGreedGradientToday)"
+                          strokeWidth="12"
+                          strokeLinecap="round"
+                        />
+                        {/* 바늘 */}
+                        <g
+                            transform={`rotate(${(fearGreedTodayData.value / 100) * 180 - 90} 100 100)`}
+                          style={{ color: 'var(--foreground)' }}
+                        >
+                          <line
+                            x1="100"
+                            y1="100"
+                            x2="100"
+                            y2="20"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                          />
+                          <circle
+                            cx="100"
+                            cy="100"
+                            r="6"
+                            fill="currentColor"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div className="coin-detail-fear-greed-gauge-scale">
+                      <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                      <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                    </div>
+                      <div className="coin-detail-fear-greed-gauge-value">{fearGreedTodayData.value}</div>
+                    <div 
+                      className="coin-detail-fear-greed-gauge-range"
+                      style={{
+                          color: getRangeColor(fearGreedTodayData.value)
+                      }}
+                    >
+                        {fearGreedTodayData.value <= 24 && '극단적 공포'}
+                        {fearGreedTodayData.value >= 25 && fearGreedTodayData.value <= 44 && '공포'}
+                        {fearGreedTodayData.value >= 45 && fearGreedTodayData.value <= 54 && '중립'}
+                        {fearGreedTodayData.value >= 55 && fearGreedTodayData.value <= 74 && '탐욕'}
+                        {fearGreedTodayData.value >= 75 && '극단적 탐욕'}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="coin-detail-fear-greed-gauge-wrapper">
+                      <div className="coin-detail-fear-greed-gauge-semicircle">
+                        <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
+                          <defs>
+                            <linearGradient id="fearGreedGradientToday" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor={gradientColors.start} />
+                              <stop offset="100%" stopColor={gradientColors.end} />
+                            </linearGradient>
+                          </defs>
+                          <path
+                            d="M 20 100 A 80 80 0 0 1 180 100"
+                            fill="none"
+                            stroke="url(#fearGreedGradientToday)"
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                          />
+                          <g
+                            transform="rotate(-90 100 100)"
+                            style={{ color: 'var(--foreground)' }}
+                          >
+                            <line
+                              x1="100"
+                              y1="100"
+                              x2="100"
+                              y2="20"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                            />
+                            <circle
+                              cx="100"
+                              cy="100"
+                              r="6"
+                              fill="currentColor"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                      <div className="coin-detail-fear-greed-gauge-scale">
+                        <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
+                        <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
+                      </div>
+                      <div className="coin-detail-fear-greed-gauge-value">-</div>
+                      <div className="coin-detail-fear-greed-gauge-range">-</div>
+                  </div>
+                )}
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="coin-detail-fear-greed-gauge">
-            <div className="coin-detail-fear-greed-gauge-container">
-              <div className="coin-detail-fear-greed-gauge-label">공포/탐욕 지수</div>
-              {isLoadingFearGreed ? (
-                <div className="coin-detail-fear-greed-gauge-loading">로딩 중...</div>
-              ) : fearGreedData ? (
-                <div className="coin-detail-fear-greed-gauge-wrapper">
-                  <div className="coin-detail-fear-greed-gauge-semicircle">
-                    <svg className="coin-detail-fear-greed-gauge-svg" viewBox="0 0 200 120">
-                      {/* 반원형 배경 그라데이션 */}
-                      <defs>
-                        <linearGradient id="fearGreedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor={gradientColors.start} />
-                          <stop offset="100%" stopColor={gradientColors.end} />
-                        </linearGradient>
-                      </defs>
-                      {/* 반원형 게이지 배경 */}
-                      <path
-                        d="M 20 100 A 80 80 0 0 1 180 100"
-                        fill="none"
-                        stroke="url(#fearGreedGradient)"
-                        strokeWidth="12"
-                        strokeLinecap="round"
-                      />
-                      {/* 바늘 */}
-                      <g
-                        transform={`rotate(${(fearGreedData.value / 100) * 180 - 90} 100 100)`}
-                        style={{ color: 'var(--foreground)' }}
+          {/* 롱/숏 비율: 상세 내용 탭 */}
+          {detailTab === 'detail' && (
+            <div className="coin-detail-long-short">
+              <div className="coin-detail-long-short-container">
+                <div className="coin-detail-long-short-header">
+                  <div className="coin-detail-long-short-label">롱/숏 비율</div>
+                  <div className="coin-detail-info-controls">
+                    {(['1h', '4h', '12h', '1d'] as LongShortPeriod[]).map((period) => (
+                      <button
+                        key={period}
+                        className={`coin-detail-info-tab-button ${longShortPeriod === period ? 'active' : ''}`}
+                        onClick={() => setLongShortPeriod(period)}
                       >
-                        <line
-                          x1="100"
-                          y1="100"
-                          x2="100"
-                          y2="20"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                        />
-                        <circle
-                          cx="100"
-                          cy="100"
-                          r="6"
-                          fill="currentColor"
-                        />
-                      </g>
-                    </svg>
-                  </div>
-                  <div className="coin-detail-fear-greed-gauge-scale">
-                    <span className="coin-detail-fear-greed-gauge-scale-start">0</span>
-                    <span className="coin-detail-fear-greed-gauge-scale-end">100</span>
-                  </div>
-                  <div className="coin-detail-fear-greed-gauge-value">{fearGreedData.value}</div>
-                  <div 
-                    className="coin-detail-fear-greed-gauge-range"
-                    style={{
-                      color: getRangeColor(fearGreedData.value)
-                    }}
-                  >
-                    {fearGreedData.value <= 24 && '극단적 공포'}
-                    {fearGreedData.value >= 25 && fearGreedData.value <= 44 && '공포'}
-                    {fearGreedData.value >= 45 && fearGreedData.value <= 54 && '중립'}
-                    {fearGreedData.value >= 55 && fearGreedData.value <= 74 && '탐욕'}
-                    {fearGreedData.value >= 75 && '극단적 탐욕'}
+                        {period}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              ) : (
-                <div className="coin-detail-fear-greed-gauge-no-data">차트에서 일자를 선택하세요.</div>
-              )}
-            </div>
+                <div className="coin-detail-long-short-content">
+                  {isLoadingLongShort ? (
+                    <div className="coin-detail-long-short-loading">로딩 중...</div>
+                  ) : longShortData.length > 0 ? (
+                    <>
+                      {/* 가장 최신 데이터: 가로 막대 그래프 */}
+                      {(() => {
+                        const latestData = longShortData[longShortData.length - 1];
+                        return latestData && (
+                          <div className="coin-detail-long-short-latest">
+                            <div className="coin-detail-long-short-latest-label">
+                              {new Date(latestData.timestamp).toLocaleString('ko-KR', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                            <div className="coin-detail-long-short-latest-bar">
+                              <div className="coin-detail-long-short-bar-container">
+                                <div 
+                                  className="coin-detail-long-short-bar-long"
+                                  style={{
+                                    width: `${(parseFloat(latestData.longAccount) * 100).toFixed(1)}%`
+                                  }}
+                                >
+                                  <span className="coin-detail-long-short-bar-label">
+                                    롱 {(parseFloat(latestData.longAccount) * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                                <div 
+                                  className="coin-detail-long-short-bar-short"
+                                  style={{
+                                    width: `${(parseFloat(latestData.shortAccount) * 100).toFixed(1)}%`
+                                  }}
+                                >
+                                  <span className="coin-detail-long-short-bar-label">
+                                    숏 {(parseFloat(latestData.shortAccount) * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="coin-detail-long-short-latest-ratio">
+                                비율: {parseFloat(latestData.longShortRatio).toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      
+                      {/* 최근 30개 데이터: 세로 막대 그래프 */}
+                      <div className="coin-detail-long-short-chart">
+                        <div className="coin-detail-long-short-chart-bars">
+                          {longShortData.slice(-30).map((item, index) => {
+                            const longPercent = parseFloat(item.longAccount) * 100;
+                            const shortPercent = parseFloat(item.shortAccount) * 100;
+                            const maxHeight = 100;
+                            const date = new Date(item.timestamp);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hours = String(date.getHours()).padStart(2, '0');
+                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                            const dateTimeString = `${year}-${month}-${day} ${hours}:${minutes}`;
+                            const longAccountPercent = (parseFloat(item.longAccount) * 100).toFixed(2);
+                            const shortAccountPercent = (parseFloat(item.shortAccount) * 100).toFixed(2);
+                            const longShortRatio = parseFloat(item.longShortRatio).toFixed(2);
+                            const isHovered = hoveredBarIndex === index;
+                            
+                            return (
+                              <div 
+                                key={index} 
+                                className="coin-detail-long-short-chart-bar-group"
+                                onMouseEnter={() => setHoveredBarIndex(index)}
+                                onMouseLeave={() => {
+                                  setHoveredBarIndex(null);
+                                  setMousePosition(null);
+                                }}
+                                onMouseMove={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setMousePosition({
+                                    x: e.clientX - rect.left,
+                                    y: e.clientY - rect.top
+                                  });
+                                }}
+                              >
+                                <div className="coin-detail-long-short-chart-bar-wrapper">
+                                  <div 
+                                    className="coin-detail-long-short-chart-bar-long"
+                                    style={{
+                                      height: `${(longPercent / 100) * maxHeight}%`
+                                    }}
+                                  />
+                                  <div 
+                                    className="coin-detail-long-short-chart-bar-short"
+                                    style={{
+                                      height: `${(shortPercent / 100) * maxHeight}%`
+                                    }}
+                                  />
+                                  {isHovered && mousePosition && (
+                                    <div 
+                                      className="coin-detail-long-short-chart-tooltip"
+                                      style={{
+                                        left: `${mousePosition.x}px`,
+                                        top: `${mousePosition.y}px`,
+                                      }}
+                                    >
+                                      <div className="coin-detail-long-short-chart-tooltip-content">
+                                        <div className="coin-detail-long-short-chart-tooltip-item">
+                                          <span className="coin-detail-long-short-chart-tooltip-label">날짜/시간:</span>
+                                          <span className="coin-detail-long-short-chart-tooltip-value">{dateTimeString}</span>
+                                        </div>
+                                        <div className="coin-detail-long-short-chart-tooltip-item">
+                                          <span className="coin-detail-long-short-chart-tooltip-label">롱 계정:</span>
+                                          <span className="coin-detail-long-short-chart-tooltip-value">{longAccountPercent}%</span>
+                                        </div>
+                                        <div className="coin-detail-long-short-chart-tooltip-item">
+                                          <span className="coin-detail-long-short-chart-tooltip-label">숏 계정:</span>
+                                          <span className="coin-detail-long-short-chart-tooltip-value">{shortAccountPercent}%</span>
+                                        </div>
+                                        <div className="coin-detail-long-short-chart-tooltip-item">
+                                          <span className="coin-detail-long-short-chart-tooltip-label">롱/숏 비율:</span>
+                                          <span className="coin-detail-long-short-chart-tooltip-value">{longShortRatio}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="coin-detail-long-short-chart-time">
+                                  {hours}:{minutes}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="coin-detail-long-short-empty">
+                      롱/숏 비율 데이터가 없습니다.
+                    </div>
+                  )}
+                </div>
+              </div>
           </div>
+          )}
 
-          <div className="coin-detail-content">
-            <p>첫 번째 줄입니다. 차트 아래에 표시되는 내용입니다.</p>
-            <p>두 번째 줄입니다. 스크롤이 가능한 영역입니다.</p>
-            <p>세 번째 줄입니다. 내용이 많아지면 스크롤이 생깁니다.</p>
-          </div>
         </div>
       </div>
     </div>
