@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
@@ -11,12 +11,89 @@ import { useLongShort } from '@/features/longshort/hooks/useLongShort';
 import { LongShortPeriod } from '@/features/longshort/services/longShortService';
 import CoinDetailCandleChart from '@/shared/components/charts/CoinDetailCandleChart';
 import CoinDetailLineChart from '@/shared/components/charts/CoinDetailLineChart';
+import { HelpIcon } from '@/shared/components/ui';
 import './CoinDetailSidebar.css';
 
 interface CoinDetailSidebarProps {
   coin: CoinResponse | null;
   isClosing?: boolean;
   onClose: () => void;
+}
+
+interface TooltipPositionerProps {
+  mouseX: number;
+  mouseY: number;
+  dateTimeString: string;
+  longAccountPercent: string;
+  shortAccountPercent: string;
+  longShortRatio: string;
+}
+
+function TooltipPositioner({ mouseX, mouseY, dateTimeString, longAccountPercent, shortAccountPercent, longShortRatio }: TooltipPositionerProps) {
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipLeft, setTooltipLeft] = useState(0);
+  
+  useLayoutEffect(() => {
+    if (!tooltipRef.current) return;
+    
+    const tooltipWidth = tooltipRef.current.offsetWidth || 180;
+    const tooltipOffset = 0; // 마우스와 바로 붙이기
+    
+    // bar-group의 위치를 기준으로 마우스 위치를 조정
+    const barGroup = tooltipRef.current.closest('.coin-detail-long-short-chart-bar-group');
+    const chartBars = tooltipRef.current.closest('.coin-detail-long-short-chart-bars');
+    
+    if (!barGroup || !chartBars) return;
+    
+    const barGroupRect = barGroup.getBoundingClientRect();
+    const chartBarsRect = chartBars.getBoundingClientRect();
+    
+    // 마우스 위치를 bar-group 기준으로 변환
+    const relativeMouseX = mouseX - (barGroupRect.left - chartBarsRect.left);
+    const chartBarsWidth = chartBars.clientWidth;
+    
+    // 마우스 우측에 배치했을 때 화면 밖으로 나가는지 확인
+    const absoluteMouseX = mouseX;
+    const wouldOverflow = absoluteMouseX + tooltipOffset + tooltipWidth > chartBarsWidth;
+    
+    // 우측에 배치할지 왼쪽에 배치할지 결정
+    const left = wouldOverflow 
+      ? relativeMouseX - tooltipWidth - tooltipOffset // 왼쪽에 배치
+      : relativeMouseX + tooltipOffset; // 우측에 배치
+    
+    setTooltipLeft(left);
+  }, [mouseX]);
+  
+  return (
+    <div 
+      ref={tooltipRef}
+      className="coin-detail-long-short-chart-tooltip"
+      style={{
+        left: `${tooltipLeft}px`,
+        top: `${mouseY}px`,
+        transform: 'translateY(-50%)', // y축 중앙 정렬
+      }}
+    >
+      <div className="coin-detail-long-short-chart-tooltip-content">
+        <div className="coin-detail-long-short-chart-tooltip-item">
+          <span className="coin-detail-long-short-chart-tooltip-label">날짜/시간:</span>
+          <span className="coin-detail-long-short-chart-tooltip-value">{dateTimeString}</span>
+        </div>
+        <div className="coin-detail-long-short-chart-tooltip-item">
+          <span className="coin-detail-long-short-chart-tooltip-label">롱 계정:</span>
+          <span className="coin-detail-long-short-chart-tooltip-value">{longAccountPercent}%</span>
+        </div>
+        <div className="coin-detail-long-short-chart-tooltip-item">
+          <span className="coin-detail-long-short-chart-tooltip-label">숏 계정:</span>
+          <span className="coin-detail-long-short-chart-tooltip-value">{shortAccountPercent}%</span>
+        </div>
+        <div className="coin-detail-long-short-chart-tooltip-item">
+          <span className="coin-detail-long-short-chart-tooltip-label">롱/숏 비율:</span>
+          <span className="coin-detail-long-short-chart-tooltip-value">{longShortRatio}</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: CoinDetailSidebarProps) {
@@ -339,6 +416,11 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                     <div className="coin-detail-info-details">
                     <div className="coin-detail-info-headline">
                           {formatDate(selectedDateData.candleDateTimeKst)}
+                          <HelpIcon tooltip={`선택된 시점의 상세 가격 정보를 표시합니다. 
+                                                upbit 거래소의 가격 정보를 기반으로 합니다.
+
+                                                차트에서 빈공간을 클릭하면 현재 데이터로 전환되어 
+                                                현재 일자의 실시간 상세 정보를 볼 수 있습니다.`} />
                     </div>
                     <div className="coin-detail-info-details-content">
                           <div className="coin-detail-info-details-left">
@@ -405,7 +487,14 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                     </div>
                       ) : (
                         <div className="coin-detail-info-details">
-                          <div className="coin-detail-info-headline">{formatTodayDate()}</div>
+                          <div className="coin-detail-info-headline">
+                            {formatTodayDate()}
+                            <HelpIcon tooltip={`현재 시점의 상세 가격 정보를 표시합니다. 
+                                              upbit 거래소의 실시간 가격을 기반으로, 10초마다 렌더링합니다. 
+
+                                              차트에서 날짜를 클릭하면 과거 데이터로 전환되어 
+                                              해당 일자의 상세 정보를 볼 수 있습니다.`} />
+                          </div>
                           <div className="coin-detail-info-details-content">
                             <div className="coin-detail-info-details-left">
                               <div className="coin-detail-info-detail-row">
@@ -495,7 +584,15 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
           {detailTab === 'detail' && (
             <div className="coin-detail-fear-greed-gauge">
               <div className="coin-detail-fear-greed-gauge-container">
-                <div className="coin-detail-fear-greed-gauge-label">공포/탐욕 지수</div>
+                <div className="coin-detail-fear-greed-gauge-label">
+                  공포/탐욕 지수
+                  <HelpIcon tooltip={`공포/탐욕 지수는 암호화폐 시장의 '투자자 심리'를 
+                                      0 부터 100 까지의 수치로 나타내는 지표입니다. 
+                                      이 지표는 시장의 과열 또는 침체 상태를 판단하는 데 도움이 됩니다.
+
+                                      차트에서 날짜를 선택하면 해당 날짜의 지수를 확인할 수 있으며, 
+                                      이는 해당 날짜의 전체 시장 참여자의 심리를 반영하는 지표입니다.`} />
+                </div>
                 <div className="coin-detail-fear-greed-gauge-content">
                   {selectedDateData ? (
                     // 선택된 날짜의 Fear & Greed 데이터 표시
@@ -825,7 +922,17 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
             <div className="coin-detail-long-short">
               <div className="coin-detail-long-short-container">
                 <div className="coin-detail-long-short-header">
-                  <div className="coin-detail-long-short-label">롱/숏 비율</div>
+                  <div className="coin-detail-long-short-label">
+                    롱/숏 비율
+                    <HelpIcon tooltip={`암호화폐 시장은 선물 거래의 영향을 크게 받고, 
+                                        선물 거래는 롱숏 포지션을 통해 이루어집니다.
+
+                                        롱 포지션 비율이 높으면 상승 기대감이 크고, 
+                                        숏 포지션 비율이 높으면 하락 우려가 큰 것으로 해석할 수 있습니다.
+
+                                        최신 30개의 데이터를 제공하며, 
+                                        binance 거래소의 고래 선물 지표를 따릅니다.`} />
+                  </div>
                   <div className="coin-detail-info-controls">
                     {(['1h', '4h', '12h', '1d'] as LongShortPeriod[]).map((period) => (
                       <button
@@ -840,7 +947,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                 </div>
                 <div className="coin-detail-long-short-content">
                   {isLoadingLongShort ? (
-                    <div className="coin-detail-long-short-loading">로딩 중...</div>
+                    <div className="coin-detail-long-short-loading">로딩중 입니다.</div>
                   ) : longShortData.length > 0 ? (
                     <>
                       {/* 가장 최신 데이터: 가로 막대 그래프 */}
@@ -849,39 +956,57 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                         return latestData && (
                           <div className="coin-detail-long-short-latest">
                             <div className="coin-detail-long-short-latest-label">
-                              {new Date(latestData.timestamp).toLocaleString('ko-KR', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                              {(() => {
+                                const date = new Date(latestData.timestamp);
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                const hours = date.getHours();
+                                const minutes = String(date.getMinutes()).padStart(2, '0');
+                                const ampm = hours >= 12 ? '오후' : '오전';
+                                const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                                return `${year}-${month}-${day} ${ampm} ${String(displayHours).padStart(2, '0')}:${minutes}`;
+                              })()} (기준)
                             </div>
                             <div className="coin-detail-long-short-latest-bar">
+                              {/* 막대 위쪽: % 값 */}
+                              <div className="coin-detail-long-short-bar-labels-top">
+                                <span 
+                                  className="coin-detail-long-short-bar-label-top"
+                                  style={{ color: 'var(--price-up)' }}
+                                >
+                                  {(parseFloat(latestData.longAccount) * 100).toFixed(1)}%
+                                </span>
+                                <span 
+                                  className="coin-detail-long-short-bar-label-top"
+                                  style={{ color: 'var(--price-down)' }}
+                                >
+                                  {(parseFloat(latestData.shortAccount) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                              {/* 막대 그래프 */}
                               <div className="coin-detail-long-short-bar-container">
                                 <div 
                                   className="coin-detail-long-short-bar-long"
                                   style={{
                                     width: `${(parseFloat(latestData.longAccount) * 100).toFixed(1)}%`
                                   }}
-                                >
-                                  <span className="coin-detail-long-short-bar-label">
-                                    롱 {(parseFloat(latestData.longAccount) * 100).toFixed(1)}%
-                                  </span>
-                                </div>
+                                />
                                 <div 
                                   className="coin-detail-long-short-bar-short"
                                   style={{
                                     width: `${(parseFloat(latestData.shortAccount) * 100).toFixed(1)}%`
                                   }}
-                                >
-                                  <span className="coin-detail-long-short-bar-label">
-                                    숏 {(parseFloat(latestData.shortAccount) * 100).toFixed(1)}%
-                                  </span>
-                                </div>
+                                />
                               </div>
-                              <div className="coin-detail-long-short-latest-ratio">
-                                비율: {parseFloat(latestData.longShortRatio).toFixed(2)}
+                              {/* 막대 하단: 롱/숏 포지션 텍스트 */}
+                              <div className="coin-detail-long-short-bar-labels-bottom">
+                                <span className="coin-detail-long-short-bar-label-bottom">
+                                  롱 포지션
+                                </span>
+                                <span className="coin-detail-long-short-bar-label-bottom">
+                                  숏 포지션
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -917,11 +1042,14 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                                   setMousePosition(null);
                                 }}
                                 onMouseMove={(e) => {
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  setMousePosition({
-                                    x: e.clientX - rect.left,
-                                    y: e.clientY - rect.top
-                                  });
+                                  const chartBars = e.currentTarget.closest('.coin-detail-long-short-chart-bars');
+                                  const chartBarsRect = chartBars?.getBoundingClientRect();
+                                  if (chartBarsRect) {
+                                    setMousePosition({
+                                      x: e.clientX - chartBarsRect.left,
+                                      y: e.clientY - chartBarsRect.top
+                                    });
+                                  }
                                 }}
                               >
                                 <div className="coin-detail-long-short-chart-bar-wrapper">
@@ -937,35 +1065,17 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                                       height: `${(shortPercent / 100) * maxHeight}%`
                                     }}
                                   />
-                                  {isHovered && mousePosition && (
-                                    <div 
-                                      className="coin-detail-long-short-chart-tooltip"
-                                      style={{
-                                        left: `${mousePosition.x}px`,
-                                        top: `${mousePosition.y}px`,
-                                      }}
-                                    >
-                                      <div className="coin-detail-long-short-chart-tooltip-content">
-                                        <div className="coin-detail-long-short-chart-tooltip-item">
-                                          <span className="coin-detail-long-short-chart-tooltip-label">날짜/시간:</span>
-                                          <span className="coin-detail-long-short-chart-tooltip-value">{dateTimeString}</span>
-                                        </div>
-                                        <div className="coin-detail-long-short-chart-tooltip-item">
-                                          <span className="coin-detail-long-short-chart-tooltip-label">롱 계정:</span>
-                                          <span className="coin-detail-long-short-chart-tooltip-value">{longAccountPercent}%</span>
-                                        </div>
-                                        <div className="coin-detail-long-short-chart-tooltip-item">
-                                          <span className="coin-detail-long-short-chart-tooltip-label">숏 계정:</span>
-                                          <span className="coin-detail-long-short-chart-tooltip-value">{shortAccountPercent}%</span>
-                                        </div>
-                                        <div className="coin-detail-long-short-chart-tooltip-item">
-                                          <span className="coin-detail-long-short-chart-tooltip-label">롱/숏 비율:</span>
-                                          <span className="coin-detail-long-short-chart-tooltip-value">{longShortRatio}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
                                 </div>
+                                {isHovered && mousePosition && (
+                                  <TooltipPositioner
+                                    mouseX={mousePosition.x}
+                                    mouseY={mousePosition.y}
+                                    dateTimeString={dateTimeString}
+                                    longAccountPercent={longAccountPercent}
+                                    shortAccountPercent={shortAccountPercent}
+                                    longShortRatio={longShortRatio}
+                                  />
+                                )}
                                 <div className="coin-detail-long-short-chart-time">
                                   {hours}:{minutes}
                                 </div>
