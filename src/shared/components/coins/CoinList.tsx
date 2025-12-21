@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, memo, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useCoins } from '@/features/coins/hooks/useCoins';
 import { useAppSelector } from '@/store/hooks';
@@ -102,6 +103,7 @@ const isOnlyInitialConsonants = (query: string): boolean => {
 };
 
 export default function CoinList() {
+  const pathname = usePathname();
   const [selectedCurrency, setSelectedCurrency] = useState<string>('KRW');
   const [selectedCoin, setSelectedCoin] = useState<CoinResponse | null>(null);
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
@@ -117,6 +119,24 @@ export default function CoinList() {
   
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector(selectAllPrices);
+
+  // 페이지 이동 시 사이드바 닫기 및 상태 초기화
+  useEffect(() => {
+    if (pathname !== '/coins') {
+      // 즉시 CSS 변수 초기화 (다른 페이지로 이동 시 body가 밀리지 않도록)
+      document.documentElement.style.setProperty('--left-sidebar-width', '0');
+      
+      if (selectedCoin) {
+        // 사이드바 닫기 애니메이션 시작
+        setIsSidebarClosing(true);
+        // 애니메이션 시간만큼 대기 후 실제로 닫기 및 상태 초기화
+        setTimeout(() => {
+          setSelectedCoin(null);
+          setIsSidebarClosing(false);
+        }, 300);
+      }
+    }
+  }, [pathname, selectedCoin]);
 
   // 검색어 debounce 처리 (300ms 지연)
   useEffect(() => {
@@ -138,20 +158,28 @@ export default function CoinList() {
     };
   }, [searchQuery]);
 
-  // 사이드바가 열릴 때 body에 padding-left 추가
+  // 사이드바가 열릴 때 body에 padding-left 추가 (coins 페이지에서만)
   useEffect(() => {
+    // coins 페이지가 아니면 CSS 변수를 설정하지 않음
+    if (pathname !== '/coins') {
+      document.documentElement.style.setProperty('--left-sidebar-width', '0');
+      return;
+    }
+    
     if (selectedCoin) {
       document.documentElement.style.setProperty('--left-sidebar-width', '750px');
     } else {
       document.documentElement.style.setProperty('--left-sidebar-width', '0');
     }
-    
+  }, [selectedCoin, pathname]);
+
+  // 컴포넌트 언마운트 시 항상 CSS 변수 초기화 (다른 페이지로 이동 시 body가 밀리지 않도록)
+  useEffect(() => {
     return () => {
-      if (!selectedCoin) {
-        document.documentElement.style.setProperty('--left-sidebar-width', '0');
-      }
+      // 컴포넌트가 언마운트될 때 항상 CSS 변수 초기화
+      document.documentElement.style.setProperty('--left-sidebar-width', '0');
     };
-  }, [selectedCoin]);
+  }, []);
 
   // 정렬 핸들러 (3단계: 내림차순 → 오름차순 → 해제)
   const handleSort = (field: SortField) => {

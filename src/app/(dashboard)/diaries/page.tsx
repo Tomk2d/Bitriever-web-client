@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { MonthlyCalendar } from '@/shared/components/calendar';
 import { useTradingHistories } from '@/features/trading/hooks/useTradingHistories';
 import AnimatedCurrency from '@/shared/components/AnimatedCurrency';
+import { HelpIcon } from '@/shared/components/ui';
 import './page.css';
 
 export default function DiariesPage() {
@@ -32,9 +33,7 @@ export default function DiariesPage() {
       <div className="diaries-page-header">
         <h3 className="text-2xl font-bold mb-6 diaries-page-title">
           매매 일지
-          <span className="diaries-help-icon" data-tooltip="거래소를 연동하면 캘린더에 표시됩니다. 해당 일자를 선택하면 거래목록을 확인할 수 있습니다.">
-            💬
-          </span>
+          <HelpIcon tooltip="거래소를 연동하면 캘린더에 표시됩니다. 해당 일자를 선택하면 거래목록을 확인할 수 있습니다." />
         </h3>
         <div className="diaries-monthly-summary">
           <div className="diaries-summary-wrapper">

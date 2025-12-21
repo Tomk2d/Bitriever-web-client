@@ -39,7 +39,6 @@
 }
 
 .coin-detail-sidebar-title {
-  font-family: 'Pretendard', sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: var(--foreground);
@@ -126,14 +125,12 @@
 }
 
 .coin-detail-coin-name {
-  font-family: 'Pretendard', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: var(--foreground);
 }
 
 .coin-detail-market-code {
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: rgba(0, 19, 43, 0.6);
@@ -179,7 +176,6 @@
 }
 
 .coin-detail-price-value {
-  font-family: 'Pretendard', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: var(--foreground);
@@ -189,7 +185,6 @@
 }
 
 .coin-detail-change-rate {
-  font-family: 'Pretendard', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--foreground);
@@ -216,7 +211,6 @@
   border: none;
   background-color: transparent;
   border-radius: 0;
-  font-family: 'Pretendard', sans-serif;
   font-size: 10px;
   font-weight: 500;
   color: rgba(0, 19, 43, 0.6);
@@ -290,7 +284,6 @@
   border: none;
   background-color: transparent;
   border-radius: 0;
-  font-family: 'Pretendard', sans-serif;
   font-size: 10px;
   font-weight: 500;
   color: rgba(0, 19, 43, 0.6);
@@ -337,13 +330,15 @@
 }
 
 .coin-detail-info-headline {
-  font-family: 'Pretendard', sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--foreground);
   margin-bottom: 4px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .coin-detail-info-details-content {
@@ -377,7 +372,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--foreground);
@@ -391,7 +385,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--foreground);
@@ -426,14 +419,12 @@
 }
 
 .coin-detail-info-detail-label {
-  font-family: 'Pretendard', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: rgba(0, 19, 43, 0.6);
 }
 
 .coin-detail-info-detail-value {
-  font-family: 'Pretendard', sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--foreground);
@@ -449,7 +440,6 @@
 }
 
 .coin-detail-info-no-data {
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   color: rgba(0, 19, 43, 0.6);
   text-align: center;
@@ -473,7 +463,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--foreground);
@@ -483,13 +472,15 @@
 }
 
 .coin-detail-fear-greed-gauge-label {
-  font-family: 'Pretendard', sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--foreground);
   margin-bottom: 4px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .coin-detail-fear-greed-gauge-wrapper {
@@ -516,7 +507,6 @@
   justify-content: space-between;
   width: 100%;
   max-width: 200px;
-  font-family: 'Pretendard', sans-serif;
   font-size: 12px;
   color: rgba(0, 19, 43, 0.6);
   padding: 0;
@@ -551,7 +541,6 @@
 }
 
 .coin-detail-fear-greed-gauge-value {
-  font-family: 'Pretendard', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: var(--foreground);
@@ -560,7 +549,6 @@
 }
 
 .coin-detail-fear-greed-gauge-range {
-  font-family: 'Pretendard', sans-serif;
   font-size: 16px;
   font-weight: 600;
   text-align: center;
@@ -569,7 +557,6 @@
 
 .coin-detail-fear-greed-gauge-loading,
 .coin-detail-fear-greed-gauge-no-data {
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   color: rgba(0, 19, 43, 0.6);
   text-align: center;
@@ -577,7 +564,6 @@
 }
 
 .coin-detail-content {
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   color: var(--foreground);
   line-height: 1.6;
@@ -725,16 +711,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .coin-detail-long-short-label {
-  font-family: 'Pretendard', sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 
@@ -742,13 +730,24 @@
   position: relative;
 }
 
-.coin-detail-long-short-loading,
+.coin-detail-long-short-loading {
+  text-align: center;
+  padding: 20px;
+  color: rgba(0, 19, 43, 0.6);
+  font-size: 14px;
+  width: 100%;
+  min-height: 400px; /* 로딩 중에도 폼 크기 유지 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .coin-detail-long-short-empty {
   text-align: center;
   padding: 20px;
   color: rgba(0, 19, 43, 0.6);
-  font-family: 'Pretendard', sans-serif;
   font-size: 14px;
+  width: 100%;
 }
 
 /* 가장 최신 데이터: 가로 막대 그래프 */
@@ -757,81 +756,87 @@
 }
 
 .coin-detail-long-short-latest-label {
-  font-family: 'Pretendard', sans-serif;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--foreground);
-  margin-bottom: 8px;
+  opacity: 0.6; /* 롱 포지션, 숏 포지션 텍스트와 동일한 색상 */
+  margin-bottom: 12px;
 }
 
 .coin-detail-long-short-latest-bar {
   width: 100%;
 }
 
+.coin-detail-long-short-bar-labels-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 0 6px; /* 좌우 공백 4px */
+}
+
+.coin-detail-long-short-bar-label-top {
+  font-size: 14px; /* 텍스트 크기 키움 */
+  font-weight: 600;
+}
+
 .coin-detail-long-short-bar-container {
   display: flex;
   width: 100%;
-  height: 40px;
+  height: 10px; /* 높이 줄임 */
   border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 8px;
+  overflow: visible; /* 공백을 보이게 하기 위해 */
+  margin-bottom: 4px;
+  gap: 1px; /* 막대 사이 공백 */
 }
 
 .coin-detail-long-short-bar-long {
   background-color: var(--price-up);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 8px;
   transition: width 0.3s ease;
-  border-radius: 4px 0 0 4px;
+  border-radius: 20px 20px 20px 20px;
 }
 
 .coin-detail-long-short-bar-short {
   background-color: var(--price-down);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 8px;
   transition: width 0.3s ease;
-  border-radius: 0 4px 4px 0;
+  border-radius: 20px 20px 20px 20px;
 }
 
-.coin-detail-long-short-bar-label {
-  font-family: 'Pretendard', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: white;
-  white-space: nowrap;
+.coin-detail-long-short-bar-labels-bottom {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 6px; /* 좌우 공백 4px */
 }
 
-.coin-detail-long-short-latest-ratio {
-  font-family: 'Pretendard', sans-serif;
-  font-size: 12px;
+.coin-detail-long-short-bar-label-bottom {
+  font-size: 11px;
+  font-weight: 500;
   color: var(--foreground);
-  text-align: center;
-  opacity: 0.7;
+  opacity: 0.6; /* 하단 세로 막대 그래프의 시간대 텍스트와 동일한 색상 */
 }
 
 /* 최근 30개 데이터: 세로 막대 그래프 */
 .coin-detail-long-short-chart {
   width: 100%;
   height: 300px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden; /* 스크롤 제거 */
 }
 
 .coin-detail-long-short-chart-bars {
   display: flex;
   align-items: flex-end;
   height: 100%;
-  gap: 2px;
-  padding: 4px 0 20px 0;
+  gap: 0; /* gap 제거 */
+  padding: 4px 0 20px 18px;
+  position: relative;
+  width: 100%;
+  overflow: hidden; /* 스크롤 방지 */
 }
 
 .coin-detail-long-short-chart-bar-group {
-  flex: 1;
-  min-width: 2px;
+  flex: 0 0 auto;
+  width: 21px; /* 막대 넓이(12px) + gap 절반(4.5px) * 2 = 21px */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -839,20 +844,21 @@
   justify-content: flex-end;
   position: relative;
   cursor: pointer;
+  padding: 0 4.5px; /* gap의 절반씩 좌우 padding으로 설정 */
+  box-sizing: border-box;
 }
 
 .coin-detail-long-short-chart-bar-wrapper {
-  width: 100%;
+  width: 12px; /* 실제 막대 넓이 */
   height: calc(100% - 40px);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 1px;
+  gap: 1px; /* 롱 막대와 숏 막대 사이 갭 */
   position: relative;
 }
 
 .coin-detail-long-short-chart-time {
-  font-family: 'Pretendard', sans-serif;
   font-size: 9px;
   color: var(--foreground);
   opacity: 0.6;
@@ -869,7 +875,7 @@
   background-color: var(--price-up);
   width: 100%;
   transition: height 0.3s ease, background-color 0.2s ease;
-  border-radius: 2px 2px 0 0;
+  border-radius: 4px 4px 0 0; /* 상단 모서리 둥글게 */
   position: relative;
   min-height: 12px;
 }
@@ -882,7 +888,7 @@
   background-color: var(--price-down);
   width: 100%;
   transition: height 0.3s ease, background-color 0.2s ease;
-  border-radius: 0 0 2px 2px;
+  border-radius: 0 0 4px 4px; /* 하단 모서리 둥글게 */
   position: relative;
   min-height: 12px;
 }
@@ -892,10 +898,9 @@
   filter: brightness(0.85); /* 더 진한 색상 */
 }
 
-/* Tooltip 스타일 - 매매일지와 동일한 디자인, 마우스 우측 하단에 위치 */
+/* Tooltip 스타일 - 옅은 검정색 배경, 하얀색 텍스트, 마우스 우측에 위치 */
 .coin-detail-long-short-chart-tooltip {
   position: absolute;
-  transform: translate(8px, 8px); /* 마우스 우측 하단에 위치 */
   z-index: 1001;
   pointer-events: none;
   opacity: 0;
@@ -907,9 +912,8 @@
 }
 
 .coin-detail-long-short-chart-tooltip-content {
-  background-color: rgba(2, 32, 71, 0.85);
-  color: var(--foreground);
-  font-family: 'Pretendard', sans-serif;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
   font-size: 12px;
   padding: 8px 12px;
   border-radius: 4px;
@@ -930,13 +934,13 @@
 }
 
 .coin-detail-long-short-chart-tooltip-label {
-  color: var(--foreground);
-  opacity: 0.7;
+  color: #ffffff;
+  opacity: 0.8;
   margin-right: 8px;
 }
 
 .coin-detail-long-short-chart-tooltip-value {
-  color: var(--foreground);
+  color: #ffffff;
   font-weight: 600;
   text-align: right;
 }
@@ -962,6 +966,6 @@
 }
 
 .dark .coin-detail-long-short-chart-tooltip-content {
-  background-color: rgba(2, 32, 71, 0.15);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
