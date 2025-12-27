@@ -9,6 +9,7 @@ import { useFearGreedByDate, useFearGreedToday } from '@/features/feargreed/hook
 import { FearGreedResponse } from '@/features/feargreed/services/fearGreedService';
 import { useLongShort } from '@/features/longshort/hooks/useLongShort';
 import { LongShortPeriod } from '@/features/longshort/services/longShortService';
+import { useArticlesByDateRange } from '@/features/articles/hooks/useArticles';
 import CoinDetailCandleChart from '@/shared/components/charts/CoinDetailCandleChart';
 import CoinDetailLineChart from '@/shared/components/charts/CoinDetailLineChart';
 import { HelpIcon } from '@/shared/components/ui';
@@ -106,6 +107,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   const [gradientColors, setGradientColors] = useState({ start: '#1375ec', end: '#dd3c44' });
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [newsPage, setNewsPage] = useState(0);
   
   const dateString = useMemo(() => {
     if (!selectedDateData) return null;
@@ -188,6 +190,16 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   // 롱/숏 비율 데이터 조회 (early return 전에 호출해야 함)
   const coinSymbol = coin?.symbol || null;
   const { data: longShortData = [], isLoading: isLoadingLongShort } = useLongShort(coinSymbol, longShortPeriod);
+  
+  // 뉴스 데이터 조회
+  const { data: articlesData, isLoading: isLoadingArticles } = useArticlesByDateRange(dateString, newsPage);
+  
+  // 뉴스 탭이 활성화되거나 날짜가 변경되면 페이지를 0으로 리셋
+  useEffect(() => {
+    if (detailTab === 'memo') {
+      setNewsPage(0);
+    }
+  }, [detailTab, dateString]);
   
   if (!coin) return null;
 
@@ -572,9 +584,96 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                   )}
                 </>
               ) : (
-                // 뉴스 탭: 빈칸
-                <div className="coin-detail-info-placeholder">
-                  {/* 뉴스 내용은 추후 추가 예정 */}
+                // 뉴스 탭
+                <div className="coin-detail-news-section">
+                  <div className="coin-detail-news-header">
+                    {selectedDateData ? (
+                      <div className="coin-detail-info-headline">
+                        {formatDate(selectedDateData.candleDateTimeKst)}
+                        <HelpIcon tooltip={`선택된 날짜의 뉴스를 표시합니다. 
+                                              차트에서 빈공간을 클릭하면 현재 데이터로 전환되어 
+                                              최신 뉴스를 볼 수 있습니다.`} />
+                      </div>
+                    ) : (
+                      <div className="coin-detail-info-headline">
+                        {formatTodayDate()}
+                        <HelpIcon tooltip={`최신 뉴스를 표시합니다. 
+                                              차트에서 날짜를 클릭하면 해당 날짜의 뉴스를 볼 수 있습니다.`} />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {isLoadingArticles ? (
+                    <div className="coin-detail-info-placeholder">
+                      로딩중 입니다.
+                    </div>
+                  ) : !articlesData || !articlesData.content || articlesData.content.length === 0 ? (
+                    <div className="coin-detail-info-placeholder">
+                      해당 날짜에 데이터가 없습니다.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="coin-detail-news-list">
+                        {articlesData.content.map((article) => {
+                          const publishedDate = new Date(article.publishedAt);
+                          const year = publishedDate.getFullYear();
+                          const month = String(publishedDate.getMonth() + 1).padStart(2, '0');
+                          const day = String(publishedDate.getDate()).padStart(2, '0');
+                          const hours = String(publishedDate.getHours()).padStart(2, '0');
+                          const minutes = String(publishedDate.getMinutes()).padStart(2, '0');
+                          const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                          
+                          return (
+                            <div key={article.id} className="coin-detail-news-item">
+                              <a
+                                href={article.originalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="coin-detail-news-link"
+                              >
+                                <div className="coin-detail-news-title">{article.headline}</div>
+                                {article.summary && (
+                                  <div className="coin-detail-news-summary">{article.summary}</div>
+                                )}
+                                <div className="coin-detail-news-meta">
+                                  {article.reporterName ? (
+                                    <span className="coin-detail-news-reporter">
+                                      {article.reporterName} <span className="coin-detail-news-publisher">({article.publisherName})</span>
+                                    </span>
+                                  ) : (
+                                    <span className="coin-detail-news-publisher">{article.publisherName}</span>
+                                  )}
+                                  <span className="coin-detail-news-date">{formattedDate}</span>
+                                </div>
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {articlesData.totalPages > 1 && (
+                        <div className="coin-detail-news-pagination">
+                          <button
+                            className="coin-detail-news-pagination-button"
+                            onClick={() => setNewsPage(Math.max(0, newsPage - 1))}
+                            disabled={articlesData.first || isLoadingArticles}
+                          >
+                            이전
+                          </button>
+                          <div className="coin-detail-news-pagination-info">
+                            {newsPage + 1} / {articlesData.totalPages}
+                          </div>
+                          <button
+                            className="coin-detail-news-pagination-button"
+                            onClick={() => setNewsPage(Math.min(articlesData.totalPages - 1, newsPage + 1))}
+                            disabled={articlesData.last || isLoadingArticles}
+                          >
+                            다음
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
