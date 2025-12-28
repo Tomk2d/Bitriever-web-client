@@ -22,15 +22,25 @@ export const useArticlesByDateRange = (date: string | null, page: number = 0) =>
       }
 
       // 날짜가 있으면 해당 날짜의 하루 범위로 조회
-      const selectedDate = new Date(date);
-      const startDate = new Date(selectedDate);
-      startDate.setHours(0, 0, 0, 0);
-      const endDate = new Date(selectedDate);
-      endDate.setHours(23, 59, 59, 999);
+      // date는 "YYYY-MM-DD" 형식이므로 직접 파싱하여 로컬 타임존 기준으로 설정
+      const [year, month, day] = date.split('-').map(Number);
+      const startDate = new Date(year, month - 1, day, 0, 0, 0, 0); // 로컬 타임존 기준
+      const endDate = new Date(year, month - 1, day, 23, 59, 59, 999); // 로컬 타임존 기준
 
       // ISO 8601 형식으로 변환: "2024-01-01T00:00:00"
-      const startDateStr = startDate.toISOString().slice(0, 19);
-      const endDateStr = endDate.toISOString().slice(0, 19);
+      // 로컬 타임존을 유지하기 위해 수동으로 포맷팅
+      const formatLocalDateTime = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      };
+
+      const startDateStr = formatLocalDateTime(startDate);
+      const endDateStr = formatLocalDateTime(endDate);
 
       return articleService.getArticlesByDateRange(startDateStr, endDateStr, page, 10);
     },
