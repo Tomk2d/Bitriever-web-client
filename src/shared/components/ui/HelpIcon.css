@@ -61,9 +61,10 @@
   opacity: 1;
 }
 
-/* 다크 모드 스타일 */
+/* 다크 모드 스타일 - 라이트 모드와 동일한 색상 유지 */
 .dark .help-icon::after {
   background-color: rgb(232, 235, 238);
+  color: #171717;
 }
 
 .dark .help-icon::before {

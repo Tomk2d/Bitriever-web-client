@@ -589,14 +589,20 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                   <div className="coin-detail-news-header">
                     {selectedDateData ? (
                       <div className="coin-detail-info-headline">
-                        {formatDate(selectedDateData.candleDateTimeKst)} 의 기사
+                        과거 기사 ({dateString})
                         <HelpIcon tooltip={`선택된 날짜의 암호화폐/금융 관련 뉴스를 표시합니다. 
                                               차트에서 빈공간을 클릭하면 현재 데이터로 전환되어 
                                               최신 뉴스를 볼 수 있습니다.`} />
                       </div>
                     ) : (
                       <div className="coin-detail-info-headline">
-                        최신 기사
+                        최신 기사 ({(() => {
+                          const today = new Date();
+                          const year = today.getFullYear();
+                          const month = String(today.getMonth() + 1).padStart(2, '0');
+                          const day = String(today.getDate()).padStart(2, '0');
+                          return `${year}-${month}-${day}`;
+                        })()})
                         <HelpIcon tooltip={`최신 암호화폐/금융 관련 뉴스를 표시합니다. 
                                               차트에서 날짜를 클릭하면 해당 날짜의 뉴스를 볼 수 있습니다.`} />
                       </div>
