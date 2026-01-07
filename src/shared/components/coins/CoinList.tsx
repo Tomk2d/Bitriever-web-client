@@ -6,8 +6,10 @@ import { CoinResponse } from '@/features/coins/services/coinService';
 import { useCoins } from '@/features/coins/hooks/useCoins';
 import { useAppSelector } from '@/store/hooks';
 import { selectAllPrices } from '@/store/slices/coinPriceSlice';
+import { useEconomicIndices } from '@/features/economicIndex/hooks/useEconomicIndices';
 import CoinItem from './CoinItem';
 import CoinDetailSidebar from './CoinDetailSidebar';
+import MarketIndicatorChart from './MarketIndicatorChart';
 import './CoinList.css';
 
 const CurrencyTabs = memo(({ 
@@ -61,15 +63,6 @@ const CurrencyTabs = memo(({
 
 CurrencyTabs.displayName = 'CurrencyTabs';
 
-const marketIndicators = [
-  { label: '달러환율', value: '1,350.50', change: '+2.30 (+0.17%)', type: 'positive' },
-  { label: '나스닥', value: '14,234.56', change: '+45.23 (+0.32%)', type: 'positive' },
-  { label: 'S&P 500', value: '4,567.89', change: '-12.34 (-0.27%)', type: 'negative' },
-  { label: '다우존스', value: '34,567.12', change: '+123.45 (+0.36%)', type: 'positive' },
-  { label: '코스피', value: '2,456.78', change: '+15.67 (+0.64%)', type: 'positive' },
-  { label: '코스닥', value: '789.12', change: '-3.45 (-0.44%)', type: 'negative' },
-];
-
 type SortField = 'name' | 'price' | 'changeRate' | 'volume' | null;
 type SortOrder = 'asc' | 'desc' | null;
 
@@ -119,6 +112,9 @@ export default function CoinList() {
   
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector(selectAllPrices);
+
+  // 경제 지표 데이터 가져오기 (10분마다 polling)
+  const { indicators: marketIndicators = [], loading: indicatorsLoading } = useEconomicIndices();
 
   // 페이지 이동 시 사이드바 닫기 및 상태 초기화
   useEffect(() => {
@@ -290,7 +286,7 @@ export default function CoinList() {
   // 마켓 인디케이터 무한 스크롤
   useEffect(() => {
     const scrollElement = indicatorsRef.current;
-    if (!scrollElement) return;
+    if (!scrollElement || marketIndicators.length === 0) return;
 
     let animationFrameId: number | null = null;
     let isRunning = true;
@@ -298,7 +294,7 @@ export default function CoinList() {
     const updateScroll = () => {
       // 각 인디케이터의 너비 (250px) + gap (24px)
       const itemWidth = 250 + 24;
-      const originalWidth = itemWidth * marketIndicators.length; // 원본 6개 요소의 총 너비
+      const originalWidth = itemWidth * marketIndicators.length;
       let scrollPosition = 0;
       const scrollSpeed = 0.7; // 픽셀/프레임
 
@@ -331,7 +327,7 @@ export default function CoinList() {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, []);
+  }, [marketIndicators.length]);
 
   const coinListContent = useMemo(() => {
     if (loading) {
@@ -370,41 +366,56 @@ export default function CoinList() {
     <div className="coin-list-container">
       <div className="coin-list-market-indicators-wrapper">
         <div className="coin-list-market-indicator-schedule">📅 D-2 ISM 제조업 구매관리자지수 발표</div>
-        <div className="coin-list-market-indicators" ref={indicatorsRef}>
-          {/* 원본 인디케이터 */}
-          {marketIndicators.map((indicator, index) => (
-            <div key={`original-${index}`} className="coin-list-market-indicator">
-              <div className="coin-list-market-indicator-chart"></div>
-              <div className="coin-list-market-indicator-content">
-                <span className="coin-list-market-indicator-label">{indicator.label}</span>
-                <span className="coin-list-market-indicator-value">{indicator.value}</span>
-                <span className={`coin-list-market-indicator-change ${indicator.type}`}>{indicator.change}</span>
+        {indicatorsLoading && marketIndicators.length === 0 ? (
+          <div className="coin-list-market-indicators">
+            <div className="coin-list-loading">경제 지표 로딩 중...</div>
+          </div>
+        ) : (
+          <div className="coin-list-market-indicators" ref={indicatorsRef}>
+            {/* 원본 인디케이터 */}
+            {marketIndicators.map((indicator, index) => (
+              <div key={`original-${indicator.indexType}-${index}`} className="coin-list-market-indicator">
+                <MarketIndicatorChart 
+                  data={indicator.data} 
+                  isPositive={indicator.type === 'positive'} 
+                />
+                <div className="coin-list-market-indicator-content">
+                  <span className="coin-list-market-indicator-label">{indicator.label}</span>
+                  <span className={`coin-list-market-indicator-value ${indicator.type}`}>{indicator.value}</span>
+                  <span className={`coin-list-market-indicator-change ${indicator.type}`}>{indicator.change}</span>
+                </div>
               </div>
-            </div>
-          ))}
-          {/* 복제본 인디케이터 (무한 루프를 위해) */}
-          {marketIndicators.map((indicator, index) => (
-            <div key={`duplicate-${index}`} className="coin-list-market-indicator">
-              <div className="coin-list-market-indicator-chart"></div>
-              <div className="coin-list-market-indicator-content">
-                <span className="coin-list-market-indicator-label">{indicator.label}</span>
-                <span className="coin-list-market-indicator-value">{indicator.value}</span>
-                <span className={`coin-list-market-indicator-change ${indicator.type}`}>{indicator.change}</span>
+            ))}
+            {/* 복제본 인디케이터 (무한 루프를 위해) */}
+            {marketIndicators.map((indicator, index) => (
+              <div key={`duplicate-${indicator.indexType}-${index}`} className="coin-list-market-indicator">
+                <MarketIndicatorChart 
+                  data={indicator.data} 
+                  isPositive={indicator.type === 'positive'} 
+                />
+                <div className="coin-list-market-indicator-content">
+                  <span className="coin-list-market-indicator-label">{indicator.label}</span>
+                  <span className={`coin-list-market-indicator-value ${indicator.type}`}>{indicator.value}</span>
+                  <span className={`coin-list-market-indicator-change ${indicator.type}`}>{indicator.change}</span>
+                </div>
               </div>
-            </div>
-          ))}
-          {/* 두 번째 복제본 (부드러운 전환을 위해) */}
-          {marketIndicators.map((indicator, index) => (
-            <div key={`duplicate2-${index}`} className="coin-list-market-indicator">
-              <div className="coin-list-market-indicator-chart"></div>
-              <div className="coin-list-market-indicator-content">
-                <span className="coin-list-market-indicator-label">{indicator.label}</span>
-                <span className="coin-list-market-indicator-value">{indicator.value}</span>
-                <span className={`coin-list-market-indicator-change ${indicator.type}`}>{indicator.change}</span>
+            ))}
+            {/* 두 번째 복제본 (부드러운 전환을 위해) */}
+            {marketIndicators.map((indicator, index) => (
+              <div key={`duplicate2-${indicator.indexType}-${index}`} className="coin-list-market-indicator">
+                <MarketIndicatorChart 
+                  data={indicator.data} 
+                  isPositive={indicator.type === 'positive'} 
+                />
+                <div className="coin-list-market-indicator-content">
+                  <span className="coin-list-market-indicator-label">{indicator.label}</span>
+                  <span className={`coin-list-market-indicator-value ${indicator.type}`}>{indicator.value}</span>
+                  <span className={`coin-list-market-indicator-change ${indicator.type}`}>{indicator.change}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="coin-list-content-wrapper">
         <CurrencyTabs 
