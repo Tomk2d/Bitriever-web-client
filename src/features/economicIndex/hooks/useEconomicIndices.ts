@@ -91,8 +91,13 @@ export const useEconomicIndices = () => {
                 return timeA - timeB;
               }),
             } as MarketIndicator;
-          } catch (err) {
-            console.error(`Failed to fetch ${type}:`, err);
+          } catch (err: any) {
+            console.error(`[EconomicIndex] Failed to fetch ${type}:`, {
+              type,
+              error: err?.message || 'Unknown error',
+              status: err?.response?.status,
+              data: err?.response?.data
+            });
             return null;
           }
         })

@@ -1,0 +1,313 @@
+.economic-calendar-sidebar {
+  position: fixed;
+  left: 0;
+  top: 70px;
+  width: 750px;
+  height: calc(100vh - 70px);
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  display: flex;
+  align-items: stretch;
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.economic-calendar-sidebar.closing {
+  animation: slideOutToLeft 0.3s ease-in;
+}
+
+.economic-calendar-sidebar-content {
+  width: 750px;
+  height: 100%;
+  background-color: var(--sidebar-bg, #ffffff);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.economic-calendar-sidebar-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  gap: 16px;
+  position: relative;
+}
+
+.economic-calendar-sidebar-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.economic-calendar-sidebar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+  min-width: 100px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.economic-calendar-month-nav-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 0;
+}
+
+.economic-calendar-month-nav-button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.economic-calendar-month-nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.economic-calendar-sidebar-close {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.economic-calendar-sidebar-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.economic-calendar-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 16px 16px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  -ms-overflow-style: auto;
+  color: var(--foreground);
+  min-height: 0;
+}
+
+.economic-calendar-sidebar-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.economic-calendar-sidebar-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.economic-calendar-sidebar-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.economic-calendar-sidebar-body::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.economic-calendar-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-size: 14px;
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.economic-calendar-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  font-size: 14px;
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.economic-calendar-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+
+.economic-calendar-events-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.economic-calendar-date-group {
+  margin-bottom: 16px;
+}
+
+.economic-calendar-date-group:last-child {
+  margin-bottom: 0;
+}
+
+.economic-calendar-events-header {
+  display: grid;
+  grid-template-columns: 0.8fr 2fr 1fr 1fr 1fr;
+  position: sticky;
+  top: 0;
+  background-color: var(--sidebar-bg, #ffffff);
+  z-index: 10;
+}
+
+.economic-calendar-header-cell {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+  text-align: left;
+}
+
+.economic-calendar-header-cell.event-name {
+  font-weight: 700;
+}
+
+.economic-calendar-header-cell.date {
+  font-weight: 700;
+}
+
+.economic-calendar-event-cell.date {
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.economic-calendar-event-cell.date.today {
+  color: var(--main-color, #02a262);
+  opacity: 1;
+  font-weight: 600;
+}
+
+.economic-calendar-event-cell.date.today .economic-calendar-date-day {
+  color: var(--main-color, #02a262);
+  font-weight: 700;
+}
+
+.economic-calendar-date-day {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.economic-calendar-date-weekday {
+  font-weight: 500;
+}
+
+.economic-calendar-event-row {
+  display: grid;
+  grid-template-columns: 0.8fr 2fr 1fr 1fr 1fr;
+  transition: background-color 0.2s ease;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.economic-calendar-event-row:last-child {
+  margin-bottom: 0;
+}
+
+.economic-calendar-event-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.economic-calendar-event-cell {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--foreground);
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.economic-calendar-event-cell.event-name {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+
+.dark .economic-calendar-event-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .economic-calendar-events-header {
+  background-color: var(--sidebar-bg, #17171c);
+}
+
+
+.dark .economic-calendar-sidebar {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dark .economic-calendar-sidebar-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .economic-calendar-month-nav-button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .economic-calendar .react-calendar__tile:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .economic-calendar-events-list {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .economic-calendar-event-item {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

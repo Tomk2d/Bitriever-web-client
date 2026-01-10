@@ -7,8 +7,11 @@ import { useCoins } from '@/features/coins/hooks/useCoins';
 import { useAppSelector } from '@/store/hooks';
 import { selectAllPrices } from '@/store/slices/coinPriceSlice';
 import { useEconomicIndices } from '@/features/economicIndex/hooks/useEconomicIndices';
+import { useTodayEventCount } from '@/features/economicEvent/hooks/useTodayEventCount';
+import { useEconomicEventsPrefetch } from '@/features/economicEvent/hooks/useEconomicEventsByMonth';
 import CoinItem from './CoinItem';
 import CoinDetailSidebar from './CoinDetailSidebar';
+import EconomicCalendarSidebar from './EconomicCalendarSidebar';
 import MarketIndicatorChart from './MarketIndicatorChart';
 import './CoinList.css';
 
@@ -100,6 +103,8 @@ export default function CoinList() {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('KRW');
   const [selectedCoin, setSelectedCoin] = useState<CoinResponse | null>(null);
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isCalendarClosing, setIsCalendarClosing] = useState(false);
   const [sortField, setSortField] = useState<SortField>('volume'); // 기본값: 거래대금
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc'); // 기본값: 내림차순
   const [searchQuery, setSearchQuery] = useState<string>(''); // 입력값
@@ -115,6 +120,12 @@ export default function CoinList() {
 
   // 경제 지표 데이터 가져오기 (10분마다 polling)
   const { indicators: marketIndicators = [], loading: indicatorsLoading } = useEconomicIndices();
+  
+  // 오늘 예정된 경제 이벤트 개수 가져오기 (5분마다 polling)
+  const { count: todayEventCount, loading: eventCountLoading } = useTodayEventCount();
+  
+  // 경제 캘린더 데이터 prefetch (현재월부터 +2개월)
+  useEconomicEventsPrefetch();
 
   // 페이지 이동 시 사이드바 닫기 및 상태 초기화
   useEffect(() => {
@@ -162,12 +173,12 @@ export default function CoinList() {
       return;
     }
     
-    if (selectedCoin) {
+    if (selectedCoin || isCalendarOpen) {
       document.documentElement.style.setProperty('--left-sidebar-width', '750px');
     } else {
       document.documentElement.style.setProperty('--left-sidebar-width', '0');
     }
-  }, [selectedCoin, pathname]);
+  }, [selectedCoin, isCalendarOpen, pathname]);
 
   // 컴포넌트 언마운트 시 항상 CSS 변수 초기화 (다른 페이지로 이동 시 body가 밀리지 않도록)
   useEffect(() => {
@@ -353,6 +364,14 @@ export default function CoinList() {
               if (selectedCoin?.id === coin.id) {
                 setSelectedCoin(null);
               } else {
+                // 경제 이벤트 사이드바가 열려있으면 닫기
+                if (isCalendarOpen) {
+                  setIsCalendarClosing(true);
+                  setTimeout(() => {
+                    setIsCalendarOpen(false);
+                    setIsCalendarClosing(false);
+                  }, 300);
+                }
                 setSelectedCoin(coin);
               }
             }}
@@ -365,7 +384,30 @@ export default function CoinList() {
   return (
     <div className="coin-list-container">
       <div className="coin-list-market-indicators-wrapper">
-        <div className="coin-list-market-indicator-schedule">📅 D-2 ISM 제조업 구매관리자지수 발표</div>
+        <div 
+          className="coin-list-market-indicator-schedule"
+          onClick={() => {
+            // 코인 상세 사이드바가 열려있으면 닫기
+            if (selectedCoin) {
+              setIsSidebarClosing(true);
+              setTimeout(() => {
+                setSelectedCoin(null);
+                setIsSidebarClosing(false);
+              }, 300);
+            }
+            setIsCalendarOpen(true);
+            setIsCalendarClosing(false);
+          }}
+        >
+          {eventCountLoading ? (
+            '경제 이벤트 로딩 중...'
+          ) : (
+            <>
+              오늘 예정된 경제 이벤트가 <span className="coin-list-event-count">{todayEventCount}개</span> 있어요
+              <span className="coin-list-schedule-arrow"> →</span>
+            </>
+          )}
+        </div>
         {indicatorsLoading && marketIndicators.length === 0 ? (
           <div className="coin-list-market-indicators">
             <div className="coin-list-loading">경제 지표 로딩 중...</div>
@@ -529,6 +571,18 @@ export default function CoinList() {
             setIsSidebarClosing(false);
           }, 300);
         }} 
+      />
+      <EconomicCalendarSidebar
+        isOpen={isCalendarOpen}
+        isClosing={isCalendarClosing}
+        onClose={() => {
+          setIsCalendarClosing(true);
+          // 애니메이션 시간만큼 대기 후 실제로 닫기
+          setTimeout(() => {
+            setIsCalendarOpen(false);
+            setIsCalendarClosing(false);
+          }, 300);
+        }}
       />
     </div>
   );

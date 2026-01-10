@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 import { authService } from '@/features/auth/services/authService';
+import NewsHeadlineRotator from './NewsHeadlineRotator';
 import './Navigation.css';
 
 export default function Navigation() {
@@ -159,6 +160,7 @@ export default function Navigation() {
 
           {/* 오른쪽 섹션 (검색바 + 로그인) */}
           <div className="navigation-right">
+            <NewsHeadlineRotator />
             <div className="navigation-search">
               <input
                 type="text"
