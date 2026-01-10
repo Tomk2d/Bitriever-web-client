@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { economicEventService } from '../services/economicEventService';
 
-const POLLING_INTERVAL = 5 * 60 * 1000; // 5분
-
 export const useTodayEventCount = () => {
   const [count, setCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -23,14 +21,6 @@ export const useTodayEventCount = () => {
 
   useEffect(() => {
     fetchTodayEventCount();
-
-    const intervalId = setInterval(() => {
-      fetchTodayEventCount();
-    }, POLLING_INTERVAL);
-
-    return () => {
-      clearInterval(intervalId);
-    };
   }, [fetchTodayEventCount]);
 
   return { count, loading, error, refetch: fetchTodayEventCount };
