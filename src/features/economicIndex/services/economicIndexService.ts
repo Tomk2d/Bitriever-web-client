@@ -16,14 +16,24 @@ export const economicIndexService = {
       console.log('[EconomicIndex] Success:', { type, dataLength: response.data.data?.length });
       return response.data.data || [];
     } catch (error: any) {
-      console.error('[EconomicIndex] Error:', { 
+      const errorInfo = {
         type, 
         typeString, 
-        url, 
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
-      });
+        url,
+        message: error?.message || 'Unknown error',
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        stack: error?.stack
+      };
+      
+      console.error('[EconomicIndex] Error:', errorInfo);
+      
+      // 네트워크 에러나 기타 에러를 더 명확하게 처리
+      if (!error?.response) {
+        console.error('[EconomicIndex] Network error or no response:', error);
+      }
+      
       throw error;
     }
   },

@@ -19,8 +19,8 @@
 
 .coin-list-market-indicator-schedule {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--foreground);
   opacity: 0.7;
   text-align: left;
@@ -28,7 +28,47 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 16px 16px 0 16px;
+  padding: 16px 16px 16px 16px;
+  cursor: pointer;
+  transition: text-decoration 0.2s ease;
+}
+
+.coin-list-market-indicator-schedule:hover {
+  text-decoration: underline;
+}
+
+.coin-list-event-count {
+  color: var(--main-color, #02a262);
+  font-weight: 700;
+}
+
+.coin-list-schedule-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+  color: var(--main-color, #02a262);
+}
+
+.coin-list-market-indicator-schedule:hover .coin-list-schedule-arrow {
+  transform: translateX(4px);
+}
+
+.dark .coin-list-market-indicator-schedule {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.dark .coin-list-event-count {
+  color: var(--main-color, #02a262);
+}
+
+.dark .coin-list-schedule-arrow {
+  color: var(--main-color, #02a262);
+}
+
+.coin-list-event-count {
+  color: var(--main-color, #02a262);
+  font-weight: 700;
 }
 
 .coin-list-market-indicators {
