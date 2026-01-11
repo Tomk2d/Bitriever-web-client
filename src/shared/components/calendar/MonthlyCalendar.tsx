@@ -32,20 +32,25 @@ export default function MonthlyCalendar({
   // 외부에서 전달된 activeStartDate가 있으면 사용, 없으면 내부 상태 사용
   const activeStartDate = externalActiveStartDate !== undefined ? externalActiveStartDate : internalActiveStartDate;
 
+  // 데이터 로딩과 관계없이 캘린더는 먼저 렌더링
   const { data: tradingHistories = [], isLoading, error } = useTradingHistories(activeStartDate);
 
+  // 데이터가 없어도 빈 객체로 초기화하여 캘린더가 정상 렌더링되도록 함
   const tradingHistoriesByDate = useMemo(() => {
     const grouped: Record<string, TradingHistoryResponse[]> = {};
     
-    tradingHistories.forEach((history) => {
-      const tradeDate = new Date(history.tradeTime);
-      const dateKey = getDateKey(tradeDate);
-      
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
-      }
-      grouped[dateKey].push(history);
-    });
+    // 데이터가 로드된 경우에만 그룹화
+    if (tradingHistories.length > 0) {
+      tradingHistories.forEach((history) => {
+        const tradeDate = new Date(history.tradeTime);
+        const dateKey = getDateKey(tradeDate);
+        
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(history);
+      });
+    }
 
     return grouped;
   }, [tradingHistories]);
@@ -84,8 +89,14 @@ export default function MonthlyCalendar({
     }
   };
 
+  // 데이터 로딩 여부와 관계없이 캘린더 타일은 렌더링
   const tileContent = useCallback(({ date, view }: { date: Date; view: string }) => {
     if (view !== 'month') {
+      return null;
+    }
+
+    // 데이터가 로딩 중이거나 없으면 빈 상태로 반환 (캘린더는 정상 렌더링)
+    if (isLoading) {
       return null;
     }
 
@@ -134,7 +145,7 @@ export default function MonthlyCalendar({
         </div>
       </div>
     );
-  }, [tradingHistoriesByDate]);
+  }, [tradingHistoriesByDate, isLoading]);
 
   useEffect(() => {
     if (!calendarRef.current) return;
