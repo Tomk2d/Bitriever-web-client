@@ -74,7 +74,8 @@
 .individual-trading-history-panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 0 16px;
+  margin: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
   color: var(--foreground);
@@ -307,6 +308,7 @@
   flex-direction: column;
   gap: 6px;
   margin-top: 1px;
+  margin-bottom: 12px;
 }
 
 .individual-trading-history-diary-item:has(.individual-trading-history-diary-content) {
@@ -512,7 +514,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 50px;
+  margin: 0;
 }
 
 .individual-trading-history-diary-edit-item {
@@ -523,7 +525,7 @@
 
 .individual-trading-history-diary-edit-label {
   font-family: 'Pretendard', sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--foreground);
 }
@@ -550,7 +552,7 @@
 }
 
 .individual-trading-history-diary-edit-textarea {
-  padding: 10px 12px;
+  padding: 12px 12px 50px 12px;
   border: 1px solid rgba(0, 19, 43, 0.2);
   border-radius: 6px;
   font-family: 'Pretendard', sans-serif;
@@ -558,8 +560,67 @@
   color: var(--foreground);
   background-color: var(--background);
   resize: vertical;
-  min-height: 120px;
+  min-height: 500px;
   transition: border-color 0.2s ease;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  outline: none;
+}
+
+.individual-trading-history-diary-edit-textarea:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(0, 19, 43, 0.5);
+  pointer-events: none;
+}
+
+/* 이미지 마커 스타일 */
+.image-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin: 0 0 12px 0;
+  background-color: rgba(2, 162, 98, 0.1);
+  border: 1px solid rgba(2, 162, 98, 0.3);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--main-color, #02a262);
+  vertical-align: middle;
+  user-select: none;
+}
+
+.image-marker-filename {
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-marker-delete {
+  background: none;
+  border: none;
+  color: var(--main-color, #02a262);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.image-marker-delete:hover {
+  background-color: rgba(2, 162, 98, 0.1);
+  color: var(--main-color-hover, #028a52);
+  opacity: 1;
 }
 
 .individual-trading-history-diary-edit-textarea:hover {
@@ -580,11 +641,11 @@
 
 .individual-trading-history-diary-edit-cancel,
 .individual-trading-history-diary-edit-save {
-  padding: 10px 20px;
+  padding: 6px 12px;
   border: none;
   border-radius: 6px;
   font-family: 'Pretendard', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -645,3 +706,39 @@
   background-color: rgba(255, 255, 255, 0.15);
 }
 
+/* 이미지 업로드 관련 스타일 */
+.individual-trading-history-diary-edit-textarea.drag-over {
+  background-color: rgba(59, 130, 246, 0.05);
+  border: 2px dashed rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
+}
+
+.textarea-hint {
+  font-size: 11px;
+  color: rgba(0, 19, 43, 0.5);
+  margin-top: 4px;
+  font-style: normal;
+}
+
+.uploading-indicator {
+  font-size: 12px;
+  color: rgba(59, 130, 246, 0.8);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.diary-image-container {
+  margin: 0;
+}
+
+.diary-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .diary-image {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}

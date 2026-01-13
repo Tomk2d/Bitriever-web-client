@@ -21,9 +21,7 @@ export async function GET(
     // Authorization 헤더 가져오기 (쿠키보다 우선)
     const authHeader = request.headers.get('Authorization');
 
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+    const headers: HeadersInit = {};
 
     if (authHeader) {
       headers['Authorization'] = authHeader;
@@ -38,6 +36,55 @@ export async function GET(
 
     const contentType = response.headers.get('content-type');
     
+    // 이미지 조회인 경우 (diaries/{id}/images/{filename})
+    if (path.match(/^diaries\/\d+\/images\/[^/]+$/)) {
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          errorText = 'Failed to read error response';
+        }
+        
+        console.error('이미지 조회 실패:', {
+          path,
+          url: `${BACKEND_URL}/api/${path}`,
+          status: response.status,
+          statusText: response.statusText,
+          hasAuth: !!(authHeader || token),
+          authHeader: authHeader ? 'present' : 'missing',
+          token: token ? 'present' : 'missing',
+          text: errorText.substring(0, 500),
+        });
+        
+        // 이미지 요청 실패 시 빈 이미지나 에러 이미지 반환 대신 JSON 에러 반환
+        // 하지만 브라우저는 이미지 태그에 JSON을 로드할 수 없으므로, 
+        // 실제로는 빈 응답이나 적절한 에러 처리가 필요
+        return NextResponse.json(
+          { 
+            error: 'Image not found',
+            message: errorText,
+            status: response.status
+          },
+          { 
+            status: response.status,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+      }
+      
+      const blob = await response.blob();
+      return new NextResponse(blob, {
+        status: response.status,
+        headers: {
+          'Content-Type': contentType || 'image/jpeg',
+        },
+      });
+    }
+    
+    // JSON 응답인 경우
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
       console.error('Non-JSON response:', {
@@ -98,10 +145,55 @@ export async function POST(
     // Authorization 헤더 가져오기 (쿠키보다 우선)
     const authHeader = request.headers.get('Authorization');
 
-    // 요청 바디 읽기
+    const requestContentType = request.headers.get('content-type') || '';
+    
+    // multipart/form-data 처리 (이미지 업로드)
+    if (requestContentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      
+      const headers: HeadersInit = {};
+      
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      } else if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      // FormData를 전달할 때는 Content-Type 헤더를 설정하지 않음 (boundary 자동 설정)
+      const response = await fetch(`${BACKEND_URL}/api/${path}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      const responseContentType = response.headers.get('content-type');
+      
+      if (!responseContentType || !responseContentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response (POST - multipart):', {
+          status: response.status,
+          contentType: responseContentType,
+          url: `${BACKEND_URL}/api/${path}`,
+          hasAuth: !!(authHeader || token),
+          text: text.substring(0, 500),
+        });
+        return NextResponse.json(
+          { 
+            error: 'Invalid response format',
+            message: `Expected JSON but received ${responseContentType}`,
+            status: response.status
+          },
+          { status: response.status || 500 }
+        );
+      }
+
+      const data = await response.json();
+      return NextResponse.json(data, { status: response.status });
+    }
+    
+    // JSON 요청 처리
     let body: any = null;
-    const requestContentType = request.headers.get('content-type');
-    if (requestContentType && requestContentType.includes('application/json')) {
+    if (requestContentType.includes('application/json')) {
       try {
         body = await request.json();
       } catch {
@@ -238,19 +330,54 @@ export async function DELETE(
     const path = pathArray.join('/');
     const token = request.cookies.get('authToken')?.value;
 
+    // Authorization 헤더 가져오기 (쿠키보다 우선)
+    const authHeader = request.headers.get('Authorization');
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    } else if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${BACKEND_URL}/api/${path}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
+      headers,
     });
+
+    const responseContentType = response.headers.get('content-type');
+    
+    if (!responseContentType || !responseContentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response (DELETE):', {
+        status: response.status,
+        contentType: responseContentType,
+        url: `${BACKEND_URL}/api/${path}`,
+        hasAuth: !!(authHeader || token),
+        text: text.substring(0, 500),
+      });
+      return NextResponse.json(
+        { 
+          error: 'Invalid response format',
+          message: `Expected JSON but received ${responseContentType}`,
+          status: response.status
+        },
+        { status: response.status || 500 }
+      );
+    }
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch {
+  } catch (error) {
+    console.error('API route error (DELETE):', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
