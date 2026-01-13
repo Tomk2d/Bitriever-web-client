@@ -196,7 +196,13 @@ export const diaryService = {
   deleteImage: async (diaryId: number, filename: string): Promise<DiaryResponse> => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
-    const response = await fetch(`/api/proxy/diaries/${diaryId}/images/${filename}`, {
+    // filename URL 인코딩 (특수문자 처리)
+    const encodedFilename = encodeURIComponent(filename);
+    const url = `/api/proxy/diaries/${diaryId}/images/${encodedFilename}`;
+    
+    console.log('[diaryService.deleteImage] 삭제 요청:', { diaryId, filename, encodedFilename, url });
+
+    const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -215,10 +221,34 @@ export const diaryService = {
       throw new Error('인증에 실패했습니다.');
     }
 
-    const result = await response.json();
+    // 응답이 JSON인지 확인
+    const contentType = response.headers.get('content-type');
+    let result;
+    
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('[diaryService] Delete Image - Non-JSON response:', {
+        status: response.status,
+        statusText: response.statusText,
+        contentType,
+        text: text.substring(0, 500),
+        url,
+      });
+      result = { error: text || '이미지 삭제에 실패했습니다.' };
+    }
 
     if (!response.ok) {
-      console.error('[diaryService] Delete Image Error:', result);
+      console.error('[diaryService] Delete Image Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        result,
+        url,
+        diaryId,
+        filename,
+        encodedFilename,
+      });
       const errorMessage = result?.message || result?.error?.message || result?.error || '이미지 삭제에 실패했습니다.';
       throw new Error(errorMessage);
     }

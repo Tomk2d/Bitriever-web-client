@@ -72,6 +72,8 @@ export default function IndividualTradingHistoryPanel({
   const textareaRef = useRef<HTMLDivElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const deletingByButtonRef = useRef<Set<string>>(new Set()); // x 버튼으로 삭제 중인 마커 추적
+  const isRenderingRef = useRef<boolean>(false); // renderContentToEditor 실행 중인지 추적
 
   // tradingMind를 한국어로 변환
   const getTradingMindText = (mindCode: number | null | undefined): string => {
@@ -199,6 +201,84 @@ export default function IndividualTradingHistoryPanel({
     };
   }, []);
 
+  // 키보드로 이미지 마커 삭제 감지 (MutationObserver 사용)
+  useEffect(() => {
+    const editor = textareaRef.current;
+    if (!editor || !isEditMode) return;
+
+    // 삭제 전 이미지 마커 목록 저장
+    let previousMarkers: Set<string> = new Set();
+    const updateMarkerList = () => {
+      const markers = editor.querySelectorAll('.image-marker');
+      previousMarkers = new Set();
+      markers.forEach((marker) => {
+        const filename = marker.getAttribute('data-filename');
+        if (filename) {
+          previousMarkers.add(filename);
+        }
+      });
+    };
+    updateMarkerList();
+
+    // MutationObserver로 DOM 변경 감지
+    const observer = new MutationObserver((mutations) => {
+      // renderContentToEditor 실행 중이면 무시
+      if (isRenderingRef.current) {
+        return;
+      }
+
+      mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement;
+            // 삭제된 노드가 이미지 마커인지 확인
+            if (element.classList?.contains('image-marker')) {
+              const filename = element.getAttribute('data-filename');
+              console.log('[MutationObserver] 이미지 마커 삭제 감지:', { filename, diaryId: diary?.id, isRendering: isRenderingRef.current });
+              if (filename && previousMarkers.has(filename)) {
+                // x 버튼 클릭으로 삭제된 경우가 아닌지 확인
+                if (!deletingByButtonRef.current.has(filename)) {
+                  // 키보드로 삭제된 경우
+                  setTimeout(() => {
+                    // renderContentToEditor 실행 중이면 무시
+                    if (isRenderingRef.current) {
+                      console.log('[MutationObserver] renderContentToEditor 실행 중이므로 삭제 요청 생략');
+                      return;
+                    }
+                    // 현재 마커가 실제로 제거되었는지 확인
+                    const currentMarkers = editor.querySelectorAll('.image-marker');
+                    const stillExists = Array.from(currentMarkers).some(
+                      (marker) => marker.getAttribute('data-filename') === filename
+                    );
+                    if (!stillExists && diary?.id) {
+                      console.log('[MutationObserver] 키보드 삭제 확인, 서버에 삭제 요청:', { filename, diaryId: diary.id });
+                      handleImageMarkerDelete(filename, false);
+                    }
+                  }, 100);
+                } else {
+                  console.log('[MutationObserver] x 버튼 클릭으로 삭제된 것으로 판단, 서버 요청 생략');
+                }
+              } else {
+                console.warn('[MutationObserver] filename이 없거나 이전 마커 목록에 없음:', { filename, hasFilename: !!filename, inPreviousMarkers: filename ? previousMarkers.has(filename) : false });
+              }
+            }
+          }
+        });
+      });
+      // 마커 목록 업데이트
+      updateMarkerList();
+    });
+
+    observer.observe(editor, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isEditMode, diary?.id]);
+
   // 작성하기 모드로 전환
   const handleEditClick = () => {
     // 현재 diary의 content를 텍스트로 변환해서 폼에 설정
@@ -239,8 +319,14 @@ export default function IndividualTradingHistoryPanel({
     const editor = textareaRef.current;
     if (!editor) return;
 
+    // 이미지 마커 삽입 중 플래그 설정 (MutationObserver 무시)
+    isRenderingRef.current = true;
+
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+    if (!selection || selection.rangeCount === 0) {
+      isRenderingRef.current = false;
+      return;
+    }
 
     const range = selection.getRangeAt(0);
     
@@ -260,7 +346,7 @@ export default function IndividualTradingHistoryPanel({
       deleteButton.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        handleImageMarkerDelete(filename);
+        handleImageMarkerDelete(filename, true); // x 버튼 클릭임을 표시
       });
     }
     
@@ -275,6 +361,11 @@ export default function IndividualTradingHistoryPanel({
     
     // formContent 업데이트
     updateFormContentFromEditor();
+
+    // 플래그 해제 (약간의 지연을 두어 MutationObserver가 안정적으로 동작하도록)
+    setTimeout(() => {
+      isRenderingRef.current = false;
+    }, 200);
   };
 
   // contentEditable의 내용을 formContent에 반영하고 결과 반환
@@ -283,50 +374,79 @@ export default function IndividualTradingHistoryPanel({
     if (!editor) return formContent || '';
 
     // contentEditable의 HTML을 파싱해서 이미지 마커를 찾고 텍스트로 변환
-    // 이미지 마커 요소 내부의 텍스트는 무시하고 마커만 변환
-    const walker = document.createTreeWalker(
-      editor,
-      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-      {
-        acceptNode: (node) => {
-          // 이미지 마커 요소 내부의 노드는 제외 (이미지 마커 자체는 포함)
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as HTMLElement;
-            if (element.classList.contains('image-marker')) {
-              return NodeFilter.FILTER_ACCEPT;
-            }
-            // 이미지 마커의 자식 요소는 제외
-            if (element.closest('.image-marker') && !element.classList.contains('image-marker')) {
-              return NodeFilter.FILTER_REJECT;
-            }
-          }
-          // 이미지 마커 내부의 텍스트 노드는 제외
-          if (node.nodeType === Node.TEXT_NODE) {
-            const parent = node.parentElement;
-            if (parent && parent.classList.contains('image-marker')) {
-              return NodeFilter.FILTER_REJECT;
-            }
-          }
-          return NodeFilter.FILTER_ACCEPT;
-        }
-      }
-    );
-
-    let result = '';
-    let node: Node | null;
-
-    while ((node = walker.nextNode())) {
+    // 줄바꿈을 정확히 보존하기 위해 HTML 구조를 직접 파싱
+    const processNode = (node: Node): string => {
+      let result = '';
+      
       if (node.nodeType === Node.TEXT_NODE) {
-        result += node.textContent || '';
+        // 텍스트 노드는 그대로 추가
+        return node.textContent || '';
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as HTMLElement;
+        
+        // 이미지 마커 처리
         if (element.classList.contains('image-marker')) {
           const filename = element.getAttribute('data-filename');
           if (filename) {
-            result += `[image]{${filename}}`;
+            return `[image]{${filename}}`;
           }
+          return '';
+        }
+        
+        // 이미지 마커 내부 요소는 무시
+        if (element.closest('.image-marker') && !element.classList.contains('image-marker')) {
+          return '';
+        }
+        
+        const tagName = element.tagName.toLowerCase();
+        
+        // 줄바꿈을 생성하는 요소들 처리
+        if (tagName === 'br') {
+          return '\n';
+        } else if (tagName === 'div' || tagName === 'p') {
+          // div나 p 태그는 줄바꿈으로 변환
+          // 단, 이미지 마커만 포함된 경우는 줄바꿈을 추가하지 않음
+          let content = '';
+          for (let i = 0; i < element.childNodes.length; i++) {
+            content += processNode(element.childNodes[i]);
+          }
+          
+          // 이미지 마커가 포함된 div/p인지 확인
+          const hasImageMarker = element.querySelector('.image-marker') !== null;
+          
+          // 이미지 마커가 포함된 경우 줄바꿈 추가하지 않음 (자식 노드의 내용만 반환)
+          // contentEditable이 이미지 마커를 자동으로 div/p로 감싸는 경우를 방지
+          if (hasImageMarker) {
+            return content;
+          }
+          
+          // div/p 앞에 줄바꿈 추가 (이전 형제가 있는 경우)
+          if (element.previousSibling) {
+            result = '\n';
+          }
+          result += content;
+          // div/p 뒤에 줄바꿈 추가 (다음 형제가 있는 경우)
+          if (element.nextSibling) {
+            result += '\n';
+          }
+          
+          return result;
+        } else {
+          // 기타 요소는 자식 노드만 처리
+          for (let i = 0; i < element.childNodes.length; i++) {
+            result += processNode(element.childNodes[i]);
+          }
+          return result;
         }
       }
+      
+      return '';
+    };
+    
+    // editor의 모든 자식 노드를 처리
+    let result = '';
+    for (let i = 0; i < editor.childNodes.length; i++) {
+      result += processNode(editor.childNodes[i]);
     }
 
     setFormContent(result);
@@ -334,15 +454,30 @@ export default function IndividualTradingHistoryPanel({
   };
 
   // 이미지 마커 삭제 핸들러
-  const handleImageMarkerDelete = async (filename: string) => {
+  const handleImageMarkerDelete = async (filename: string, isButtonClick: boolean = false) => {
     if (!diary?.id) {
       alert('일지가 없어 이미지를 삭제할 수 없습니다.');
       return;
     }
 
+    console.log('[handleImageMarkerDelete] 삭제 요청:', { filename, diaryId: diary.id, isButtonClick });
+
+    // filename 유효성 검사
+    if (!filename || filename.trim().length === 0) {
+      console.error('[handleImageMarkerDelete] filename이 비어있음');
+      alert('이미지 파일명을 찾을 수 없습니다.');
+      return;
+    }
+
+    // x 버튼 클릭인 경우 플래그 설정
+    if (isButtonClick) {
+      deletingByButtonRef.current.add(filename);
+    }
+
     setIsDeleting(true);
     try {
       // 서버에 삭제 요청
+      console.log('[handleImageMarkerDelete] 서버에 삭제 요청 전송:', { diaryId: diary.id, filename });
       const updatedDiary = await diaryService.deleteImage(diary.id, filename);
       
       // 업데이트된 diary의 content를 텍스트로 변환
@@ -366,6 +501,12 @@ export default function IndividualTradingHistoryPanel({
       alert('이미지 삭제에 실패했습니다.');
     } finally {
       setIsDeleting(false);
+      // 플래그 제거
+      if (isButtonClick) {
+        setTimeout(() => {
+          deletingByButtonRef.current.delete(filename);
+        }, 200);
+      }
     }
   };
 
@@ -373,6 +514,9 @@ export default function IndividualTradingHistoryPanel({
   const renderContentToEditor = (content: string) => {
     const editor = textareaRef.current;
     if (!editor) return;
+
+    // 렌더링 시작 플래그 설정
+    isRenderingRef.current = true;
 
     // content를 파싱해서 이미지 마커를 찾고 시각적으로 렌더링
     const imageMarkerRegex = /\[image\]\{([^}]+)\}/g;
@@ -438,10 +582,15 @@ export default function IndividualTradingHistoryPanel({
         e.stopPropagation();
         const filename = button.getAttribute('data-filename');
         if (filename) {
-          handleImageMarkerDelete(filename);
+          handleImageMarkerDelete(filename, true); // x 버튼 클릭임을 표시
         }
       });
     });
+
+    // 렌더링 완료 플래그 해제 (약간의 지연을 두어 MutationObserver가 안정적으로 동작하도록)
+    setTimeout(() => {
+      isRenderingRef.current = false;
+    }, 200);
   };
 
   // 이미지 업로드 핸들러
@@ -499,18 +648,32 @@ export default function IndividualTradingHistoryPanel({
 
   // Drag & Drop 핸들러
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    // 업로드/삭제 중이면 드래그 무시
+    if (isUploading || isDeleting) {
+      e.preventDefault();
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    // 업로드/삭제 중이면 무시
+    if (isUploading || isDeleting) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    // 업로드/삭제 중이면 드롭 무시
+    if (isUploading || isDeleting) {
+      e.preventDefault();
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
@@ -530,6 +693,11 @@ export default function IndividualTradingHistoryPanel({
 
   // Paste 핸들러
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    // 업로드/삭제 중이면 붙여넣기 무시
+    if (isUploading || isDeleting) {
+      e.preventDefault();
+      return;
+    }
     const items = Array.from(e.clipboardData.items);
     const imageItems = items.filter(item => item.type.startsWith('image/'));
     
@@ -549,7 +717,75 @@ export default function IndividualTradingHistoryPanel({
 
   // contentEditable 입력 핸들러
   const handleEditorInput = () => {
+    // 업로드/삭제 중이면 입력 무시
+    if (isUploading || isDeleting) {
+      return;
+    }
     updateFormContentFromEditor();
+  };
+
+  // 키보드로 이미지 마커 삭제 감지
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // 업로드/삭제 중이면 키보드 입력 무시
+    if (isUploading || isDeleting) {
+      e.preventDefault();
+      return;
+    }
+    // Delete 또는 Backspace 키를 눌렀을 때
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const editor = textareaRef.current;
+      if (!editor) return;
+
+      // 삭제될 노드 확인
+      let nodeToDelete: Node | null = null;
+      
+      if (e.key === 'Delete') {
+        // Delete 키: 커서 뒤의 노드 삭제
+        nodeToDelete = range.endContainer.nextSibling || 
+                      (range.endContainer.parentElement?.nextSibling || null);
+      } else if (e.key === 'Backspace') {
+        // Backspace 키: 커서 앞의 노드 삭제
+        if (range.startOffset === 0) {
+          // 텍스트 노드의 시작이면 이전 형제 노드 확인
+          nodeToDelete = range.startContainer.previousSibling || 
+                        (range.startContainer.parentElement?.previousSibling || null);
+        }
+      }
+
+      // 이미지 마커인지 확인
+      if (nodeToDelete) {
+        const element = nodeToDelete.nodeType === Node.ELEMENT_NODE 
+          ? nodeToDelete as HTMLElement 
+          : nodeToDelete.parentElement;
+        
+        if (element && element.classList?.contains('image-marker')) {
+          const filename = element.getAttribute('data-filename');
+          if (filename) {
+            e.preventDefault();
+            handleImageMarkerDelete(filename);
+            return;
+          }
+        }
+      }
+
+      // 선택된 영역이 이미지 마커를 포함하는지 확인
+      const commonAncestor = range.commonAncestorContainer;
+      const imageMarker = (commonAncestor.nodeType === Node.ELEMENT_NODE 
+        ? commonAncestor as HTMLElement 
+        : commonAncestor.parentElement)?.closest('.image-marker');
+      
+      if (imageMarker) {
+        const filename = imageMarker.getAttribute('data-filename');
+        if (filename) {
+          e.preventDefault();
+          handleImageMarkerDelete(filename);
+        }
+      }
+    }
   };
 
   // 저장
@@ -817,15 +1053,19 @@ export default function IndividualTradingHistoryPanel({
                 <label className="individual-trading-history-diary-edit-label">매매근거 & 고려사항</label>
                 <div
                   ref={textareaRef}
-                  className={`individual-trading-history-diary-edit-textarea ${isDragOver ? 'drag-over' : ''}`}
-                  contentEditable
+                  className={`individual-trading-history-diary-edit-textarea ${isDragOver ? 'drag-over' : ''} ${isUploading || isDeleting ? 'disabled' : ''}`}
+                  contentEditable={!isUploading && !isDeleting}
                   onInput={handleEditorInput}
+                  onKeyDown={handleKeyDown}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onPaste={handlePaste}
                   data-placeholder="매매시 고려한 점을 입력해서 매매일지를 작성해보세요.                                     (이미지를 드래그하거나 붙여넣을 수 있습니다)"
                   suppressContentEditableWarning
+                  style={{
+                    pointerEvents: isUploading || isDeleting ? 'none' : 'auto',
+                  }}
                 />
                 <div className="textarea-hint">(이미지 파일은 JPEG, PNG, GIF, WEBP 형식만 지원되며, 최대 5MB까지 업로드 가능합니다)</div>
                 {isUploading && (
