@@ -152,5 +152,78 @@ export const diaryService = {
 
     return result.data || null;
   },
+
+  uploadImage: async (diaryId: number, file: File): Promise<DiaryResponse> => {
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`/api/proxy/diaries/${diaryId}/images`, {
+      method: 'POST',
+      headers: {
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      },
+      body: formData,
+    });
+
+    // 401 에러 발생 시 로그아웃 처리
+    if (response.status === 401) {
+      console.warn('이미지 업로드: 인증 실패 (401) - 로그아웃 처리');
+      const { authService } = await import('@/features/auth/services/authService');
+      await authService.logout();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('인증에 실패했습니다.');
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('[diaryService] Upload Image Error:', result);
+      const errorMessage = result?.message || result?.error?.message || result?.error || '이미지 업로드에 실패했습니다.';
+      throw new Error(errorMessage);
+    }
+
+    return result.data || null;
+  },
+
+  getImageUrl: (diaryId: number, filename: string): string => {
+    return `/api/proxy/diaries/${diaryId}/images/${filename}`;
+  },
+
+  deleteImage: async (diaryId: number, filename: string): Promise<DiaryResponse> => {
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    const response = await fetch(`/api/proxy/diaries/${diaryId}/images/${filename}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      },
+    });
+
+    // 401 에러 발생 시 로그아웃 처리
+    if (response.status === 401) {
+      console.warn('이미지 삭제: 인증 실패 (401) - 로그아웃 처리');
+      const { authService } = await import('@/features/auth/services/authService');
+      await authService.logout();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('인증에 실패했습니다.');
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('[diaryService] Delete Image Error:', result);
+      const errorMessage = result?.message || result?.error?.message || result?.error || '이미지 삭제에 실패했습니다.';
+      throw new Error(errorMessage);
+    }
+
+    return result.data || null;
+  },
 };
 
