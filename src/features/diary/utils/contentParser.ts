@@ -50,11 +50,12 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
     // 마커 이전의 텍스트가 있으면 text 블록으로 추가 (그대로 저장)
     if (match.index > lastIndex) {
       const textContent = text.substring(lastIndex, match.index);
-      // 사용자가 입력한 그대로 저장 (앞뒤 공백만 제거)
+      // 앞뒤 공백(스페이스, 탭)만 제거하고 줄바꿈은 그대로 유지
       const trimmedContent = textContent.replace(/^[ \t]+|[ \t]+$/gm, '');
-      // 공백만 있어도 저장 (내용이 있거나 줄바꿈이 있거나 공백만 있어도 저장)
-      if (trimmedContent.length > 0 || textContent.length > 0) {
-        blocks.push({ type: 'text', content: trimmedContent || '' });
+      // 내용이 있거나 줄바꿈이 있으면 저장 (공백 줄도 유지)
+      if (trimmedContent.length > 0 || textContent.includes('\n')) {
+        // trimmedContent가 비어있어도 원본에 줄바꿈이 있으면 원본 사용
+        blocks.push({ type: 'text', content: trimmedContent.length > 0 ? trimmedContent : textContent });
       }
     }
     
@@ -69,19 +70,23 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
   // 마지막 마커 이후의 텍스트가 있으면 text 블록으로 추가 (그대로 저장)
   if (lastIndex < text.length) {
     const textContent = text.substring(lastIndex);
-    // 사용자가 입력한 그대로 저장 (앞뒤 공백만 제거)
+    // 앞뒤 공백(스페이스, 탭)만 제거하고 줄바꿈은 그대로 유지
     const trimmedContent = textContent.replace(/^[ \t]+|[ \t]+$/gm, '');
-    // 공백만 있어도 저장 (내용이 있거나 줄바꿈이 있거나 공백만 있어도 저장)
-    if (trimmedContent.length > 0 || textContent.length > 0) {
-      blocks.push({ type: 'text', content: trimmedContent || '' });
+    // 내용이 있거나 줄바꿈이 있으면 저장 (공백 줄도 유지)
+    if (trimmedContent.length > 0 || textContent.includes('\n')) {
+      // trimmedContent가 비어있어도 원본에 줄바꿈이 있으면 원본 사용
+      blocks.push({ type: 'text', content: trimmedContent.length > 0 ? trimmedContent : textContent });
     }
   }
   
   // 블록이 없으면 전체 텍스트를 하나의 text 블록으로 (공백만 있어도 저장)
   if (blocks.length === 0 && text.length > 0) {
+    // 앞뒤 공백(스페이스, 탭)만 제거하고 줄바꿈은 그대로 유지
     const trimmedText = text.replace(/^[ \t]+|[ \t]+$/gm, '');
-    // 공백만 있어도 저장
-    blocks.push({ type: 'text', content: trimmedText || text });
+    // 내용이 있거나 줄바꿈이 있으면 저장
+    if (trimmedText.length > 0 || text.includes('\n')) {
+      blocks.push({ type: 'text', content: trimmedText.length > 0 ? trimmedText : text });
+    }
   }
   
   return { blocks };

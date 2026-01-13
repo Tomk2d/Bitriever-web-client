@@ -574,13 +574,19 @@
   pointer-events: none;
 }
 
+.individual-trading-history-diary-edit-textarea.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  user-select: none;
+}
+
 /* 이미지 마커 스타일 */
 .image-marker {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  margin: 0 0 12px 0;
+  margin: 0 0 0 0;
   background-color: rgba(2, 162, 98, 0.1);
   border: 1px solid rgba(2, 162, 98, 0.3);
   border-radius: 4px;
