@@ -240,9 +240,9 @@ export default function IndividualTradingHistoryPanel({
                 if (!deletingByButtonRef.current.has(filename)) {
                   // 키보드로 삭제된 경우
                   setTimeout(() => {
-                    // renderContentToEditor 실행 중이면 무시
-                    if (isRenderingRef.current) {
-                      console.log('[MutationObserver] renderContentToEditor 실행 중이므로 삭제 요청 생략');
+                    // renderContentToEditor 실행 중이거나 저장 중이면 무시
+                    if (isRenderingRef.current || isSaving) {
+                      console.log('[MutationObserver] renderContentToEditor 실행 중이거나 저장 중이므로 삭제 요청 생략');
                       return;
                     }
                     // 현재 마커가 실제로 제거되었는지 확인
@@ -277,7 +277,7 @@ export default function IndividualTradingHistoryPanel({
     return () => {
       observer.disconnect();
     };
-  }, [isEditMode, diary?.id]);
+  }, [isEditMode, diary?.id, isSaving]);
 
   // 작성하기 모드로 전환
   const handleEditClick = () => {
@@ -588,9 +588,10 @@ export default function IndividualTradingHistoryPanel({
     });
 
     // 렌더링 완료 플래그 해제 (약간의 지연을 두어 MutationObserver가 안정적으로 동작하도록)
+    // 지연 시간을 늘려서 MutationObserver가 DOM 변경을 잘못 감지하지 않도록 함
     setTimeout(() => {
       isRenderingRef.current = false;
-    }, 200);
+    }, 500);
   };
 
   // 이미지 업로드 핸들러
@@ -617,7 +618,7 @@ export default function IndividualTradingHistoryPanel({
     try {
       const updatedDiary = await diaryService.uploadImage(diary.id, file);
       
-      // 업데이트된 diary의 content에서 새로 추가된 이미지 경로 찾기
+      // 서버 응답에서 새로 추가된 이미지의 filename 추출
       if (updatedDiary.content) {
         try {
           const parsed: ParsedDiaryContent = JSON.parse(updatedDiary.content);
@@ -629,14 +630,21 @@ export default function IndividualTradingHistoryPanel({
             if (block.type === 'image' && block.path) {
               // 경로에서 filename 추출: @diaryImage/{diaryId}/{filename}
               const filename = block.path.split('/').pop() || '';
+              
+              // 새 마커만 추가 (기존 내용은 유지)
               insertImageMarker(filename);
+              
+              // diary 상태만 업데이트 (formContent는 insertImageMarker에서 updateFormContentFromEditor 호출로 업데이트됨)
               setDiary(updatedDiary);
               break;
             }
           }
         } catch (e) {
           console.error('Content 파싱 실패:', e);
+          setDiary(updatedDiary);
         }
+      } else {
+        setDiary(updatedDiary);
       }
     } catch (error) {
       console.error('[IndividualTradingHistoryPanel] 이미지 업로드 실패:', error);
@@ -793,6 +801,8 @@ export default function IndividualTradingHistoryPanel({
     if (!tradingHistory?.id) return;
 
     setIsSaving(true);
+    // 저장 중에는 MutationObserver가 동작하지 않도록 플래그 설정
+    isRenderingRef.current = true;
     try {
       // 저장 전에 contentEditable의 최신 내용을 가져와서 사용
       const currentContent = updateFormContentFromEditor();
@@ -822,8 +832,13 @@ export default function IndividualTradingHistoryPanel({
         savedDiary = await diaryService.create(requestData);
       }
 
-      // 편집 모드를 먼저 닫아서 렌더링 모드로 전환
+      // 편집 모드를 먼저 닫아서 MutationObserver를 disconnect (렌더링 모드로 전환)
       setIsEditMode(false);
+      
+      // contentEditable 즉시 초기화 (편집 모드가 닫힌 후, observer가 disconnect된 후)
+      if (textareaRef.current) {
+        textareaRef.current.innerHTML = '';
+      }
       
       // 저장된 diary로 상태 업데이트 (렌더링 모드에서 올바른 데이터 표시)
       setDiary(savedDiary);
@@ -837,15 +852,15 @@ export default function IndividualTradingHistoryPanel({
       }
       setFormTradingMind(savedDiary.tradingMind ?? null);
       
-      // contentEditable 초기화 (편집 모드가 닫힌 후)
+      // 저장 완료 후 플래그 해제
       setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.innerHTML = '';
-        }
-      }, 0);
+        isRenderingRef.current = false;
+      }, 100);
     } catch (error) {
       console.error('[IndividualTradingHistoryPanel] 매매일지 저장 실패:', error);
       alert('매매일지 저장에 실패했습니다.');
+      // 에러 발생 시에도 플래그 해제
+      isRenderingRef.current = false;
     } finally {
       setIsSaving(false);
     }
