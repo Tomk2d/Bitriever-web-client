@@ -135,7 +135,7 @@ export default function Navigation() {
             {/* 로고 섹션 */}
             <div className="navigation-logo">
               <img 
-                src="/assets/images/logos/window.svg" 
+                src="/data/main-logo-ex.png" 
                 alt="Bitriever Logo" 
                 className="logo-image"
               />

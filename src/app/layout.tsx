@@ -22,6 +22,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Bitriever",
   description: "암호화폐 투자 지원 플랫폼",
+  icons: {
+    icon: '/data/main-logo-ex.png',
+    shortcut: '/data/main-logo-ex.png',
+    apple: '/data/main-logo-ex.png',
+  },
 };
 
 export default async function RootLayout({
