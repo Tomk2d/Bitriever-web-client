@@ -15,9 +15,11 @@ import {
   formatNumber,
 } from '@/features/asset/utils/assetCalculations';
 import WalletAssetList from './WalletAssetList';
+import { NotificationList } from '@/features/notification/components/NotificationList';
+import { useUnreadNotificationCount } from '@/features/notification/hooks/useNotifications';
 import './RightSidebar.css';
 
-type MenuType = 'wallet' | 'watchlist' | 'chatbot' | 'faq' | 'settings' | null;
+type MenuType = 'wallet' | 'watchlist' | 'chatbot' | 'notification' | 'faq' | 'settings' | null;
 
 type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
 
@@ -39,6 +41,9 @@ export default function RightSidebar() {
   // 자산 데이터 가져오기 (wallet 메뉴 선택 시에만 활성화)
   const shouldFetchAssets = selectedMenu === 'wallet' && isPanelOpen;
   const { data: assets = [], isLoading: isAssetsLoading, refetch } = useAssets(shouldFetchAssets);
+  
+  // 읽지 않은 알림 개수
+  const { data: unreadCount } = useUnreadNotificationCount();
   
   // 거래소 목록 (code 순으로 정렬)
   const exchangeOptions = useMemo(() => {
@@ -142,6 +147,18 @@ export default function RightSidebar() {
           {/* 하단 메뉴 */}
           <div className="sidebar-section sidebar-bottom">
             <button
+              className={`sidebar-menu-item ${selectedMenu === 'notification' && isPanelOpen ? 'active' : ''}`}
+              onClick={() => handleMenuClick('notification')}
+            >
+              <span className="sidebar-icon">🔔</span>
+              <span className="sidebar-text">알림</span>
+              {unreadCount && unreadCount.unreadCount > 0 && (
+                <span className="notification-badge-sidebar">
+                  {unreadCount.unreadCount > 99 ? '99+' : unreadCount.unreadCount}
+                </span>
+              )}
+            </button>
+            <button
               className={`sidebar-menu-item ${selectedMenu === 'faq' && isPanelOpen ? 'active' : ''}`}
               onClick={() => handleMenuClick('faq')}
             >
@@ -168,6 +185,7 @@ export default function RightSidebar() {
                 {selectedMenu === 'wallet' && '내 자산'}
                 {selectedMenu === 'watchlist' && '관심'}
                 {selectedMenu === 'chatbot' && '자격증'}
+                {selectedMenu === 'notification' && '알림'}
                 {selectedMenu === 'faq' && 'FAQ'}
                 {selectedMenu === 'settings' && '설정'}
               </h3>
@@ -387,6 +405,7 @@ export default function RightSidebar() {
             )}
             {selectedMenu === 'watchlist' && <div>관심 컨텐츠</div>}
             {selectedMenu === 'chatbot' && <div>자격증 컨텐츠</div>}
+            {selectedMenu === 'notification' && <NotificationList />}
             {selectedMenu === 'faq' && <div>FAQ 컨텐츠</div>}
             {selectedMenu === 'settings' && <div>설정 컨텐츠</div>}
           </div>
