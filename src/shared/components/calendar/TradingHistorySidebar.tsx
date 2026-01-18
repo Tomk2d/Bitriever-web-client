@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
 import { formatCurrency, formatNumber, formatQuantity, truncateIfLong, truncateNumberWithUnit } from '@/features/asset/utils/assetCalculations';
-import IndividualTradingHistoryPanel from './IndividualTradingHistoryPanel';
+import IndividualTradingHistoryPanel, { type IndividualTradingHistoryPanelRef } from './IndividualTradingHistoryPanel';
 import './TradingHistorySidebar.css';
 
 type SortOption = 'latest' | 'oldest' | 'amount' | 'name' | 'profitHigh' | 'profitLow';
@@ -22,6 +22,7 @@ export default function TradingHistorySidebar({
   const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('latest');
   const [selectedTradingHistory, setSelectedTradingHistory] = useState<TradingHistoryResponse | null>(null);
+  const panelRef = useRef<IndividualTradingHistoryPanelRef>(null);
 
   // selectedDate가 변경되면 선택된 거래 내역 초기화
   useEffect(() => {
@@ -240,11 +241,32 @@ export default function TradingHistorySidebar({
                 <div 
                   key={history.id} 
                   className={`trading-history-item ${isSelected ? 'selected' : ''}`}
-                  onClick={() => {
+                  onClick={async () => {
                     if (isSelected) {
                       setSelectedTradingHistory(null);
                     } else {
-                      setSelectedTradingHistory(history);
+                      // 다른 매매일지 선택 전 변경사항 확인
+                      if (panelRef.current?.hasUnsavedChanges()) {
+                        const shouldSave = window.confirm('저장하지 않은 변경사항이 있습니다. 저장하시겠습니까?');
+                        if (shouldSave) {
+                          try {
+                            await panelRef.current.handleSave();
+                            setSelectedTradingHistory(history);
+                          } catch (error) {
+                            const shouldContinue = window.confirm('저장에 실패했습니다. 그래도 계속하시겠습니까?');
+                            if (shouldContinue) {
+                              setSelectedTradingHistory(history);
+                            }
+                          }
+                        } else {
+                          const shouldDiscard = window.confirm('변경사항을 저장하지 않고 계속하시겠습니까?');
+                          if (shouldDiscard) {
+                            setSelectedTradingHistory(history);
+                          }
+                        }
+                      } else {
+                        setSelectedTradingHistory(history);
+                      }
                     }
                   }}
                 >
@@ -309,6 +331,8 @@ export default function TradingHistorySidebar({
       </div>
       {selectedTradingHistory && (
         <IndividualTradingHistoryPanel
+          ref={panelRef}
+          key={selectedTradingHistory.id}
           tradingHistory={selectedTradingHistory}
           onClose={() => setSelectedTradingHistory(null)}
         />

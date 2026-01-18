@@ -326,7 +326,7 @@
 
 .individual-trading-history-diary-label {
   font-family: 'Pretendard', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--foreground);
   margin: 0;
@@ -345,7 +345,7 @@
 .individual-trading-history-diary-content {
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-size: 12.5px;
+  font-size: 13.5px;
   color: rgba(0, 19, 43, 0.85);
 }
 
@@ -525,9 +525,21 @@
 
 .individual-trading-history-diary-edit-label {
   font-family: 'Pretendard', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--foreground);
+}
+
+.diary-edit-label-toolbar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.diary-edit-label-toolbar-wrapper .individual-trading-history-diary-edit-label {
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .individual-trading-history-diary-edit-select {
@@ -559,8 +571,9 @@
   font-size: 14px;
   color: var(--foreground);
   background-color: var(--background);
-  resize: vertical;
-  min-height: 500px;
+  resize: none;
+  height: 400px;
+  overflow-y: auto;
   transition: border-color 0.2s ease;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -747,4 +760,79 @@
 
 .dark .diary-image {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 포맷 툴바 스타일 */
+.diary-edit-toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 2px 8px;
+  margin-bottom: 0px;
+  background-color: var(--sidebar-bg, #fafbfc);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.diary-edit-toolbar-button {
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--foreground);
+  transition: all 0.2s;
+  min-width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diary-edit-toolbar-button:hover:not(:disabled) {
+  background-color: #f5f5f5;
+  border-color: var(--main-color, #02a262);
+}
+
+.diary-edit-toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.diary-edit-toolbar-button strong {
+  font-weight: 700;
+}
+
+.diary-edit-toolbar-button u {
+  text-decoration: underline;
+}
+
+.dark .diary-edit-toolbar {
+  background-color: var(--sidebar-bg, #17171c);
+}
+
+.dark .diary-edit-toolbar-button {
+  background-color: var(--background, #232328);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.dark .diary-edit-toolbar-button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--main-color, #02a262);
+}
+
+/* Markdown 렌더링 스타일 */
+.diary-markdown-content {
+  line-height: 1.6;
+  font-size: 13.5px;
+}
+
+.diary-markdown-content strong {
+  font-weight: 700;
+}
+
+.diary-markdown-content u {
+  text-decoration: underline;
 }
