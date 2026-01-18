@@ -345,7 +345,7 @@
 .individual-trading-history-diary-content {
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-size: 13.5px;
+  font-size: 13px;
   color: rgba(0, 19, 43, 0.85);
 }
 
@@ -826,7 +826,7 @@
 /* Markdown 렌더링 스타일 */
 .diary-markdown-content {
   line-height: 1.6;
-  font-size: 13.5px;
+  font-size: 13px;
 }
 
 .diary-markdown-content strong {

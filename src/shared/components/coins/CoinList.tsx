@@ -113,7 +113,7 @@ export default function CoinList() {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // React Query를 사용한 코인 데이터 캐싱
-  const { data: coins = [], isLoading: loading, error } = useCoins(selectedCurrency);
+  const { data: coins = [], isLoading: loading, error, isFetching } = useCoins(selectedCurrency);
   
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector(selectAllPrices);
@@ -242,9 +242,15 @@ export default function CoinList() {
 
   // 정렬된 코인 목록
   const sortedCoins = useMemo(() => {
-    if (!sortField || !sortOrder) return filteredCoins;
-
+    // 항상 정렬을 적용하여 서버/클라이언트 간 일관성 유지
+    // 기본 정렬: id 순서 (서버에서 가져온 순서와 일치하도록)
     const sorted = [...filteredCoins].sort((a, b) => {
+      // 기본 정렬: id 순서 (안정적인 정렬을 위해)
+      if (!sortField || !sortOrder) {
+        return a.id - b.id;
+      }
+
+      // 사용자가 선택한 정렬 필드에 따라 정렬
       let aValue: string | number = 0;
       let bValue: string | number = 0;
 
@@ -278,6 +284,9 @@ export default function CoinList() {
           aValue = aVolumeData?.accTradePrice24h || 0;
           bValue = bVolumeData?.accTradePrice24h || 0;
           break;
+        default:
+          // 기본 정렬: id 순서
+          return a.id - b.id;
       }
 
       if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -341,7 +350,8 @@ export default function CoinList() {
   }, [marketIndicators.length]);
 
   const coinListContent = useMemo(() => {
-    if (loading) {
+    // 데이터가 없고 로딩 중일 때만 로딩 표시 (서버 prefetch 데이터가 있으면 로딩 표시 안 함)
+    if (loading && coins.length === 0) {
       return <div className="coin-list-loading">로딩 중...</div>;
     }
 

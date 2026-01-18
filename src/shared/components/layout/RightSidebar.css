@@ -59,6 +59,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+  position: relative;
 }
 
 .sidebar-icon {
@@ -89,6 +90,23 @@
 
 .sidebar-menu-item.active:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.notification-badge-sidebar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--main-color, #02a262);
+  color: white;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 12px;
+  font-family: 'Pretendard', sans-serif;
+  z-index: 1;
 }
 
 /* 왼쪽 패널 */
