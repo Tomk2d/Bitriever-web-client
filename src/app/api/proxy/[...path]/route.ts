@@ -36,8 +36,8 @@ export async function GET(
 
     const contentType = response.headers.get('content-type');
     
-    // 이미지 조회인 경우 (diaries/{id}/images/{filename})
-    if (path.match(/^diaries\/\d+\/images\/[^/]+$/)) {
+    // 이미지 조회인 경우 (diaries/{id}/images/{filename} 또는 communities/{id}/images/{filename})
+    if (path.match(/^(diaries|communities)\/\d+\/images\/[^/]+$/)) {
       if (!response.ok) {
         let errorText = '';
         try {

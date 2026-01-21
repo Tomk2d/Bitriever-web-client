@@ -80,6 +80,7 @@
   --sidebar-bg: #fafbfc; /* 라이트 모드 사이드바 배경 - 더 밝게 조정 RGB(250, 251, 252) */
   --price-up: #dd3c44; /* 상승 색상 */
   --price-down: #1375ec; /* 하락 색상 */
+  --text-inactive: rgba(121, 131, 140, 0.75); /* 비활성화 텍스트 색상 */
 }
 
 @theme inline {

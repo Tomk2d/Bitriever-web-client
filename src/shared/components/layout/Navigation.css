@@ -82,7 +82,7 @@
   font-weight: 700;
   font-size: 16px;
   line-height: 19.5px;
-  color: #79838c;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
   text-decoration: none;
   transition: color 0.2s;
   white-space: nowrap;
@@ -95,6 +95,7 @@
 
 .nav-item.active {
   color: #333d4b;
+  font-weight: 800;
 }
 
 /* 오른쪽 섹션 */

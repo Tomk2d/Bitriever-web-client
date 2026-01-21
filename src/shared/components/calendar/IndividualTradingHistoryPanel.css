@@ -746,6 +746,41 @@
   font-style: italic;
 }
 
+/* 매매일지 업로드/저장 로딩 오버레이 */
+.diary-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.diary-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 3px solid rgba(2, 162, 98, 0.15);
+  border-top-color: var(--main-color, #02a262);
+  animation: diary-spinner 0.8s linear infinite;
+  margin-bottom: 8px;
+}
+
+.diary-loading-text {
+  font-size: 13px;
+  color: rgba(0, 19, 43, 0.75);
+  font-weight: 500;
+}
+
+@keyframes diary-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .diary-image-container {
   margin: 0;
 }

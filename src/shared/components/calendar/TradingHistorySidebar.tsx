@@ -264,8 +264,8 @@ export default function TradingHistorySidebar({
                             setSelectedTradingHistory(history);
                           }
                         }
-                      } else {
-                        setSelectedTradingHistory(history);
+                    } else {
+                      setSelectedTradingHistory(history);
                       }
                     }
                   }}
