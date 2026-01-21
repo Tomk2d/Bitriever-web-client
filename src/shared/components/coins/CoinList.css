@@ -252,8 +252,7 @@
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 15px;
   font-weight: 620;
-  color: var(--foreground);
-  opacity: 0.6;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
   cursor: pointer;
   border-radius: 0;
   transition: all 0.2s ease;
@@ -263,7 +262,7 @@
 }
 
 .coin-list-currency-tab:hover {
-  opacity: 0.8;
+  color: var(--foreground);
 }
 
 .coin-list-currency-tab.active {

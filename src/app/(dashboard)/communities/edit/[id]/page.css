@@ -1,0 +1,235 @@
+.community-edit {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.community-edit-loading,
+.community-edit-error {
+  text-align: center;
+  padding: 40px;
+  color: rgba(0, 19, 43, 0.6);
+  font-family: 'Pretendard', sans-serif;
+}
+
+.edit-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 24px;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.form-select,
+.form-input {
+  padding: 12px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  color: var(--foreground);
+  background-color: var(--background);
+  transition: border-color 0.2s ease;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+}
+
+.form-editor {
+  min-height: 400px;
+  padding: 18px 18px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top: none;
+  margin-top: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  color: var(--foreground);
+  background-color: var(--background);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  outline: none;
+}
+
+.form-editor:focus,
+.form-editor:hover {
+  outline: none;
+  border-color: rgba(0, 19, 43, 0.15);
+}
+
+.form-editor:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(0, 19, 43, 0.5);
+  pointer-events: none;
+}
+
+/* 커뮤니티 수정 페이지 이미지 블록 (작성과 동일 스타일) */
+.write-image-block {
+  display: inline-block;
+  position: relative;
+  margin: 8px 0;
+  max-width: 100%;
+}
+
+.write-image {
+  border-radius: 6px;
+  display: block;
+  /* 원본 크기 유지 (너무 크면 인라인 스타일로 제한) */
+}
+
+.write-image-remove-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hashtags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.hashtag-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: rgba(2, 162, 98, 0.1);
+  color: var(--main-color, #02a262);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.hashtag-remove {
+  background: none;
+  border: none;
+  color: var(--main-color, #02a262);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.form-button {
+  padding: 12px 24px;
+  border: 1px solid rgba(0, 19, 43, 0.2);
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-button.cancel {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.form-button.cancel:hover {
+  border-color: rgba(0, 19, 43, 0.3);
+}
+
+.form-button.submit {
+  background-color: var(--main-color, #02a262);
+  color: white;
+  border-color: var(--main-color, #02a262);
+}
+
+.form-button.submit:hover:not(:disabled) {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.form-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 다크 모드 스타일 */
+.dark .community-edit-loading,
+.dark .community-edit-error {
+  color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .form-select,
+.dark .form-input {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-editor {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-editor:focus {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-editor:hover {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .form-editor:empty:before {
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .write-image-remove-button {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dark .hashtag-tag {
+  background-color: rgba(2, 162, 98, 0.2);
+}
+
+.dark .form-button {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .form-button.cancel:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.05);
+}

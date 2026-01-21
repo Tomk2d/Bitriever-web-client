@@ -1,0 +1,392 @@
+.community-detail {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.community-detail-main {
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 19, 43, 0.1);
+  margin-bottom: 32px;
+}
+
+.community-detail-back-button {
+  margin-bottom: 40px;
+  padding: 0;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  background: var(--background);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(121, 131, 140, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.community-detail-back-button:hover {
+  border-color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  background-color: rgba(121, 131, 140, 0.1);
+  color: var(--foreground);
+}
+
+.community-detail-back-button:hover {
+  color: var(--foreground);
+}
+
+.community-detail-loading,
+.community-detail-error {
+  text-align: center;
+  padding: 40px;
+  color: rgba(0, 19, 43, 0.6);
+  font-family: 'Pretendard', sans-serif;
+}
+
+.community-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: rgba(0, 19, 43, 0.6);
+}
+
+.community-card-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.community-profile-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--main-color, #02a262) 0%, #028a52 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-initial {
+  color: white;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.community-user-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.community-author {
+  font-weight: 600;
+  color: var(--foreground);
+  font-size: 17px;
+}
+
+.community-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+}
+
+.community-category {
+  padding: 2px 8px;
+  background-color: transparent;
+  color: rgba(0, 19, 43, 0.5);
+  border: 1px solid rgba(0, 19, 43, 0.2);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.community-detail-actions {
+  position: relative;
+}
+
+.community-detail-menu-button {
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  cursor: pointer;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.community-detail-menu-button:hover {
+  color: var(--foreground);
+}
+
+.community-detail-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--background);
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 100px;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(121, 131, 140, 0.1);
+}
+
+.dropdown-item.edit {
+  color: var(--foreground);
+}
+
+.dropdown-item.delete {
+  color: #dc3545;
+}
+
+.dropdown-item.delete:hover {
+  background-color: rgba(121, 131, 140, 0.1);
+}
+
+.dropdown-item.report {
+  color: #dc3545;
+}
+
+.dropdown-item.report:hover {
+  background-color: rgba(121, 131, 140, 0.1);
+}
+
+.community-detail-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 23.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-top: 20px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.community-detail-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.hashtag {
+  padding: 4px 8px;
+  background-color: rgba(2, 162, 98, 0.1);
+  color: var(--main-color, #02a262);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.community-detail-content {
+  margin-bottom: 24px;
+  padding: 0;
+  background-color: transparent;
+}
+
+.content-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.content-text {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--foreground);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-bottom: 0;
+}
+
+.content-image {
+  border-radius: 8px;
+  margin: 12px 0 12px 0;
+  /* 원본 크기 유지 (너무 크면 인라인 스타일로 제한) */
+}
+
+.community-detail-reactions {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 0px;
+}
+
+.community-detail-reactions .reaction-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.community-detail-reactions .reaction-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.community-detail-reactions .reaction-icon {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.community-detail-reactions .reaction-count {
+  font-size: 11px;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  transition: color 0.2s ease;
+}
+
+.community-detail-reactions .reaction-button.reaction-up.active .reaction-icon,
+.community-detail-reactions .reaction-button.reaction-up.active .reaction-count {
+  color: var(--price-up, #dd3c44) !important;
+}
+
+.community-detail-reactions .reaction-button.reaction-down.active .reaction-icon,
+.community-detail-reactions .reaction-button.reaction-down.active .reaction-count {
+  color: var(--price-down, #1375ec) !important;
+}
+
+.community-detail-reactions .reaction-button.reaction-up:hover:not(:disabled):not(.active) .reaction-icon {
+  color: var(--price-up, #dd3c44);
+}
+
+.community-detail-reactions .reaction-button.reaction-down:hover:not(:disabled):not(.active) .reaction-icon {
+  color: var(--price-down, #1375ec);
+}
+
+.community-detail-comments {
+  margin-top: 32px;
+}
+
+.comments-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.comments-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+}
+
+.comment-sort-button {
+  padding: 4px 12px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  background: var(--background);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment-sort-button:hover {
+  border-color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  background-color: rgba(121, 131, 140, 0.1);
+  color: var(--foreground);
+}
+
+/* 다크 모드 스타일 */
+.dark .community-detail-main {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .community-detail-back-button {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .community-detail-back-button:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.dark .community-detail-loading,
+.dark .community-detail-error {
+  color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .community-detail-header {
+  color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .community-category {
+  color: rgba(237, 237, 237, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .community-detail-dropdown {
+  background-color: var(--background);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .dropdown-item.delete:hover,
+.dark .dropdown-item.report:hover {
+  background-color: rgba(220, 53, 69, 0.2);
+}
+
+.dark .hashtag {
+  background-color: rgba(2, 162, 98, 0.2);
+}
+
+.dark .comment-sort-button {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--background);
+}
+
+.dark .comment-sort-button:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+}

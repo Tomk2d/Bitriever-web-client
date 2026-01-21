@@ -1,0 +1,518 @@
+.community-write {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.write-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.write-back-button {
+  padding: 0;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  background: var(--background);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(121, 131, 140, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.write-back-button:hover {
+  border-color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+  background-color: rgba(121, 131, 140, 0.1);
+  color: var(--foreground);
+}
+
+.write-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.write-form-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.write-form-profile {
+  flex-shrink: 0;
+  margin-top: 12px;
+}
+
+.write-form-profile .comment-profile-image {
+  width: 32px;
+  height: 32px;
+}
+
+.write-form-profile .comment-profile-initial {
+  font-size: 14px;
+}
+
+.write-form-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-group-title-category {
+  position: relative;
+}
+
+.title-category-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  padding: 8px 6px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px 6px 0 0;
+  background-color: var(--background);
+}
+
+.form-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.form-select,
+.form-input {
+  padding: 12px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+  background-color: var(--background);
+  transition: border-color 0.2s ease;
+}
+
+.form-input {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.title-category-wrapper .form-input {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  padding: 0 12px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 23.5px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+}
+
+/* 작성 페이지 전용 카테고리 드롭다운 */
+.title-category-wrapper .write-category-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.title-category-wrapper .write-category-button {
+  padding: 12px 16px;
+  background: var(--background);
+  border: none;
+  border-radius: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 620;
+  color: var(--main-color, #02a262);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.title-category-wrapper .write-category-button.write-category-button-placeholder {
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+}
+
+.title-category-wrapper .write-category-button.write-category-button-placeholder:hover {
+  color: var(--text-inactive, rgba(121, 131, 140, 0.75));
+}
+
+.title-category-wrapper .write-category-button:hover {
+  color: var(--main-color, #02a262);
+}
+
+.write-dropdown-arrow {
+  margin-left: 4px;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.write-dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.write-category-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--background);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.write-category-menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.write-category-menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.write-category-menu-item.active {
+  background-color: rgba(2, 162, 98, 0.1);
+  color: var(--main-color, #02a262);
+  font-weight: 600;
+}
+
+.form-editor {
+  min-height: 400px;
+  padding: 18px 18px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 6px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top: none;
+  margin-top: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 17px;
+  color: var(--foreground);
+  background-color: var(--background);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  outline: none;
+}
+
+.form-editor:focus,
+.form-editor:hover {
+  outline: none;
+  border-color: rgba(0, 19, 43, 0.15);
+}
+
+.form-editor:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(0, 19, 43, 0.5);
+  pointer-events: none;
+}
+
+/* 커뮤니티 작성 페이지 전용 이미지 블록 */
+.write-image-block {
+  display: block;
+  position: relative;
+  margin: 8px 0;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.write-image {
+  border-radius: 6px;
+  display: block;
+  /* 원본 크기 유지 (너무 크면 인라인 스타일로 제한) */
+}
+
+.write-image-remove-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.upload-indicator {
+  font-size: 12px;
+  color: var(--main-color, #02a262);
+  margin-top: 8px;
+}
+
+.hashtags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.hashtag-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: rgba(2, 162, 98, 0.1);
+  color: var(--main-color, #02a262);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.hashtag-remove {
+  background: none;
+  border: none;
+  color: var(--main-color, #02a262);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.form-group-hashtag-actions-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 8px 6px;
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  background-color: var(--background);
+  margin-top: 0;
+}
+
+.form-group-hashtag-input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group-hashtag-input .form-input {
+  border: none;
+  border-radius: 0;
+  padding: 12px;
+  margin: 0;
+}
+
+.form-group-hashtag-actions-wrapper .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.form-button-submit {
+  padding: 4px 12px;
+  border: 1px solid var(--main-color, #02a262);
+  border-radius: 6px;
+  background-color: var(--main-color, #02a262);
+  color: white;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-button-submit:hover:not(:disabled) {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.form-button-submit:disabled {
+  cursor: not-allowed;
+  background-color: #f1f3f6;
+  border-color: #f1f3f6;
+  color: #b1b7c3;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.form-button {
+  padding: 12px 24px;
+  border: 1px solid rgba(0, 19, 43, 0.2);
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-button.cancel {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.form-button.cancel:hover {
+  border-color: rgba(0, 19, 43, 0.3);
+}
+
+.form-button-submit {
+  padding: 6px 16px;
+  border: 1px solid var(--main-color, #02a262);
+  border-radius: 6px;
+  background-color: var(--main-color, #02a262);
+  color: white;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-button-submit:hover:not(:disabled) {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.form-button-submit:disabled {
+  cursor: not-allowed;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(237, 237, 237, 0.4);
+}
+
+.form-button.submit {
+  background-color: var(--main-color, #02a262);
+  color: white;
+  border-color: var(--main-color, #02a262);
+}
+
+.form-button.submit:hover:not(:disabled) {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.form-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 다크 모드 스타일 */
+.dark .title-category-wrapper {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-select,
+.dark .form-input {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-editor {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-editor:focus {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .form-editor:hover {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .form-editor:empty:before {
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .write-category-menu {
+  background-color: var(--background);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .write-category-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .write-category-menu-item.active {
+  background-color: rgba(2, 162, 98, 0.2);
+}
+
+.dark .write-image-remove-button {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dark .hashtag-tag {
+  background-color: rgba(2, 162, 98, 0.2);
+}
+
+.dark .write-back-button {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .write-back-button:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.dark .form-button-submit:disabled {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(237, 237, 237, 0.4);
+}
+
+.dark .form-button {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .form-button.cancel:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .form-group-hashtag-actions-wrapper {
+  border-color: rgba(255, 255, 255, 0.1);
+}

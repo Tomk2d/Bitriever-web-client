@@ -1068,6 +1068,14 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
   return (
     <div className="individual-trading-history-panel">
       <div className="individual-trading-history-panel-content">
+        {(isSaving || isUploading || isDeleting) && (
+          <div className="diary-loading-overlay">
+            <div className="diary-loading-spinner" />
+            <div className="diary-loading-text">
+              {isSaving ? '저장 중입니다...' : isUploading ? '이미지 업로드 중입니다...' : '이미지 삭제 중입니다...'}
+            </div>
+          </div>
+        )}
         <div className="individual-trading-history-panel-header">
           <div className="individual-trading-history-panel-header-left">
             <h3 className="individual-trading-history-panel-title">매매일지</h3>
@@ -1250,7 +1258,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
               </div>
               <div className="individual-trading-history-diary-edit-item">
                 <div className="diary-edit-label-toolbar-wrapper">
-                  <label className="individual-trading-history-diary-edit-label">매매근거 & 고려사항</label>
+                <label className="individual-trading-history-diary-edit-label">매매근거 & 고려사항</label>
                   {/* 포맷 버튼 툴바 */}
                   <div className="diary-edit-toolbar">
                   <button

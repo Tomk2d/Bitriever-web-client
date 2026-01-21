@@ -1,0 +1,13 @@
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.comment-list-empty {
+  text-align: center;
+  padding: 40px;
+  color: rgba(0, 19, 43, 0.5);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+}

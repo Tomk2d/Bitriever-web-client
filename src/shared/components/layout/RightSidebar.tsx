@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { toggleTheme } from '@/store/slices/uiSlice';
 import { selectAllPrices } from '@/store/slices/coinPriceSlice';
 import { useAssets } from '@/features/asset/hooks/useAssets';
 import { assetService } from '@/features/asset/services/assetService';
@@ -24,6 +25,7 @@ type MenuType = 'wallet' | 'watchlist' | 'chatbot' | 'notification' | 'faq' | 's
 type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
 
 export default function RightSidebar() {
+  const dispatch = useAppDispatch();
   const [selectedMenu, setSelectedMenu] = useState<MenuType>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isRefreshDisabled, setIsRefreshDisabled] = useState(false);
@@ -37,6 +39,9 @@ export default function RightSidebar() {
   
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector(selectAllPrices);
+  
+  // Redux에서 테마 정보 가져오기
+  const theme = useAppSelector((state) => state.ui.theme);
   
   // 자산 데이터 가져오기 (wallet 메뉴 선택 시에만 활성화)
   const shouldFetchAssets = selectedMenu === 'wallet' && isPanelOpen;
@@ -407,7 +412,19 @@ export default function RightSidebar() {
             {selectedMenu === 'chatbot' && <div>자격증 컨텐츠</div>}
             {selectedMenu === 'notification' && <NotificationList />}
             {selectedMenu === 'faq' && <div>FAQ 컨텐츠</div>}
-            {selectedMenu === 'settings' && <div>설정 컨텐츠</div>}
+            {selectedMenu === 'settings' && (
+              <div>
+                <div>설정 컨텐츠</div>
+                <div className="settings-theme-toggle-wrapper">
+                  <button
+                    onClick={() => dispatch(toggleTheme())}
+                    className="settings-theme-toggle-button"
+                  >
+                    테마 전환 ({theme === 'light' ? '라이트' : '다크'})
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
