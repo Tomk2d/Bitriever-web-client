@@ -119,6 +119,20 @@ export default function CommunityEditPage() {
   const handleImageUpload = async (file: File) => {
     if (!id) return;
 
+    // 파일 크기 확인 (5MB = 5,242,880 바이트)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_FILE_SIZE) {
+      alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+      return;
+    }
+
+    // 이미지 개수 확인 (에디터 내 이미지 블록만 카운트)
+    const currentImageCount = editorRef.current?.querySelectorAll('.write-image-block').length || 0;
+    if (currentImageCount >= 5) {
+      alert('이미지는 최대 5개까지 추가할 수 있습니다.');
+      return;
+    }
+
     const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     setPendingImages(prev => new Map(prev).set(tempId, file));
 
@@ -403,6 +417,10 @@ export default function CommunityEditPage() {
       e.preventDefault();
       const tag = hashtagInput.trim().replace(/^#/, '');
       if (tag && !hashtags.includes(tag)) {
+        if (hashtags.length >= 5) {
+          alert('해시태그는 최대 5개까지 추가할 수 있습니다.');
+          return;
+        }
         setHashtags([...hashtags, tag]);
         setHashtagInput('');
       }
@@ -548,6 +566,13 @@ export default function CommunityEditPage() {
 
     if (!id || !title.trim()) {
       alert('제목을 입력해주세요.');
+      return;
+    }
+
+    // 제목 바이트 수 확인 (100byte = 한글 33자 제한)
+    const titleBytes = new TextEncoder().encode(title).length;
+    if (titleBytes > 100) {
+      alert('제목은 100byte 이하로 작성해주세요. (한글 33자)');
       return;
     }
 
@@ -736,7 +761,22 @@ export default function CommunityEditPage() {
               <input
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  const newTitle = e.target.value;
+                  // 바이트 수 확인 (100byte = 한글 33자 제한)
+                  const titleBytes = new TextEncoder().encode(newTitle).length;
+                  if (titleBytes > 100) {
+                    alert('제목은 100byte 이하로 작성해주세요. (한글 33자)');
+                    // 현재 제목을 100바이트 이하로 자르기
+                    let truncatedTitle = newTitle;
+                    while (new TextEncoder().encode(truncatedTitle).length > 100 && truncatedTitle.length > 0) {
+                      truncatedTitle = truncatedTitle.slice(0, -1);
+                    }
+                    setTitle(truncatedTitle);
+                    return;
+                  }
+                  setTitle(newTitle);
+                }}
                 className="form-input"
                 placeholder="제목을 입력하세요"
                 required
