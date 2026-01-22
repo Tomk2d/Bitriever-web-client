@@ -32,9 +32,30 @@ export function parseContentToText(content: string | null | undefined): string {
 }
 
 /**
+ * 텍스트 블록의 줄바꿈을 정규화
+ * - 내부: 연속된 \n을 최대 2개로 제한 (먼저 처리)
+ * - 시작점: 여러 개의 \n을 1개로 제한
+ * - 끝점: 여러 개의 \n을 1개로 제한
+ */
+function normalizeTextBlockNewlines(text: string): string {
+  if (!text) return text;
+  
+  // 먼저 내부의 연속된 \n을 최대 2개로 제한 (3개 이상이면 2개로)
+  let normalized = text.replace(/\n{3,}/g, '\n\n');
+  
+  // 시작점의 연속된 \n을 1개로 제한
+  normalized = normalized.replace(/^\n+/, '\n');
+  
+  // 끝점의 연속된 \n을 1개로 제한
+  normalized = normalized.replace(/\n+$/, '\n');
+  
+  return normalized;
+}
+
+/**
  * 마커 텍스트를 blocks 배열로 변환
  * [image]{filename} 패턴을 찾아서 image 블록으로 변환
- * 사용자가 입력한 공백 줄을 정확히 유지 (수정하지 않음)
+ * 각 텍스트 블록의 줄바꿈을 정규화 (시작/끝 1개, 내부 최대 2개)
  */
 export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryContent {
   if (!text) {
@@ -47,7 +68,7 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
   let match;
   
   while ((match = imageMarkerRegex.exec(text)) !== null) {
-    // 마커 이전의 텍스트가 있으면 text 블록으로 추가 (그대로 저장)
+    // 마커 이전의 텍스트가 있으면 text 블록으로 추가
     if (match.index > lastIndex) {
       const textContent = text.substring(lastIndex, match.index);
       // 앞뒤 공백(스페이스, 탭)만 제거하고 줄바꿈은 그대로 유지
@@ -55,7 +76,9 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
       // 내용이 있거나 줄바꿈이 있으면 저장 (공백 줄도 유지)
       if (trimmedContent.length > 0 || textContent.includes('\n')) {
         // trimmedContent가 비어있어도 원본에 줄바꿈이 있으면 원본 사용
-        blocks.push({ type: 'text', content: trimmedContent.length > 0 ? trimmedContent : textContent });
+        const finalContent = trimmedContent.length > 0 ? trimmedContent : textContent;
+        // 줄바꿈 정규화 적용
+        blocks.push({ type: 'text', content: normalizeTextBlockNewlines(finalContent) });
       }
     }
     
@@ -67,7 +90,7 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
     lastIndex = match.index + match[0].length;
   }
   
-  // 마지막 마커 이후의 텍스트가 있으면 text 블록으로 추가 (그대로 저장)
+  // 마지막 마커 이후의 텍스트가 있으면 text 블록으로 추가
   if (lastIndex < text.length) {
     const textContent = text.substring(lastIndex);
     // 앞뒤 공백(스페이스, 탭)만 제거하고 줄바꿈은 그대로 유지
@@ -75,7 +98,9 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
     // 내용이 있거나 줄바꿈이 있으면 저장 (공백 줄도 유지)
     if (trimmedContent.length > 0 || textContent.includes('\n')) {
       // trimmedContent가 비어있어도 원본에 줄바꿈이 있으면 원본 사용
-      blocks.push({ type: 'text', content: trimmedContent.length > 0 ? trimmedContent : textContent });
+      const finalContent = trimmedContent.length > 0 ? trimmedContent : textContent;
+      // 줄바꿈 정규화 적용
+      blocks.push({ type: 'text', content: normalizeTextBlockNewlines(finalContent) });
     }
   }
   
@@ -85,7 +110,9 @@ export function textToContentBlocks(text: string, diaryId: number): ParsedDiaryC
     const trimmedText = text.replace(/^[ \t]+|[ \t]+$/gm, '');
     // 내용이 있거나 줄바꿈이 있으면 저장
     if (trimmedText.length > 0 || text.includes('\n')) {
-      blocks.push({ type: 'text', content: trimmedText.length > 0 ? trimmedText : text });
+      const finalContent = trimmedText.length > 0 ? trimmedText : text;
+      // 줄바꿈 정규화 적용
+      blocks.push({ type: 'text', content: normalizeTextBlockNewlines(finalContent) });
     }
   }
   

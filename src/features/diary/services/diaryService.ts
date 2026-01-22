@@ -111,6 +111,55 @@ export const diaryService = {
     return result.data || null;
   },
 
+  updateContent: async (id: number, data: Partial<DiaryRequest>): Promise<DiaryResponse> => {
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    const response = await fetch(`/api/proxy/diaries/${id}/update-content`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      },
+      body: JSON.stringify(data),
+    });
+
+    // 401 에러 발생 시 로그아웃 처리
+    if (response.status === 401) {
+      console.warn('매매일지 수정: 인증 실패 (401) - 로그아웃 처리');
+      const { authService } = await import('@/features/auth/services/authService');
+      await authService.logout();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('인증에 실패했습니다.');
+    }
+
+    let result;
+    try {
+      result = await response.json();
+    } catch (error) {
+      const text = await response.text();
+      console.error('[diaryService] UpdateContent - JSON parse error:', {
+        status: response.status,
+        text: text.substring(0, 500),
+      });
+      throw new Error(`서버 응답을 파싱할 수 없습니다. (${response.status})`);
+    }
+
+    if (!response.ok) {
+      console.error('[diaryService] UpdateContent Error:', {
+        status: response.status,
+        result,
+        data: JSON.stringify(data),
+        id,
+      });
+      const errorMessage = result?.message || result?.error?.message || result?.error || `매매일지 수정에 실패했습니다. (${response.status})`;
+      throw new Error(errorMessage);
+    }
+
+    return result.data || null;
+  },
+
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/api/diaries/${id}`);
   },
@@ -190,7 +239,7 @@ export const diaryService = {
   },
 
   getImageUrl: (diaryId: number, filename: string): string => {
-    return `/api/proxy/diaries/${diaryId}/images/${filename}`;
+    return `/api/proxy/diaries/${diaryId}/images/${encodeURIComponent(filename)}`;
   },
 
   deleteImage: async (diaryId: number, filename: string): Promise<DiaryResponse> => {

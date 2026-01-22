@@ -49,11 +49,25 @@ export const communityService = {
       throw new Error('인증에 실패했습니다.');
     }
 
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (error) {
+      const text = await response.text();
+      console.error('[communityService] Create - JSON parse error:', {
+        status: response.status,
+        text: text.substring(0, 500),
+      });
+      throw new Error(`서버 응답을 파싱할 수 없습니다. (${response.status})`);
+    }
 
     if (!response.ok) {
-      console.error('[communityService] Create Error:', result);
-      const errorMessage = result?.message || result?.error?.message || result?.error || '게시글 작성에 실패했습니다.';
+      console.error('[communityService] Create Error:', {
+        status: response.status,
+        result,
+        data: JSON.stringify(data),
+      });
+      const errorMessage = result?.error?.message || result?.message || result?.error || '게시글 작성에 실패했습니다.';
       throw new Error(errorMessage);
     }
 
