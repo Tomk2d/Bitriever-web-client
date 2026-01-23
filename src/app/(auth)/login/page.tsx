@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { Input, Button } from '@/shared/components/ui';
 import { authService } from '@/features/auth/services/authService';
@@ -11,6 +11,7 @@ import './LoginPage.css';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [isSignup, setIsSignup] = useState(false);
   
@@ -35,6 +36,23 @@ export default function LoginPage() {
   
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // URL 쿼리 파라미터에서 에러 메시지 확인
+  useEffect(() => {
+    const error = searchParams.get('error');
+    const message = searchParams.get('message');
+    
+    if (error && message) {
+      // 에러 메시지 표시
+      setSubmitError(decodeURIComponent(message));
+      
+      // URL에서 에러 파라미터 제거 (깔끔한 URL 유지)
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('error');
+      newUrl.searchParams.delete('message');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -88,16 +106,20 @@ export default function LoginPage() {
           nickname: userData.nickname,
           connectedExchanges: userData.connectedExchanges || [],
         }));
+        
+        // 자산 동기화 API 호출 (is_connect_exchange가 true이고 connected_exchanges가 null이 아닐 때만)
+        if (userData.isConnectExchange === true && 
+            userData.connectedExchanges && 
+            userData.connectedExchanges.length > 0) {
+          assetService.syncAssets().catch((error) => {
+            // 에러는 조용히 처리 (로그인 플로우에는 영향 없음)
+            console.error('자산 동기화 실패:', error);
+          });
+        }
       } catch (error) {
         // getCurrentUser 실패 시에도 로그인은 성공한 상태이므로 계속 진행
         console.error('사용자 정보 조회 실패:', error);
       }
-      
-      // 자산 동기화 API 호출 (비동기, 백그라운드에서 실행)
-      assetService.syncAssets().catch((error) => {
-        // 에러는 조용히 처리 (로그인 플로우에는 영향 없음)
-        console.error('자산 동기화 실패:', error);
-      });
       
       // 로그인 성공 시 대시보드로 이동
       router.push('/dashboard');
@@ -114,19 +136,21 @@ export default function LoginPage() {
   };
 
   const handleKakaoLogin = () => {
-    // TODO: 카카오 로그인 연동
-    console.log('카카오 로그인');
+    window.location.href = '/api/auth/oauth2/kakao';
   };
 
   const handleNaverLogin = () => {
-    // TODO: 네이버 로그인 연동
-    console.log('네이버 로그인');
+    window.location.href = '/api/auth/oauth2/naver';
   };
 
   const handleGoogleLogin = () => {
-    // TODO: 구글 로그인 연동
-    console.log('구글 로그인');
+    window.location.href = '/api/auth/oauth2/google';
   };
+
+  // 애플 로그인은 Apple Developer Program 가입 필요 (일단 비활성화)
+  // const handleAppleLogin = () => {
+  //   window.location.href = '/api/auth/oauth2/apple';
+  // };
 
   const handleSwitchToSignup = () => {
     setIsSignup(true);
@@ -376,6 +400,14 @@ export default function LoginPage() {
               >
                 <span className="social-icon">G</span>
               </button>
+              {/* 애플 로그인은 Apple Developer Program 가입 필요 (일단 비활성화) */}
+              {/* <button
+                type="button"
+                onClick={handleAppleLogin}
+                className="social-button apple-button"
+              >
+                <span className="social-icon">🍎</span>
+              </button> */}
             </div>
           </div>
             </>

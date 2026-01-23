@@ -18,9 +18,10 @@ export interface SignupRequest {
 export interface AuthResponse {
   userId: string;
   email: string;
-  nickname: string;
+  nickname: string | null;
   accessToken: string;
   refreshToken: string;
+  requiresNickname?: boolean; // SNS 회원가입 시 닉네임 설정 필요 여부
 }
 
 export const authService = {
@@ -66,8 +67,41 @@ export const authService = {
     }
   },
 
+  refreshToken: async (): Promise<AuthResponse> => {
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    
+    if (!refreshToken) {
+      throw new Error('Refresh token이 없습니다.');
+    }
+    
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.message || result.error?.message || '토큰 갱신에 실패했습니다.');
+    }
+
+    const authData = result.data;
+    
+    // 새로운 JWT 토큰을 로컬 스토리지에 저장
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('accessToken', authData.accessToken);
+      localStorage.setItem('refreshToken', authData.refreshToken);
+    }
+    
+    return authData;
+  },
+
   logout: async (): Promise<void> => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
     // 서버에 로그아웃 요청 시도 (실패해도 계속 진행)
     try {
@@ -77,6 +111,10 @@ export const authService = {
           'Content-Type': 'application/json',
           ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         },
+        body: JSON.stringify({
+          accessToken: accessToken || null,
+          refreshToken: refreshToken || null,
+        }),
       });
 
       // 401 에러는 토큰 만료로 인한 것이므로 정상적인 시나리오로 간주
@@ -103,6 +141,46 @@ export const authService = {
     
     // React Query 캐시 모두 클리어
     queryClient.clear();
+  },
+
+  checkNicknameAvailable: async (nickname: string): Promise<boolean> => {
+    const response = await fetch(`/api/proxy/auth/check-nickname?nickname=${encodeURIComponent(nickname)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || result.error?.message || '닉네임 중복 확인에 실패했습니다.');
+    }
+
+    return result.data;
+  },
+
+  setNickname: async (nickname: string): Promise<void> => {
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    
+    if (!accessToken) {
+      throw new Error('로그인이 필요합니다.');
+    }
+    
+    const response = await fetch('/api/proxy/auth/set-nickname', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ nickname }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || result.error?.message || '닉네임 설정에 실패했습니다.');
+    }
   },
 
   getCurrentUser: async (): Promise<UserResponse> => {
