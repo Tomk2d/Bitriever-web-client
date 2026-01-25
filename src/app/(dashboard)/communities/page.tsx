@@ -15,6 +15,11 @@ export default function CommunitiesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  const getProfileImageUrl = (profileUrl: string | null | undefined) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
+  };
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(0);
   const [feedDropdownOpen, setFeedDropdownOpen] = useState(false);
@@ -258,11 +263,11 @@ export default function CommunitiesPage() {
                     >
                       <div className="community-card-header">
                         <div className="community-card-user-info">
-                          <div className="community-profile-image">
-                            <span className="profile-initial">
-                              {(community.userNickname || '익명').charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          <img 
+                            src={getProfileImageUrl(community.userProfileUrl)} 
+                            alt="프로필" 
+                            className="community-profile-img"
+                          />
                           <div className="community-user-details">
                             <span className="community-author">{community.userNickname || '익명'}</span>
                             <span className="community-date">

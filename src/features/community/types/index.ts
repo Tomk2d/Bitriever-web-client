@@ -30,6 +30,7 @@ export interface CommunityResponse {
   id: number;
   userId: string;
   userNickname?: string;
+  userProfileUrl?: string;
   category: string;
   title: string;
   content?: string;
@@ -45,6 +46,7 @@ export interface CommunityListResponse {
   id: number;
   userId: string;
   userNickname?: string;
+  userProfileUrl?: string;
   category: string;
   title: string;
   hashtags?: string[];
@@ -66,6 +68,7 @@ export interface CommunityCommentResponse {
   communityId: number;
   userId: string;
   userNickname?: string;
+  userProfileUrl?: string;
   parentId?: number | null;
   content: string;
   likeCount?: number;

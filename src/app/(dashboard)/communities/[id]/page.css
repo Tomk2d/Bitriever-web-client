@@ -79,6 +79,16 @@
   font-weight: 600;
 }
 
+.community-profile-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+}
+
 .community-user-details {
   display: flex;
   align-items: center;

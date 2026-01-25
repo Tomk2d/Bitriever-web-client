@@ -19,6 +19,7 @@ export interface AuthResponse {
   userId: string;
   email: string;
   nickname: string | null;
+  profileUrl: string;
   accessToken: string;
   refreshToken: string;
   requiresNickname?: boolean; // SNS 회원가입 시 닉네임 설정 필요 여부

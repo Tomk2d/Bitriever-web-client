@@ -283,11 +283,20 @@
   line-height: 1;
 }
 
+.profile-avatar-image {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+}
+
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 240px;
+  min-width: 120px;
   background-color: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
@@ -330,6 +339,16 @@
   font-size: 20px;
   line-height: 1;
   flex-shrink: 0;
+}
+
+.profile-dropdown-avatar-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
 }
 
 .profile-dropdown-info {

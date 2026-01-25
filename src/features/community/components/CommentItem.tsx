@@ -13,6 +13,7 @@ interface CommentItemProps {
     id: number;
     userId: string;
     userNickname?: string;
+    userProfileUrl?: string;
     content: string;
     likeCount?: number;
     dislikeCount?: number;
@@ -33,6 +34,11 @@ export default function CommentItem({ comment, communityId, isAuthenticated, dep
   const user = useAppSelector((state) => state.auth.user);
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const getProfileImageUrl = (profileUrl: string | null | undefined) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
+  };
   const [editContent, setEditContent] = useState(comment.content);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -105,11 +111,11 @@ export default function CommentItem({ comment, communityId, isAuthenticated, dep
     <div className={`comment-item ${depth > 0 ? 'comment-reply' : ''}`} style={{ marginLeft: depth > 0 ? 36 : 0 }}>
       <div className="comment-item-header">
         <div className="comment-card-user-info">
-          <div className="comment-profile-image">
-            <span className="comment-profile-initial">
-              {(comment.userNickname || '익명').charAt(0).toUpperCase()}
-            </span>
-          </div>
+          <img 
+            src={getProfileImageUrl(comment.userProfileUrl)} 
+            alt="프로필" 
+            className="comment-profile-img"
+          />
           <div className="comment-user-details">
             <span className="comment-author">{comment.userNickname || '익명'}</span>
             <span className="comment-date">

@@ -12,13 +12,19 @@ interface CommentFormProps {
   onCancel?: () => void;
   initialContent?: string;
   userNickname?: string;
+  userProfileUrl?: string | null;
 }
 
-export default function CommentForm({ communityId, parentId, onSuccess, onCancel, initialContent = '', userNickname }: CommentFormProps) {
+export default function CommentForm({ communityId, parentId, onSuccess, onCancel, initialContent = '', userNickname, userProfileUrl }: CommentFormProps) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const getProfileImageUrl = (profileUrl: string | null | undefined) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
+  };
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
@@ -67,11 +73,11 @@ export default function CommentForm({ communityId, parentId, onSuccess, onCancel
     <form onSubmit={handleSubmit} className="comment-form">
       <div className="comment-form-wrapper">
         <div className="comment-form-profile">
-          <div className="comment-profile-image">
-            <span className="comment-profile-initial">
-              {userNickname ? userNickname.charAt(0).toUpperCase() : '익'}
-            </span>
-          </div>
+          <img 
+            src={getProfileImageUrl(userProfileUrl)} 
+            alt="프로필" 
+            className="comment-profile-img"
+          />
         </div>
         <textarea
           ref={textareaRef}
