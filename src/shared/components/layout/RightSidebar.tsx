@@ -18,6 +18,7 @@ import {
 import WalletAssetList from './WalletAssetList';
 import { NotificationList } from '@/features/notification/components/NotificationList';
 import { useUnreadNotificationCount } from '@/features/notification/hooks/useNotifications';
+import { useQueryClient } from '@tanstack/react-query';
 import './RightSidebar.css';
 
 type MenuType = 'wallet' | 'watchlist' | 'chatbot' | 'notification' | 'faq' | 'settings' | null;
@@ -26,6 +27,7 @@ type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
 
 export default function RightSidebar() {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const [selectedMenu, setSelectedMenu] = useState<MenuType>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isRefreshDisabled, setIsRefreshDisabled] = useState(false);
@@ -71,6 +73,11 @@ export default function RightSidebar() {
       // 같은 메뉴를 클릭하면 패널 닫기
       setIsPanelOpen(false);
       setSelectedMenu(null);
+      
+      // 알림 패널을 닫을 때 알림 캐시 무효화하여 다음에 열 때 최신 데이터 가져오기
+      if (menu === 'notification') {
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'infinite'] });
+      }
     } else {
       // 다른 메뉴를 클릭하면 패널 열고 메뉴 변경
       setSelectedMenu(menu);
@@ -209,8 +216,14 @@ export default function RightSidebar() {
             <button
               className="sidebar-panel-close"
               onClick={() => {
+                const wasNotificationPanel = selectedMenu === 'notification';
                 setIsPanelOpen(false);
                 setSelectedMenu(null);
+                
+                // 알림 패널을 닫을 때 알림 캐시 무효화하여 다음에 열 때 최신 데이터 가져오기
+                if (wasNotificationPanel) {
+                  queryClient.invalidateQueries({ queryKey: ['notifications', 'infinite'] });
+                }
               }}
               aria-label="패널 닫기"
             >
@@ -238,7 +251,13 @@ export default function RightSidebar() {
                     <div className="wallet-card-row">
                       <span className="wallet-card-label-small">BTC</span>
                       <span className="wallet-card-value-small">
-                        {formatNumber((getBTCAsset(assets)?.quantity || 0) * (getBTCAsset(assets)?.avgBuyPrice || 0))}
+                        {(() => {
+                          // 모든 거래소의 BTC 보유 수량 합산
+                          const totalBTCQuantity = assets
+                            .filter((asset) => asset.symbol === 'BTC')
+                            .reduce((total, asset) => total + (asset.quantity || 0), 0);
+                          return totalBTCQuantity > 0 ? totalBTCQuantity.toFixed(8) : '0';
+                        })()}
                       </span>
                     </div>
                   </div>
@@ -403,7 +422,12 @@ export default function RightSidebar() {
                         </div>
                       </div>
                     </div>
-                    <WalletAssetList assets={filteredAssets} sortOption={sortOption} />
+                    <WalletAssetList 
+                      assets={filteredAssets} 
+                      sortOption={sortOption}
+                      selectedExchangeCode={selectedExchangeCode}
+                      exchanges={exchangeOptions}
+                    />
                   </>
                 )}
               </>

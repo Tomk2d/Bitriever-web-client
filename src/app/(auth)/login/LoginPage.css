@@ -157,11 +157,103 @@
 
 .social-buttons {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   justify-content: center;
+  align-items: stretch;
+  width: 100%;
 }
 
+/* 통일된 소셜 로그인 버튼 */
+.social-button-unified {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.social-button-unified:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.social-button-unified:active {
+  transform: translateY(0);
+}
+
+.social-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.social-icon-wrapper svg {
+  width: 20px;
+  height: 20px;
+}
+
+.social-text {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* 카카오 버튼 */
+.kakao-btn {
+  background-color: #FEE500;
+  color: #000000;
+}
+
+.kakao-btn:hover {
+  background-color: #FDD835;
+}
+
+/* 네이버 버튼 */
+.naver-btn {
+  background-color: #03C75A;
+  color: #ffffff;
+}
+
+.naver-btn:hover {
+  background-color: #02B350;
+}
+
+/* 구글 버튼 */
+.google-btn {
+  background-color: #ffffff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+}
+
+.google-btn:hover {
+  background-color: #f8f9fa;
+}
+
+/* 애플 버튼 */
+.apple-btn {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.apple-btn:hover {
+  background-color: #1a1a1a;
+}
+
+/* 기존 텍스트 기반 버튼 스타일 (하위 호환용) */
 .social-button {
   width: 48px;
   height: 48px;
@@ -245,6 +337,31 @@
   color: var(--foreground);
 }
 
+.dark .social-divider {
+  color: #6b7280;
+}
+
+.dark .social-divider::before,
+.dark .social-divider::after {
+  border-color: #4b5563;
+}
+
+/* 다크 모드 통일 버튼 스타일 */
+.dark .social-button-unified:hover {
+  opacity: 0.85;
+}
+
+.dark .google-btn {
+  background-color: #2a2a2a;
+  color: var(--foreground);
+  border-color: #4b5563;
+}
+
+.dark .google-btn:hover {
+  background-color: #3a3a3a;
+}
+
+/* 기존 텍스트 버튼 다크 모드 (하위 호환용) */
 .dark .social-button {
   background-color: #2a2a2a;
   border-color: #4b5563;
@@ -254,15 +371,6 @@
 .dark .social-button:hover {
   background-color: #3a3a3a;
   border-color: #6b7280;
-}
-
-.dark .social-divider {
-  color: #6b7280;
-}
-
-.dark .social-divider::before,
-.dark .social-divider::after {
-  border-color: #4b5563;
 }
 
 .dark .kakao-button {

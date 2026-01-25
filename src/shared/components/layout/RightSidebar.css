@@ -768,3 +768,68 @@
 .dark .settings-theme-toggle-button:hover {
   background-color: #4b5563;
 }
+
+/* 거래소별 그룹 스타일 */
+.wallet-asset-group {
+  margin-bottom: 16px;
+}
+
+.wallet-asset-group:last-child {
+  margin-bottom: 0;
+}
+
+.wallet-asset-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.wallet-asset-group-name {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--main-color, #02a262);
+}
+
+.wallet-asset-group-count {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 19, 43, 0.58);
+}
+
+.wallet-asset-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 거래소 표시 행 스타일 */
+.wallet-asset-exchange-row {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+}
+
+.wallet-asset-exchange-name {
+  color: var(--main-color, #02a262);
+  font-weight: 600;
+}
+
+/* 다크 모드 그룹 스타일 */
+.dark .wallet-asset-group-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .wallet-asset-group-count {
+  color: rgba(237, 237, 237, 0.58);
+}
+
+.dark .wallet-asset-exchange-row {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}

@@ -109,8 +109,14 @@ export default function CoinList() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc'); // 기본값: 내림차순
   const [searchQuery, setSearchQuery] = useState<string>(''); // 입력값
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>(''); // debounce된 검색어
+  const [isMounted, setIsMounted] = useState(false); // 클라이언트 마운트 여부
   const indicatorsRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 클라이언트 마운트 확인 (Hydration 에러 방지)
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // React Query를 사용한 코인 데이터 캐싱
   const { data: coins = [], isLoading: loading, error, isFetching } = useCoins(selectedCurrency);
@@ -240,10 +246,14 @@ export default function CoinList() {
     });
   }, [coins, debouncedSearchQuery]);
 
-  // 정렬된 코인 목록
+  // 정렬된 코인 목록 (클라이언트에서만 정렬 적용하여 Hydration 에러 방지)
   const sortedCoins = useMemo(() => {
-    // 항상 정렬을 적용하여 서버/클라이언트 간 일관성 유지
-    // 기본 정렬: id 순서 (서버에서 가져온 순서와 일치하도록)
+    // 서버 렌더링 시점에는 정렬하지 않고 원본 순서 유지
+    if (!isMounted) {
+      return filteredCoins;
+    }
+
+    // 클라이언트에서만 정렬 적용
     const sorted = [...filteredCoins].sort((a, b) => {
       // 기본 정렬: id 순서 (안정적인 정렬을 위해)
       if (!sortField || !sortOrder) {
@@ -301,7 +311,7 @@ export default function CoinList() {
     });
 
     return sorted;
-  }, [filteredCoins, sortField, sortOrder, priceData]);
+  }, [filteredCoins, sortField, sortOrder, priceData, isMounted]);
 
   // 마켓 인디케이터 무한 스크롤
   useEffect(() => {
@@ -350,9 +360,18 @@ export default function CoinList() {
   }, [marketIndicators.length]);
 
   const coinListContent = useMemo(() => {
-    // 데이터가 없고 로딩 중일 때만 로딩 표시 (서버 prefetch 데이터가 있으면 로딩 표시 안 함)
-    if (loading && coins.length === 0) {
+    // 클라이언트 마운트 후에만 로딩 상태 체크 (Hydration 에러 방지)
+    if (isMounted && loading && coins.length === 0) {
       return <div className="coin-list-loading">로딩 중...</div>;
+    }
+
+    // 서버 렌더링 시점에는 로딩 표시하지 않음 (데이터가 없어도 빈 리스트 표시)
+    if (!isMounted && coins.length === 0) {
+      return (
+        <div className="coin-list">
+          {/* 서버 렌더링 시 빈 리스트 */}
+        </div>
+      );
     }
 
     if (error) {
@@ -389,7 +408,7 @@ export default function CoinList() {
         ))}
       </div>
     );
-  }, [sortedCoins, loading, error, selectedCoin]);
+  }, [sortedCoins, loading, error, selectedCoin, isMounted, coins.length, isCalendarOpen]);
 
   return (
     <div className="coin-list-container">

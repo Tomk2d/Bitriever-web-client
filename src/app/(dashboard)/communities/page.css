@@ -164,7 +164,7 @@
 }
 
 .community-card:hover {
-  background-color: rgba(209, 209, 253, 0.08);
+  background-color: rgba(209, 209, 253, 0.12);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -431,16 +431,16 @@
   text-decoration: none;
   color: inherit;
   display: block;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   padding: 8px;
   margin: -8px;
   border-radius: 6px;
 }
 
 .communities-news-list .coin-detail-news-link:hover {
-  background-color: rgba(2, 162, 98, 0.1);
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgba(209, 209, 253, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .communities-news-list .coin-detail-news-title {
@@ -577,7 +577,8 @@
 }
 
 .dark .communities-news-list .coin-detail-news-link:hover {
-  background-color: rgba(2, 162, 98, 0.15);
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 

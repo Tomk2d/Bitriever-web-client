@@ -63,12 +63,19 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const onConnect = useCallback(() => {
     console.log('[WebSocket] 연결됨');
     
-    // WebSocket 연결 후 최초 GET 요청 실행
+    // WebSocket 연결 후 최초 GET 요청 실행 (거래소별로 분리하여 가져오기)
     if (!initialFetchDone.current) {
       initialFetchDone.current = true;
-      coinPriceService.getAllTickerPrices()
-        .then((prices) => {
-          dispatch(setInitialPrices(prices));
+      
+      // 업비트와 코인원을 각각 가져와서 합치기
+      Promise.all([
+        coinPriceService.getTickerPricesByExchange('UPBIT'),
+        coinPriceService.getTickerPricesByExchange('COINONE'),
+      ])
+        .then(([upbitPrices, coinonePrices]) => {
+          // 두 거래소의 가격을 합쳐서 초기 데이터로 설정
+          const allPrices = [...upbitPrices, ...coinonePrices];
+          dispatch(setInitialPrices(allPrices));
         })
         .catch((error) => {
           console.error('[WebSocketProvider] 최초 가격 데이터 조회 실패:', error);
