@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   nickname: string;
+  profileUrl: string;
 }
 
 export interface AuthState {
@@ -19,7 +20,9 @@ export interface UserResponse {
   id: string;
   email: string;
   nickname: string;
+  profileUrl: string;
   signupType: number | null;
+  snsProvider: number | null;
   createdAt: string;
   isActive: boolean | null;
   isConnectExchange: boolean | null;

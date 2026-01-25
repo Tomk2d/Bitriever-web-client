@@ -134,18 +134,23 @@ export default function WalletAssetList({
     // 현재가 (Redux에서 가져오기)
     const currentPrice = priceDataForAsset?.tradePrice || 0;
     
+    // 매수평균가
+    const avgBuyPrice = asset.avgBuyPrice || 0;
+    
+    // 현재가가 0인 경우 (가격 데이터 없음) 수익률/손익 계산 불가
+    const hasValidPrice = currentPrice > 0 && avgBuyPrice > 0;
+    
     // 현재가 * 보유수량 (평가금액)
     const evaluationAmount = currentPrice * (asset.quantity || 0);
     
-    // 매수평균가 * 보유수량 (총평가금액)
-    const buyAmount = (asset.avgBuyPrice || 0) * (asset.quantity || 0);
+    // 매수평균가 * 보유수량 (총매수금액)
+    const buyAmount = avgBuyPrice * (asset.quantity || 0);
     
-    // 평가 손익 = 평가금액 - 총평가금액
-    const profitLoss = evaluationAmount - buyAmount;
+    // 평가 손익 = 평가금액 - 총매수금액 (현재가가 0이면 계산 불가)
+    const profitLoss = hasValidPrice ? evaluationAmount - buyAmount : null;
     
-    // 수익률 = (현재가 - 매수평균가) / 매수평균가 * 100
-    const avgBuyPrice = asset.avgBuyPrice || 0;
-    const profitRate = avgBuyPrice > 0 ? ((currentPrice - avgBuyPrice) / avgBuyPrice) * 100 : 0;
+    // 수익률 = (현재가 - 매수평균가) / 매수평균가 * 100 (현재가가 0이면 계산 불가)
+    const profitRate = hasValidPrice ? ((currentPrice - avgBuyPrice) / avgBuyPrice) * 100 : null;
     
     // 거래소 이름
     const exchangeName = exchangeNameMap[asset.exchangeCode] || asset.coin?.exchange || '';
@@ -169,18 +174,18 @@ export default function WalletAssetList({
               <span className="wallet-asset-detail-label">평가 손익</span>
               <span 
                 className="wallet-asset-detail-value"
-                style={{ color: profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
+                style={{ color: profitLoss !== null ? (profitLoss >= 0 ? 'var(--price-up)' : 'var(--price-down)') : 'inherit' }}
               >
-                {formatCurrency(profitLoss)}
+                {profitLoss !== null ? formatCurrency(profitLoss) : '-'}
               </span>
             </div>
             <div className="wallet-asset-detail-row">
               <span className="wallet-asset-detail-label">수익률</span>
               <span 
                 className="wallet-asset-detail-value"
-                style={{ color: profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
+                style={{ color: profitRate !== null ? (profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)') : 'inherit' }}
               >
-                {profitRate.toFixed(2)}%
+                {profitRate !== null ? `${profitRate.toFixed(2)}%` : '-'}
               </span>
             </div>
           </div>
@@ -202,7 +207,7 @@ export default function WalletAssetList({
             <span className="wallet-asset-detail-label">평가금액</span>
             <span 
               className="wallet-asset-detail-value"
-              style={{ color: profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)' }}
+              style={{ color: profitRate !== null ? (profitRate >= 0 ? 'var(--price-up)' : 'var(--price-down)') : 'inherit' }}
             >
               {evaluationAmount > 0 ? formatCurrency(evaluationAmount) : '-'}
             </span>
@@ -242,7 +247,7 @@ export default function WalletAssetList({
         ))
       ) : (
         // 단일 목록 렌더링 (특정 거래소 선택 시)
-        groupedAssets[0]?.assets.map((asset) => renderAssetItem(asset, selectedExchangeCode !== null))
+        groupedAssets[0]?.assets.map((asset) => renderAssetItem(asset, false))
       )}
     </div>
   );

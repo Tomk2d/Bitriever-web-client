@@ -8,6 +8,21 @@ import './TradingHistorySidebar.css';
 
 type SortOption = 'latest' | 'oldest' | 'amount' | 'name' | 'profitHigh' | 'profitLow';
 
+// exchangeCode를 거래소 이름으로 변환하는 함수
+const getExchangeName = (exchangeCode: number | undefined): string => {
+  if (!exchangeCode) return '-';
+  const exchangeMap: Record<number, string> = {
+    1: 'UPBIT',
+    2: 'BITHUMB',
+    3: 'COINONE',
+    11: 'BINANCE',
+    12: 'BYBIT',
+    13: 'COINBASE',
+    14: 'OKX',
+  };
+  return exchangeMap[exchangeCode] || '-';
+};
+
 interface TradingHistorySidebarProps {
   selectedDate: Date | null;
   tradingHistories: TradingHistoryResponse[];
@@ -19,7 +34,7 @@ export default function TradingHistorySidebar({
   tradingHistories,
   onClose,
 }: TradingHistorySidebarProps) {
-  const [selectedExchange, setSelectedExchange] = useState<string | null>(null);
+  const [selectedExchange, setSelectedExchange] = useState<number | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('latest');
   const [selectedTradingHistory, setSelectedTradingHistory] = useState<TradingHistoryResponse | null>(null);
   const panelRef = useRef<IndividualTradingHistoryPanelRef>(null);
@@ -53,24 +68,30 @@ export default function TradingHistorySidebar({
     return { totalBuy: buy, totalSell: sell };
   }, [tradingHistories]);
 
-  // 거래소 목록 추출 (해당 일자의 거래내역에서)
+  // 거래소 목록 추출 (해당 일자의 거래내역에서 exchangeCode 기반)
   const exchangeOptions = useMemo(() => {
-    const exchanges = new Set<string>();
+    const exchangeCodes = new Set<number>();
     tradingHistories.forEach((history) => {
-      if (history.coin?.exchange) {
-        exchanges.add(history.coin.exchange);
+      if (history.exchangeCode) {
+        exchangeCodes.add(history.exchangeCode);
       }
     });
-    return Array.from(exchanges).sort();
+    // exchangeCode를 이름으로 변환하여 반환
+    return Array.from(exchangeCodes)
+      .sort((a, b) => a - b)
+      .map((code) => ({
+        code,
+        name: getExchangeName(code),
+      }));
   }, [tradingHistories]);
 
   // 필터링 및 정렬된 거래내역
   const filteredAndSortedHistories = useMemo(() => {
     let filtered = tradingHistories;
 
-    // 거래소 필터링
-    if (selectedExchange) {
-      filtered = filtered.filter((h) => h.coin?.exchange === selectedExchange);
+    // 거래소 필터링 (exchangeCode 기반)
+    if (selectedExchange !== null) {
+      filtered = filtered.filter((h) => h.exchangeCode === selectedExchange);
     }
 
     // 정렬
@@ -197,12 +218,12 @@ export default function TradingHistorySidebar({
                 id="trading-exchange-select"
                 className="trading-history-filter-select"
                 value={selectedExchange ?? ''}
-                onChange={(e) => setSelectedExchange(e.target.value || null)}
+                onChange={(e) => setSelectedExchange(e.target.value ? Number(e.target.value) : null)}
               >
                 <option value="">거래소 전체</option>
                 {exchangeOptions.map((exchange) => (
-                  <option key={exchange} value={exchange}>
-                    {exchange}
+                  <option key={exchange.code} value={exchange.code}>
+                    {exchange.name}
                   </option>
                 ))}
               </select>
@@ -229,7 +250,7 @@ export default function TradingHistorySidebar({
               const isBuy = history.tradeType === 0;
               const koreanName = coin?.koreanName || coin?.symbol || `코인 ${history.coinId}`;
               const marketCode = coin?.marketCode || '-';
-              const exchange = coin?.exchange || '-';
+              const exchange = getExchangeName(history.exchangeCode);
               const tradeType = isBuy ? '매수' : '매도';
               const quantity = history.quantity || 0;
               const price = history.price || 0;
@@ -313,6 +334,7 @@ export default function TradingHistorySidebar({
                   </div>
                   {history.tradeTime && (
                     <div className="trading-history-trade-time">
+                      <span className="trading-history-exchange-name">{exchange}</span>
                       <span className="trading-history-detail-value">
                         {`${new Date(history.tradeTime).toLocaleTimeString('ko-KR', {
                           hour: '2-digit',

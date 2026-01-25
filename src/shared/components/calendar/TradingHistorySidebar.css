@@ -254,13 +254,27 @@
 .trading-history-trade-time {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
   margin-top: 6px;
+}
+
+.trading-history-exchange-name {
+  color: rgba(0, 19, 43, 0.58);
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 9px;
+  text-align: left;
+  border: 1px solid rgba(0, 19, 43, 0.2);
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
 .trading-history-trade-time .trading-history-detail-value {
   color: rgba(0, 19, 43, 0.58);
   font-weight: 500;
   font-size: 10px;
+  text-align: right;
 }
 
 .trading-history-item-details + .trading-history-detail-value {
@@ -404,6 +418,11 @@
 
 .dark .trading-history-trade-time .trading-history-detail-value {
   color: rgba(237, 237, 237, 0.58);
+}
+
+.dark .trading-history-exchange-name {
+  color: rgba(237, 237, 237, 0.58);
+  border-color: rgba(237, 237, 237, 0.2);
 }
 
 .dark .trading-history-item-details + .trading-history-detail-value {

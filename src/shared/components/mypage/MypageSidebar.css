@@ -1,0 +1,65 @@
+.mypage-sidebar {
+  position: fixed;
+  left: 0;
+  top: 70px;
+  width: 200px;
+  height: calc(100vh - 70px);
+  background-color: var(--sidebar-bg, #ffffff);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mypage-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 8px 16px 8px;
+  gap: 2px;
+}
+
+.mypage-sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.mypage-sidebar-item:hover {
+  background-color: rgba(209, 209, 253, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mypage-sidebar-item.active {
+  background-color: rgba(209, 209, 253, 0.15);
+}
+
+.mypage-sidebar-item-label {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+/* 다크 모드 */
+.dark .mypage-sidebar {
+  background-color: var(--sidebar-bg, #17171c);
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .mypage-sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .mypage-sidebar-item.active {
+  background-color: rgba(209, 209, 253, 0.15);
+}

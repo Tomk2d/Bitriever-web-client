@@ -119,6 +119,11 @@ export default function CommunityDetailPage() {
   const isAuthor = isAuthenticated && user && user.userId === community.userId;
   const contentText = parseContentToText(community.content);
 
+  const getProfileImageUrl = (profileUrl: string | null | undefined) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
+  };
+
   return (
     <div className="container mx-auto pt-8 pb-8">
       <div className="community-detail">
@@ -130,11 +135,11 @@ export default function CommunityDetailPage() {
           {/* 헤더 */}
           <div className="community-detail-header">
             <div className="community-card-user-info">
-              <div className="community-profile-image">
-                <span className="profile-initial">
-                  {(community.userNickname || '익명').charAt(0).toUpperCase()}
-                </span>
-              </div>
+              <img 
+                src={getProfileImageUrl(community.userProfileUrl)} 
+                alt="프로필" 
+                className="community-profile-img"
+              />
               <div className="community-user-details">
                 <span className="community-author">{community.userNickname || '익명'}</span>
                 <span className="community-date">
@@ -224,7 +229,7 @@ export default function CommunityDetailPage() {
         {/* 댓글 섹션 */}
         <div className="community-detail-comments">
           {isAuthenticated && (
-            <CommentForm communityId={community.id} userNickname={user?.nickname} />
+            <CommentForm communityId={community.id} userNickname={user?.nickname} userProfileUrl={user?.profileUrl} />
           )}
           <div className="comments-title-wrapper">
             <h3 className="comments-title">댓글 {commentsData?.totalElements || 0}개</h3>

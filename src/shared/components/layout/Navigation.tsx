@@ -43,6 +43,7 @@ export default function Navigation() {
             userId: userData.id,
             email: userData.email,
             nickname: userData.nickname,
+            profileUrl: userData.profileUrl || '/profile1',
             connectedExchanges: userData.connectedExchanges || [],
           }));
         } catch (error) {
@@ -120,12 +121,17 @@ export default function Navigation() {
 
   const handleSettings = () => {
     setIsDropdownOpen(false);
-    router.push('/profile');
+    router.push('/mypage');
   };
 
   const getInitials = (nickname: string | null) => {
     if (!nickname) return '?';
     return nickname.charAt(0).toUpperCase();
+  };
+
+  const getProfileImageUrl = (profileUrl: string | null) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
   };
 
   return (
@@ -177,22 +183,22 @@ export default function Navigation() {
                   className="profile-button"
                   aria-label="프로필 메뉴"
                 >
-                  <div className="profile-avatar">
-                    {getInitials(user.nickname)}
-                  </div>
+                  <span 
+                    className="profile-avatar-image"
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      fontSize: '20px',
+                      filter: 'grayscale(100%)',
+                      opacity: 0.6
+                    }}
+                  >
+                    👤
+                  </span>
                 </button>
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
-                    <div className="profile-dropdown-header">
-                      <div className="profile-dropdown-avatar">
-                        {getInitials(user.nickname)}
-                      </div>
-                      <div className="profile-dropdown-info">
-                        <div className="profile-dropdown-name">{user.nickname}</div>
-                        <div className="profile-dropdown-email">{user.email}</div>
-                      </div>
-                    </div>
-                    <div className="profile-dropdown-divider"></div>
                     <button
                       type="button"
                       onClick={handleSettings}

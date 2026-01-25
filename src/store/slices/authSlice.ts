@@ -6,6 +6,7 @@ interface AuthState {
     userId: string | null;
     email: string | null;
     nickname: string | null;
+    profileUrl: string | null;
     connectedExchanges: ExchangeTypeInfo[];
   } | null;
   isAuthenticated: boolean;
@@ -28,11 +29,12 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
-    setUserFromAuthResponse: (state, action: PayloadAction<{ userId: string; email: string; nickname: string }>) => {
+    setUserFromAuthResponse: (state, action: PayloadAction<{ userId: string; email: string; nickname: string; profileUrl: string }>) => {
       state.user = {
         userId: action.payload.userId,
         email: action.payload.email,
         nickname: action.payload.nickname,
+        profileUrl: action.payload.profileUrl,
         connectedExchanges: [],
       };
       state.isAuthenticated = true;

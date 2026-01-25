@@ -15,6 +15,21 @@ interface IndividualTradingHistoryPanelProps {
   onClose: () => void;
 }
 
+// exchangeCode를 거래소 이름으로 변환하는 함수
+const getExchangeName = (exchangeCode: number | undefined): string => {
+  if (!exchangeCode) return '-';
+  const exchangeMap: Record<number, string> = {
+    1: 'UPBIT',
+    2: 'BITHUMB',
+    3: 'COINONE',
+    11: 'BINANCE',
+    12: 'BYBIT',
+    13: 'COINBASE',
+    14: 'OKX',
+  };
+  return exchangeMap[exchangeCode] || '-';
+};
+
 interface IndividualTradingHistoryPanelRef {
   hasUnsavedChanges: () => boolean;
   handleSave: () => Promise<void>;
@@ -1214,7 +1229,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
                   <div className="individual-trading-history-additional-item">
                     <span className="individual-trading-history-detail-label">거래소</span>
                     <span className="individual-trading-history-detail-value">
-                      {coin?.exchange || '-'}
+                      {getExchangeName(tradingHistory.exchangeCode)}
                     </span>
                   </div>
                   <div className="individual-trading-history-additional-item">
