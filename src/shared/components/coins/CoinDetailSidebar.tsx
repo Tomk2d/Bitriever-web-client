@@ -348,15 +348,27 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
             <div className="coin-detail-coin-name">{koreanName}</div>
             <div className="coin-detail-market-code">{marketCode}</div>
           </div>
-          <div 
-            className={`coin-detail-price-info ${isPriceChanged ? 'price-changed' : ''}`}
-            style={isPriceChanged ? { backgroundColor: getBackgroundColor() } : {}}
-          >
-            <div className="coin-detail-price-value" style={{ color: changeRateColor }}>
-              {price !== null ? `${formatPrice(price)}원` : '-'}
-            </div>
-            <div className="coin-detail-change-rate" style={{ color: changeRateColor }}>
-              {formatChangeRate(changeRate)}
+          <div className="coin-detail-price-wrapper">
+            {coin.exchange && (
+              <span 
+                className="coin-detail-exchange-marker"
+                data-tooltip={`해당 가상화폐의 가격은 ${coin.exchange}를 따릅니다.`}
+              >
+                {coin.exchange}
+              </span>
+            )}
+            <div 
+              className={`coin-detail-price-info ${isPriceChanged ? 'price-changed' : ''}`}
+              style={isPriceChanged ? { backgroundColor: getBackgroundColor() } : {}}
+            >
+              <div className="coin-detail-price-info-content">
+                <div className="coin-detail-price-value" style={{ color: changeRateColor }}>
+                  {price !== null ? `${formatPrice(price)}원` : '-'}
+                </div>
+                <div className="coin-detail-change-rate" style={{ color: changeRateColor }}>
+                  {formatChangeRate(changeRate)}
+                </div>
+              </div>
             </div>
           </div>
           <button

@@ -14,11 +14,84 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const handleNotification = (notification: NotificationResponse) => {
     console.log('[NotificationProvider] 새 알림 수신:', notification);
     
-    // 모든 notifications 쿼리 캐시에 새 알림 추가
-    // queryClient.setQueriesData를 사용하여 모든 notifications 쿼리를 업데이트
+    let shouldIncreaseUnreadCount = false;
+    let shouldDecreaseUnreadCount = false;
+    
+    // useInfiniteQuery 캐시 업데이트 (무한 스크롤용)
     queryClient.setQueriesData(
-      { queryKey: ['notifications'] },
+      { queryKey: ['notifications', 'infinite'] },
       (oldData: any) => {
+        if (!oldData?.pages) return oldData;
+        
+        // 첫 번째 페이지에서 중복 확인
+        const firstPage = oldData.pages[0];
+        if (firstPage?.content) {
+          const existingIndex = firstPage.content.findIndex(
+            (n: NotificationResponse) => n.id === notification.id
+          );
+          
+          if (existingIndex >= 0) {
+            // 이미 존재하면 업데이트만
+            const updatedContent = [...firstPage.content];
+            const oldNotification = updatedContent[existingIndex];
+            updatedContent[existingIndex] = notification;
+            
+            // 읽지 않은 개수 업데이트 플래그 설정
+            if (oldNotification.read && !notification.read) {
+              shouldIncreaseUnreadCount = true;
+            } else if (!oldNotification.read && notification.read) {
+              shouldDecreaseUnreadCount = true;
+            }
+            
+            // 첫 번째 페이지 업데이트
+            const updatedPages = [...oldData.pages];
+            updatedPages[0] = {
+              ...firstPage,
+              content: updatedContent,
+            };
+            
+            return {
+              ...oldData,
+              pages: updatedPages,
+            };
+          }
+        }
+        
+        // 새 알림인 경우 - 첫 번째 페이지의 맨 앞에 추가
+        if (!notification.read) {
+          shouldIncreaseUnreadCount = true;
+        }
+        
+        const updatedPages = [...oldData.pages];
+        if (updatedPages[0]) {
+          updatedPages[0] = {
+            ...updatedPages[0],
+            content: [notification, ...(updatedPages[0].content || [])],
+            totalElements: (updatedPages[0].totalElements || 0) + 1,
+          };
+        } else {
+          // 페이지가 없으면 새로 생성
+          updatedPages[0] = {
+            content: [notification],
+            page: 0,
+            size: 20,
+            totalElements: 1,
+          };
+        }
+        
+        return {
+          ...oldData,
+          pages: updatedPages,
+        };
+      }
+    );
+    
+    // 일반 useQuery 캐시 업데이트 (기존 호환성)
+    queryClient.setQueriesData(
+      { queryKey: ['notifications'], exact: false },
+      (oldData: any) => {
+        // useInfiniteQuery가 아닌 경우만 처리
+        if (oldData?.pages) return oldData;
         if (!oldData) return oldData;
         
         // 이미 같은 ID의 알림이 있으면 추가하지 않음 (중복 방지)
@@ -29,11 +102,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         if (existingIndex !== undefined && existingIndex >= 0) {
           // 이미 존재하면 업데이트만
           const updatedContent = [...oldData.content];
+          const oldNotification = updatedContent[existingIndex];
           updatedContent[existingIndex] = notification;
+          
+          // 읽지 않은 개수 업데이트 플래그 설정 (읽음 -> 안읽음으로 변경된 경우)
+          if (oldNotification.read && !notification.read) {
+            shouldIncreaseUnreadCount = true;
+          }
+          // 안읽음 -> 읽음으로 변경된 경우
+          else if (!oldNotification.read && notification.read) {
+            shouldDecreaseUnreadCount = true;
+          }
+          
           return {
             ...oldData,
             content: updatedContent,
           };
+        }
+        
+        // 새 알림인 경우
+        if (!notification.read) {
+          shouldIncreaseUnreadCount = true;
         }
         
         // 새 알림을 맨 앞에 추가 (최신순)
@@ -45,19 +134,28 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       }
     );
 
-    // 읽지 않은 개수 캐시 갱신
-    queryClient.setQueryData(
-      ['notifications', 'unread-count'],
-      (oldData: any) => {
-        if (!oldData) {
-          return { unreadCount: 1 };
+    // 읽지 않은 개수 캐시 갱신 (setQueriesData 외부에서 별도로 호출하여 즉시 반영)
+    // 함수형 업데이트를 사용하여 항상 최신 상태를 보장
+    if (shouldIncreaseUnreadCount) {
+      queryClient.setQueryData<{ unreadCount: number }>(
+        ['notifications', 'unread-count'],
+        (oldData) => {
+          const currentCount = oldData?.unreadCount ?? 0;
+          console.log('[NotificationProvider] 읽지 않은 개수 증가:', currentCount, '->', currentCount + 1);
+          return { unreadCount: currentCount + 1 };
         }
-        return {
-          ...oldData,
-          unreadCount: (oldData.unreadCount || 0) + 1,
-        };
-      }
-    );
+      );
+    } else if (shouldDecreaseUnreadCount) {
+      queryClient.setQueryData<{ unreadCount: number }>(
+        ['notifications', 'unread-count'],
+        (oldData) => {
+          const currentCount = oldData?.unreadCount ?? 0;
+          const newCount = Math.max(0, currentCount - 1);
+          console.log('[NotificationProvider] 읽지 않은 개수 감소:', currentCount, '->', newCount);
+          return { unreadCount: newCount };
+        }
+      );
+    }
 
     // 브라우저 알림 표시 (선택사항)
     if ('Notification' in window && Notification.permission === 'granted') {

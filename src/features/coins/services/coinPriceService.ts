@@ -64,6 +64,28 @@ export const coinPriceService = {
     return result.data || [];
   },
 
+  /**
+   * 거래소별 코인 현재가 조회 (최초 연결 시 사용)
+   * @param exchange 거래소 이름 (UPBIT, COINONE 등)
+   * @returns 해당 거래소의 코인 현재 가격 목록
+   */
+  getTickerPricesByExchange: async (exchange: string): Promise<CoinTickerPriceDto[]> => {
+    const response = await fetch(`/api/proxy/coin-prices/ticker/all?exchange=${encodeURIComponent(exchange)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: '코인 가격 조회에 실패했습니다.' }));
+      throw new Error(error.message || error.error?.message || '코인 가격 조회에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  },
+
   getByDateRange: async (
     coinId: number,
     startDate: string,

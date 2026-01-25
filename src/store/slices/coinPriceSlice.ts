@@ -61,10 +61,42 @@ export const { setInitialPrices, updatePrices, updatePrice, clearPrices } = coin
 
 // Selectors
 export const selectAllPrices = (state: { coinPrice: CoinPriceState }) => state.coinPrice.prices;
-export const selectPriceByMarket = (market: string) => (state: { coinPrice: CoinPriceState }) => 
-  state.coinPrice.prices[market] || null;
+
+// 대소문자 무시하여 가격 조회 (코인원의 경우 market이 소문자, marketCode가 대문자일 수 있음)
+export const selectPriceByMarket = (market: string) => (state: { coinPrice: CoinPriceState }) => {
+  if (!market) return null;
+  
+  // 정확한 매칭 시도
+  if (state.coinPrice.prices[market]) {
+    return state.coinPrice.prices[market];
+  }
+  
+  // 대소문자 무시 매칭 시도 (소문자, 대문자, 원본 순서로 시도)
+  const marketLower = market.toLowerCase();
+  const marketUpper = market.toUpperCase();
+  
+  // 소문자로 시도
+  if (state.coinPrice.prices[marketLower]) {
+    return state.coinPrice.prices[marketLower];
+  }
+  
+  // 대문자로 시도
+  if (state.coinPrice.prices[marketUpper]) {
+    return state.coinPrice.prices[marketUpper];
+  }
+  
+  // 모든 키를 순회하면서 대소문자 무시 비교 (fallback)
+  for (const [key, value] of Object.entries(state.coinPrice.prices)) {
+    if (key.toLowerCase() === marketLower) {
+      return value;
+    }
+  }
+  
+  return null;
+};
+
 export const selectTradePriceByMarket = (market: string) => (state: { coinPrice: CoinPriceState }) => 
-  state.coinPrice.prices[market]?.tradePrice || 0;
+  selectPriceByMarket(market)(state)?.tradePrice || 0;
 export const selectIsInitialized = (state: { coinPrice: CoinPriceState }) => state.coinPrice.isInitialized;
 export const selectLastUpdated = (state: { coinPrice: CoinPriceState }) => state.coinPrice.lastUpdated;
 

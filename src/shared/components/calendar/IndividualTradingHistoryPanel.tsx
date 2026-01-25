@@ -15,6 +15,11 @@ interface IndividualTradingHistoryPanelProps {
   onClose: () => void;
 }
 
+interface IndividualTradingHistoryPanelRef {
+  hasUnsavedChanges: () => boolean;
+  handleSave: () => Promise<void>;
+}
+
 const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRef, IndividualTradingHistoryPanelProps>(({
   tradingHistory,
   onClose: originalOnClose,
@@ -350,9 +355,9 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
   };
 
   // contentEditable의 내용을 formContent에 반영 (게시판과 동일한 방식)
-  const updateFormContentFromEditor = () => {
+  const updateFormContentFromEditor = (): string => {
     const editor = textareaRef.current;
-    if (!editor) return;
+    if (!editor) return '';
 
     const clone = editor.cloneNode(true) as HTMLDivElement;
 
@@ -461,6 +466,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
 
     text = text.replace(/^[\n\r]+|[\n\r]+$/g, '');
     setFormContent(text);
+    return text;
   };
 
   // 에디터에서 blocks 추출하는 함수 (게시글과 동일한 방식)
@@ -1274,7 +1280,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   onPaste={handlePaste}
-                  data-placeholder="매매시 고려한 점을 입력해서 매매일지를 작성해보세요.                                     (이미지를 드래그하거나 붙여넣을 수 있습니다)"
+                  data-placeholder="매매시 고려한 점을 입력해서 매매일지를 작성해보세요.                                              (이미지를 드래그하거나 붙여넣을 수 있습니다)"
                   suppressContentEditableWarning
                 />
                 <div className="textarea-hint">(이미지 파일은 JPEG, PNG, GIF, WEBP 형식만 지원되며, 최대 5MB까지 업로드 가능합니다)</div>
