@@ -52,6 +52,7 @@ export interface CommunityListResponse {
   hashtags?: string[];
   likeCount?: number;
   dislikeCount?: number;
+  commentCount?: number;
   userReaction?: string | null;
   thumbnailImageUrl?: string;
   previewText?: string;

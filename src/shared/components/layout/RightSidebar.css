@@ -69,6 +69,9 @@
   display: block;
   filter: grayscale(100%);
   opacity: 0.8;
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
 }
 
 .sidebar-text {
@@ -782,7 +785,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 8px 0 4px 0;
   margin-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
