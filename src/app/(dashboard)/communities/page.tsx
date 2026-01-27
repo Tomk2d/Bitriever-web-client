@@ -343,6 +343,10 @@ export default function CommunitiesPage() {
                             <span className="reaction-icon">▼</span>
                             <span className="reaction-count">{community.dislikeCount || 0}</span>
                           </button>
+                          <div className="community-comment-count">
+                            <span className="comment-icon">💬</span>
+                            <span className="comment-count">{community.commentCount || 0}</span>
+                          </div>
                         </div>
                       </div>
                     </Link>
