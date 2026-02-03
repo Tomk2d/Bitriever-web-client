@@ -415,6 +415,8 @@ export default function CoinDetailLineChart({
     }
   }, [currentPrice]);
 
+  const hasNoData = !isLoading && (!priceDataList || priceDataList.length === 0);
+
   return (
     <div
       ref={chartContainerRef}
@@ -433,6 +435,11 @@ export default function CoinDetailLineChart({
           }}
         >
           로딩 중...
+        </div>
+      )}
+      {hasNoData && (
+        <div className="coin-detail-chart-empty">
+          지원하지 않는 종목입니다.
         </div>
       )}
     </div>

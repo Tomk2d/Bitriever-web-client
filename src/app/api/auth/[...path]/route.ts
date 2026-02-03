@@ -32,6 +32,10 @@ export async function POST(
     if (authHeader) {
       headers['Authorization'] = authHeader;
     }
+    const cookieHeader = request.headers.get('Cookie');
+    if (cookieHeader) {
+      headers['Cookie'] = cookieHeader;
+    }
 
     const fetchOptions: RequestInit = {
       method: 'POST',
@@ -46,12 +50,14 @@ export async function POST(
 
     const data = await response.json();
 
-    if (response.ok) {
-      const nextResponse = NextResponse.json(data);
-      return nextResponse;
+    const nextResponse = response.ok
+      ? NextResponse.json(data)
+      : NextResponse.json(data, { status: response.status });
+    const setCookie = response.headers.get('Set-Cookie');
+    if (setCookie) {
+      nextResponse.headers.append('Set-Cookie', setCookie);
     }
-
-    return NextResponse.json(data, { status: response.status });
+    return nextResponse;
   } catch (error) {
     console.error('API route error:', error);
     return NextResponse.json(
@@ -92,6 +98,10 @@ export async function GET(
     } else if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
+    const cookieHeader = request.headers.get('Cookie');
+    if (cookieHeader) {
+      headers['Cookie'] = cookieHeader;
+    }
 
     const response = await fetch(url, {
       method: 'GET',
@@ -100,11 +110,14 @@ export async function GET(
 
     const data = await response.json();
 
-    if (response.ok) {
-      return NextResponse.json(data, { status: response.status });
+    const nextResponse = response.ok
+      ? NextResponse.json(data, { status: response.status })
+      : NextResponse.json(data, { status: response.status });
+    const setCookie = response.headers.get('Set-Cookie');
+    if (setCookie) {
+      nextResponse.headers.append('Set-Cookie', setCookie);
     }
-
-    return NextResponse.json(data, { status: response.status });
+    return nextResponse;
   } catch (error) {
     console.error('API route error:', error);
     return NextResponse.json(

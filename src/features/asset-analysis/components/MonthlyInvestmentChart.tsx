@@ -26,8 +26,10 @@ interface MonthlyChartItem {
 export default function MonthlyInvestmentChart({ data }: MonthlyInvestmentChartProps) {
   if (data.monthlyInvestments.length === 0) {
     return (
-      <div className="monthly-investment-chart-empty">
-        <p>월별 투자 데이터가 없습니다.</p>
+      <div className="monthly-investment-chart monthly-investment-chart-empty-wrapper">
+        <div className="monthly-investment-chart-empty">
+          <p>월별 투자 데이터가 없습니다.</p>
+        </div>
       </div>
     );
   }

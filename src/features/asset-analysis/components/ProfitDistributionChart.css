@@ -120,13 +120,21 @@
 }
 
 /* 빈 상태 스타일 */
+.profit-distribution-chart-empty-wrapper {
+  justify-content: center;
+}
+
 .profit-distribution-chart-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 400px;
+  width: 100%;
+  flex: 1;
+  min-height: 330px;
   color: var(--text-secondary, rgba(121, 131, 140, 0.75));
   font-size: 0.875rem;
+  font-weight: 400;
+  text-align: center;
 }
 
 /* 반응형 디자인 */

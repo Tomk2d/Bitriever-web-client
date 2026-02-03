@@ -155,8 +155,8 @@ export default function ProfilePage() {
           계정 삭제 시 모든 데이터가 영구적으로 삭제됩니다.
         </p>
         <button 
-          className="mypage-button"
-          style={{ backgroundColor: '#dc3545' }}
+          className="mypage-button mypage-button-danger"
+          style={{ padding: '6px 12px' }}
           onClick={() => {
             // TODO: 계정 삭제 확인 모달
             alert('계정 삭제 기능은 준비 중입니다.');

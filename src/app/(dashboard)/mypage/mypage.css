@@ -246,6 +246,39 @@
   background-color: rgba(255, 255, 255, 0.04);
 }
 
+/* 거래소 연동 페이지 전용 버튼 */
+.mypage-button-danger {
+  background-color: #f87171 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.mypage-button-danger:hover {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.mypage-button-success {
+  background-color: #28c97a !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.mypage-button-success:hover {
+  background-color: #02a262 !important;
+  color: #ffffff !important;
+}
+
+.mypage-button-ghost {
+  background-color: transparent !important;
+  color: var(--foreground);
+  opacity: 0.6;
+}
+
+.mypage-button-ghost:hover {
+  background-color: transparent !important;
+}
+
 /* 빈 상태 */
 .mypage-empty {
   text-align: center;

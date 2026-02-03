@@ -31,8 +31,10 @@ interface ChartDataItem {
 export default function CoinHoldingChart({ data }: CoinHoldingChartProps) {
   if (data.holdings.length === 0) {
     return (
-      <div className="coin-holding-chart-empty">
-        <p>보유 코인 데이터가 없습니다.</p>
+      <div className="coin-holding-chart coin-holding-chart-empty-wrapper">
+        <div className="coin-holding-chart-empty">
+          <p>보유 코인 데이터가 없습니다.</p>
+        </div>
       </div>
     );
   }

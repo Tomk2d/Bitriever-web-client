@@ -41,8 +41,10 @@ interface ChartDataItem {
 export default function ProfitDistributionChart({ data }: ProfitDistributionChartProps) {
   if (data.totalSellCount === 0) {
     return (
-      <div className="profit-distribution-chart-empty">
-        <p>매도 거래 데이터가 없습니다.</p>
+      <div className="profit-distribution-chart profit-distribution-chart-empty-wrapper">
+        <div className="profit-distribution-chart-empty">
+          <p>매도 거래 데이터가 없습니다.</p>
+        </div>
       </div>
     );
   }

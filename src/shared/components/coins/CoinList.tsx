@@ -13,39 +13,49 @@ import CoinItem from './CoinItem';
 import CoinDetailSidebar from './CoinDetailSidebar';
 import EconomicCalendarSidebar from './EconomicCalendarSidebar';
 import MarketIndicatorChart from './MarketIndicatorChart';
+import { useAssets } from '@/features/asset/hooks/useAssets';
 import './CoinList.css';
 
+type TopTab = 'KRW' | 'BTC' | 'USDT' | 'HOLDINGS';
+
 const CurrencyTabs = memo(({ 
-  selectedCurrency, 
-  onCurrencyChange,
+  selectedTab, 
+  onTabChange,
   searchQuery,
-  onSearchChange
+  onSearchChange,
 }: { 
-  selectedCurrency: string; 
-  onCurrencyChange: (currency: string) => void;
+  selectedTab: TopTab; 
+  onTabChange: (tab: TopTab) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }) => {
   return (
     <div className="coin-list-currency-tabs">
+      <div className="coin-list-currency-tabs-inner">
       <div className="coin-list-currency-tabs-left">
         <button
-          className={`coin-list-currency-tab ${selectedCurrency === 'KRW' ? 'active' : ''}`}
-          onClick={() => onCurrencyChange('KRW')}
+          className={`coin-list-currency-tab ${selectedTab === 'KRW' ? 'active' : ''}`}
+          onClick={() => onTabChange('KRW')}
         >
           원화
         </button>
         <button
-          className={`coin-list-currency-tab ${selectedCurrency === 'BTC' ? 'active' : ''}`}
-          onClick={() => onCurrencyChange('BTC')}
+          className={`coin-list-currency-tab ${selectedTab === 'BTC' ? 'active' : ''}`}
+          onClick={() => onTabChange('BTC')}
         >
           BTC
         </button>
         <button
-          className={`coin-list-currency-tab ${selectedCurrency === 'USDT' ? 'active' : ''}`}
-          onClick={() => onCurrencyChange('USDT')}
+          className={`coin-list-currency-tab ${selectedTab === 'USDT' ? 'active' : ''}`}
+          onClick={() => onTabChange('USDT')}
         >
           USDT
+        </button>
+        <button
+          className={`coin-list-currency-tab ${selectedTab === 'HOLDINGS' ? 'active' : ''}`}
+          onClick={() => onTabChange('HOLDINGS')}
+        >
+          보유 종목
         </button>
       </div>
       <div className="coin-list-currency-tabs-right">
@@ -60,6 +70,8 @@ const CurrencyTabs = memo(({
           />
         </div>
       </div>
+      </div>
+      <div className="coin-list-currency-tabs-line" aria-hidden />
     </div>
   );
 });
@@ -100,6 +112,7 @@ const isOnlyInitialConsonants = (query: string): boolean => {
 
 export default function CoinList() {
   const pathname = usePathname();
+  const [selectedTab, setSelectedTab] = useState<TopTab>('KRW');
   const [selectedCurrency, setSelectedCurrency] = useState<string>('KRW');
   const [selectedCoin, setSelectedCoin] = useState<CoinResponse | null>(null);
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
@@ -118,8 +131,12 @@ export default function CoinList() {
     setIsMounted(true);
   }, []);
 
-  // React Query를 사용한 코인 데이터 캐싱
-  const { data: coins = [], isLoading: loading, error, isFetching } = useCoins(selectedCurrency);
+  // React Query를 사용한 코인/자산 데이터 캐싱
+  const enableCoinsQuery = selectedTab !== 'HOLDINGS';
+  const { data: coins = [], isLoading: loading, error, isFetching } = useCoins(
+    enableCoinsQuery ? selectedCurrency : 'KRW'
+  );
+  const { data: assets = [] } = useAssets(true);
   
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector(selectAllPrices);
@@ -212,14 +229,41 @@ export default function CoinList() {
     }
   };
 
-  // 검색 필터링된 코인 목록 (debouncedSearchQuery 사용)
+  // 보유 종목 탭에서 사용할 코인 목록 (원화/BTC/USDT 전체 보유 종목, KRW-KRW 제외)
+  const holdingCoins = useMemo<CoinResponse[]>(() => {
+    if (!assets || assets.length === 0) return [];
+
+    const map = new Map<string, CoinResponse>();
+
+    assets.forEach((asset) => {
+      if (!asset.coin) return;
+      if (asset.symbol === 'KRW') return; // KRW-KRW 제외
+      if ((asset.quantity || 0) <= 0) return;
+
+      const marketCode = asset.coin.marketCode;
+      if (!marketCode || marketCode === 'KRW-KRW') return;
+
+      if (!map.has(marketCode)) {
+        map.set(marketCode, asset.coin);
+      }
+    });
+
+    return Array.from(map.values());
+  }, [assets]);
+
+  // 검색 + 탭(보유 종목/통화) 필터링된 코인 목록 (debouncedSearchQuery 사용)
   const filteredCoins = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return coins;
+    const baseList =
+      selectedTab === 'HOLDINGS'
+        ? holdingCoins
+        : coins;
+
+    if (!debouncedSearchQuery.trim()) return baseList;
 
     const query = debouncedSearchQuery.trim().toLowerCase();
     const isInitialOnly = isOnlyInitialConsonants(query);
 
-    return coins.filter(coin => {
+    return baseList.filter(coin => {
       const koreanName = coin.koreanName || '';
       const englishName = coin.englishName || '';
       const symbol = coin.symbol || '';
@@ -244,7 +288,7 @@ export default function CoinList() {
         return koreanMatch || englishMatch || symbolMatch;
       }
     });
-  }, [coins, debouncedSearchQuery]);
+  }, [coins, debouncedSearchQuery, selectedTab, holdingCoins]);
 
   // 정렬된 코인 목록 (클라이언트에서만 정렬 적용하여 Hydration 에러 방지)
   const sortedCoins = useMemo(() => {
@@ -490,13 +534,19 @@ export default function CoinList() {
       </div>
       <div className="coin-list-content-wrapper">
         <CurrencyTabs 
-          selectedCurrency={selectedCurrency} 
-          onCurrencyChange={setSelectedCurrency}
+          selectedTab={selectedTab} 
+          onTabChange={(tab) => {
+            setSelectedTab(tab);
+            if (tab === 'KRW' || tab === 'BTC' || tab === 'USDT') {
+              setSelectedCurrency(tab);
+            }
+          }}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
         />
         <div className="coin-list-wrapper">
           <div className="coin-list-header">
+            <div className="coin-list-header-inner">
             <div 
               className="coin-list-header-section coin-list-header-info coin-list-header-sortable"
               onClick={() => handleSort('name')}
@@ -584,6 +634,7 @@ export default function CoinList() {
                   ▼
                 </span>
               </div>
+            </div>
             </div>
           </div>
           {coinListContent}

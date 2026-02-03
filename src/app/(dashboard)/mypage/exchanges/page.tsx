@@ -22,20 +22,20 @@ const EXCHANGES: Exchange[] = [
     isAvailable: true,
   },
   {
-    code: 2,
-    name: 'BITHUMB',
-    koreanName: '빗썸',
-    logo: '/exchanges/bithumb.png',
-    isConnected: false,
-    isAvailable: false,
-  },
-  {
     code: 3,
     name: 'COINONE',
     koreanName: '코인원',
     logo: '/exchanges/coinone.png',
     isConnected: false,
     isAvailable: true,
+  },
+  {
+    code: 2,
+    name: 'BITHUMB',
+    koreanName: '빗썸',
+    logo: '/exchanges/bithumb.png',
+    isConnected: false,
+    isAvailable: false,
   },
   {
     code: 11,
@@ -126,8 +126,8 @@ export default function ExchangesPage() {
                 </div>
               </div>
               <button
-                className="mypage-button mypage-button-secondary"
-                style={{ padding: '8px 16px', fontSize: '13px' }}
+                className="mypage-button mypage-button-danger"
+                style={{ padding: '6px 12px', fontSize: '13px' }}
                 onClick={() => handleDisconnect(exchange)}
               >
                 연동 해제
@@ -162,19 +162,18 @@ export default function ExchangesPage() {
             </div>
             {exchange.isAvailable ? (
               <button
-                className="mypage-button"
-                style={{ padding: '8px 16px', fontSize: '13px' }}
+                className="mypage-button mypage-button-success"
+                style={{ padding: '6px 12px', fontSize: '13px' }}
                 onClick={() => handleConnect(exchange)}
               >
                 연동하기
               </button>
             ) : (
               <button
-                className="mypage-button"
+                className="mypage-button mypage-button-ghost"
                 style={{ 
-                  padding: '8px 16px', 
+                  padding: '6px 12px', 
                   fontSize: '13px',
-                  opacity: 0.5,
                   cursor: 'not-allowed'
                 }}
                 disabled
@@ -240,8 +239,8 @@ export default function ExchangesPage() {
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button
-                className="mypage-button"
-                style={{ flex: 1 }}
+                className="mypage-button mypage-button-success"
+                style={{ flex: 1, padding: '9px 18px' }}
                 onClick={handleSubmitApi}
                 disabled={!apiKey || !secretKey}
               >
@@ -249,7 +248,7 @@ export default function ExchangesPage() {
               </button>
               <button
                 className="mypage-button mypage-button-secondary"
-                style={{ flex: 1 }}
+                style={{ flex: 1, padding: '9px 18px' }}
                 onClick={() => setShowApiModal(false)}
               >
                 취소

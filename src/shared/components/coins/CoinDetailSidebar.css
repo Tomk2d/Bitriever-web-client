@@ -353,6 +353,17 @@
   overflow: hidden;
 }
 
+.coin-detail-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
 .coin-detail-info-section {
   margin-bottom: 12px;
 }
@@ -447,6 +458,17 @@
 .coin-detail-info-details-content.blurred {
   filter: blur(3px);
   pointer-events: none;
+}
+
+.coin-detail-info-details-unsupported {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
 }
 
 .coin-detail-fear-greed-gauge-content {

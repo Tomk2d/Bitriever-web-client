@@ -5,22 +5,30 @@ const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BA
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    const cookieHeader = request.headers.get('Cookie');
+    if (cookieHeader) {
+      headers['Cookie'] = cookieHeader;
+    }
 
     const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     });
 
     const data = await response.json();
 
-    if (response.ok) {
-      return NextResponse.json(data);
+    const nextResponse = response.ok
+      ? NextResponse.json(data)
+      : NextResponse.json(data, { status: response.status });
+    const setCookie = response.headers.get('Set-Cookie');
+    if (setCookie) {
+      nextResponse.headers.append('Set-Cookie', setCookie);
     }
-
-    return NextResponse.json(data, { status: response.status });
+    return nextResponse;
   } catch (error) {
     console.error('API route error:', error);
     return NextResponse.json(
