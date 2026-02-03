@@ -1,0 +1,73 @@
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  row-gap: 1rem;
+  column-gap: 0.75rem;
+  margin-bottom: 2rem;
+  justify-items: stretch;
+}
+
+.summary-card {
+  background: var(--card-background);
+  border-radius: 12px;
+  padding: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card-content {
+  width: fit-content;
+}
+
+.summary-card-title {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+  font-weight: 500;
+}
+
+.summary-card-value {
+  font-size: calc(1.5rem - 4px);
+  font-weight: 700;
+  margin-bottom: 0.375rem;
+  line-height: 1.2;
+}
+
+.summary-card-subtitle {
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+@media (max-width: 1024px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .summary-card {
+    padding: 0.875rem;
+    max-width: 100%;
+  }
+
+  .summary-card-value {
+    font-size: 1.25rem;
+  }
+
+  .summary-card-title {
+    font-size: 0.75rem;
+  }
+
+  .summary-card-subtitle {
+    font-size: 0.625rem;
+  }
+}

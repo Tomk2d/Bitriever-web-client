@@ -1,0 +1,144 @@
+.risk-analysis {
+  padding: 1.5rem;
+}
+
+.risk-section {
+  margin-bottom: 2rem;
+}
+
+.risk-section:last-child {
+  margin-bottom: 0;
+}
+
+.risk-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.risk-concentration {
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.risk-concentration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.risk-level {
+  font-weight: 600;
+}
+
+.risk-concentration-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.risk-concentration-bar-wrapper {
+  width: 100%;
+  height: 12px;
+  background: var(--background);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.risk-concentration-bar {
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.risk-coin-list,
+.risk-exchange-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.risk-coin-item,
+.risk-exchange-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.risk-coin-name,
+.risk-exchange-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 80px;
+}
+
+.risk-coin-bar-wrapper,
+.risk-exchange-bar-wrapper {
+  flex: 1;
+  height: 8px;
+  background: var(--background);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.risk-coin-bar,
+.risk-exchange-bar {
+  height: 100%;
+  background: var(--price-up);
+  transition: width 0.3s;
+}
+
+.risk-coin-percentage,
+.risk-exchange-percentage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 50px;
+  text-align: right;
+}
+
+.risk-diversity {
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.risk-diversity-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--price-up);
+  margin-bottom: 1rem;
+}
+
+.risk-diversity-bar-wrapper {
+  width: 100%;
+  height: 12px;
+  background: var(--background);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.risk-diversity-bar {
+  height: 100%;
+  background: var(--price-up);
+  transition: width 0.3s;
+}
+
+.risk-diversity-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

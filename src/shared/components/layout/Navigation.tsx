@@ -91,7 +91,7 @@ export default function Navigation() {
     { label: '마켓', path: '/coins' },
     { label: '매매일지', path: '/diaries' },
     { label: '피드', path: '/communities' },
-    { label: '자산 분석', path: '/profile' },
+    { label: '자산 분석', path: '/asset-analysis' },
   ];
 
   const isActive = (path: string) => {

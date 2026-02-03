@@ -1,0 +1,138 @@
+.portfolio-risk-summary {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  padding-top: 20px;
+}
+
+.portfolio-risk-card {
+  flex: 1;
+  min-width: 220px;
+  max-width: 280px;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0rem 1.25rem;
+}
+
+.portfolio-risk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.portfolio-risk-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.portfolio-risk-level {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.portfolio-risk-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.portfolio-risk-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  height: 30px;
+  line-height: 30px;
+  display: inline-block;
+}
+
+.portfolio-risk-subtext {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.portfolio-risk-bar-wrapper {
+  position: relative;
+}
+
+.portfolio-risk-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--background);
+  overflow: hidden;
+}
+
+/* 배경색은 인라인 style로만 적용 (집중도/다양성별 색상) */
+.portfolio-risk-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* 커스텀 툴팁 (코인 보유 차트 툴팁과 동일 디자인) */
+.portfolio-risk-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background-color: var(--card-background, var(--background));
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  max-width: 280px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.dark .portfolio-risk-tooltip {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.portfolio-risk-tooltip-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.portfolio-risk-tooltip-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.portfolio-risk-tooltip-desc {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+}
+
+.portfolio-risk-tooltip-formula {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+}
+
+.portfolio-risk-tooltip-sub {
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+}
+
+@media (max-width: 768px) {
+  .portfolio-risk-summary {
+    flex-direction: column;
+  }
+}
+
