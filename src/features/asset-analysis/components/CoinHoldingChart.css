@@ -1,0 +1,160 @@
+.coin-holding-chart {
+  width: 100%;
+  padding: 1.5rem 1.5rem 0.75rem;
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  min-height: 320px;
+}
+
+.coin-holding-pie-container {
+  flex: 1 1 360px;
+  min-height: 300px;
+  max-width: 400px;  /* 최대 크기는 지금처럼 유지 */
+  min-width: 360px;  /* 데스크톱 기준 최소 폭 */
+  width: 100%;       /* 부모 폭에 맞춰 반응형으로 줄어듦 */
+}
+
+/* Recharts Pie 차트 섹터 스타일 */
+.coin-holding-segment {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  filter: brightness(1);
+}
+
+.coin-holding-segment:hover {
+  filter: brightness(1.15);
+  transform-origin: center;
+}
+
+/* 커스텀 Tooltip 스타일 - 내부 요소에 맞게 좌우 fit */
+.coin-holding-tooltip {
+  background-color: var(--card-background, var(--background));
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: fit-content;
+  min-width: min-content;
+}
+
+.dark .coin-holding-tooltip {
+  background-color: var(--card-background, var(--background));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.coin-holding-tooltip-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.coin-holding-tooltip-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.coin-holding-tooltip-percentage {
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+}
+
+/* Legend 스타일 */
+.coin-holding-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  flex: 1;
+  min-width: 0;
+  padding-left: 1rem;
+  padding-right: 0;
+  align-items: flex-start; /* 각 아이템을 내용 너비에 맞게 */
+}
+
+.coin-holding-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.coin-holding-legend-item:hover {
+  transform: translateX(4px);
+}
+
+.coin-holding-legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.coin-holding-legend-info {
+  flex: 1;
+  min-width: 0;
+  padding-right: 0;
+}
+
+.coin-holding-legend-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+  padding-right: 0;
+}
+
+.coin-holding-legend-value {
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+  line-height: 1.4;
+  padding-right: 0;
+}
+
+.coin-holding-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+  font-size: 0.875rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .coin-holding-chart {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .coin-holding-pie-container {
+    min-height: 250px;
+    max-width: 100%;
+    min-width: 260px; /* 태블릿/작은 화면에서 최소 폭 축소 */
+  }
+
+  .coin-holding-legend {
+    padding-left: 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    gap: 0.75rem;
+  }
+
+  .dark .coin-holding-legend {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* 작은 화면에서 차트 크기 조정 */
+@media (max-width: 480px) {
+  .coin-holding-pie-container {
+    min-height: 200px;
+    min-width: 220px; /* 모바일에서 더 줄어듦 */
+  }
+}

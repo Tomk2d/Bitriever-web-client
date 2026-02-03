@@ -1,0 +1,111 @@
+.trading-frequency-chart {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 1.5rem;
+}
+
+.trading-frequency-section {
+  flex: 1;
+  margin-bottom: 0;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.trading-frequency-section:last-child {
+  margin-bottom: 0;
+}
+
+.trading-frequency-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.trading-frequency-hourly {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  gap: 0.25rem;
+  min-width: 360px;
+  padding: 0 10px;
+}
+
+.trading-frequency-dayofweek {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  gap: 0.5rem;
+  min-width: 360px;
+  padding: 0 10px;
+}
+
+.trading-frequency-hour-item,
+.trading-frequency-day-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.trading-frequency-bar-wrapper {
+  display: flex;
+  align-items: flex-end;
+  height: 150px;
+  width: 100%;
+}
+
+.trading-frequency-bar {
+  width: 100%;
+  min-height: 2px;
+  background: var(--price-up);
+  border-radius: 4px 4px 0 0;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.trading-frequency-bar:hover {
+  opacity: 0.8;
+}
+
+.trading-frequency-hour-label,
+.trading-frequency-day-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.trading-frequency-tooltip-wrapper {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  transform: translate(0, -100%);
+}
+
+@media (max-width: 768px) {
+  .trading-frequency-chart {
+    flex-direction: column;
+  }
+
+  .trading-frequency-hourly {
+    gap: 0.125rem;
+  }
+
+  .trading-frequency-dayofweek {
+    gap: 0.25rem;
+  }
+
+  .trading-frequency-hour-label,
+  .trading-frequency-day-label {
+    font-size: 0.625rem;
+  }
+}
