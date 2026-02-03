@@ -51,7 +51,6 @@ export default function Navigation() {
           // 토큰이 유효하지 않으면 제거
           if (typeof window !== 'undefined') {
             localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
           }
           dispatch(clearUser());
         }

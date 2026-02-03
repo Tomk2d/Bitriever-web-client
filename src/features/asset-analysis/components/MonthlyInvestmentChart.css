@@ -10,12 +10,23 @@
   min-height: 320px;
 }
 
+.monthly-investment-chart.monthly-investment-chart-empty-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .monthly-investment-chart-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 320px;
-  color: var(--text-secondary);
+  width: 100%;
+  flex: 1;
+  min-height: 320px;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-align: center;
 }
 
 /* 툴팁 - 내부 요소에 맞게 좌우 fit */

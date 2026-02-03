@@ -48,7 +48,9 @@ export default function PsychologyAnalysis({ data }: PsychologyAnalysisProps) {
       <div className="psychology-analysis">
         <div className="psychology-section">
           <h3 className="psychology-title">심리 상태 분포</h3>
-          <div className="coin-holding-chart-empty">심리 데이터가 없습니다.</div>
+          <div className="psychology-empty-wrapper">
+            <p className="psychology-empty-text">심리 데이터가 없습니다.</p>
+          </div>
         </div>
       </div>
     );

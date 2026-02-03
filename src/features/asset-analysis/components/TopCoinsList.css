@@ -106,9 +106,16 @@
 }
 
 .top-coins-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 200px;
   padding: 2rem;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 @media (max-width: 768px) {

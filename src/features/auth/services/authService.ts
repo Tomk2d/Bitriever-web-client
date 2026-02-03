@@ -21,7 +21,6 @@ export interface AuthResponse {
   nickname: string | null;
   profileUrl: string;
   accessToken: string;
-  refreshToken: string;
   requiresNickname?: boolean; // SNS 회원가입 시 닉네임 설정 필요 여부
 }
 
@@ -29,6 +28,7 @@ export const authService = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -43,10 +43,8 @@ export const authService = {
 
     const authData = result.data;
     
-    // JWT 토큰을 로컬 스토리지에 저장
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', authData.accessToken);
-      localStorage.setItem('refreshToken', authData.refreshToken);
     }
     
     return authData;
@@ -69,18 +67,12 @@ export const authService = {
   },
 
   refreshToken: async (): Promise<AuthResponse> => {
-    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
-    
-    if (!refreshToken) {
-      throw new Error('Refresh token이 없습니다.');
-    }
-    
     const response = await fetch('/api/auth/refresh', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ refreshToken }),
     });
 
     const result = await response.json();
@@ -91,10 +83,8 @@ export const authService = {
 
     const authData = result.data;
     
-    // 새로운 JWT 토큰을 로컬 스토리지에 저장
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', authData.accessToken);
-      localStorage.setItem('refreshToken', authData.refreshToken);
     }
     
     return authData;
@@ -102,23 +92,17 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
-    // 서버에 로그아웃 요청 시도 (실패해도 계속 진행)
     try {
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         },
-        body: JSON.stringify({
-          accessToken: accessToken || null,
-          refreshToken: refreshToken || null,
-        }),
       });
 
-      // 401 에러는 토큰 만료로 인한 것이므로 정상적인 시나리오로 간주
       if (response.status !== 401) {
         const result = await response.json();
         if (!response.ok) {
@@ -126,15 +110,11 @@ export const authService = {
         }
       }
     } catch (error) {
-      // 네트워크 에러 등은 무시하고 로컬 정리 계속 진행
       console.warn('로그아웃 서버 요청 중 에러 (무시):', error);
     }
     
-    // 서버 응답과 관계없이 항상 로컬 정리 수행
-    // 로컬 스토리지에서 토큰 제거
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
     }
 
     // Redux store의 유저 관련 state 초기화

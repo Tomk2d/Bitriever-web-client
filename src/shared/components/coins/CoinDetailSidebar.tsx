@@ -441,7 +441,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                     <div className="coin-detail-info-headline">
                           {formatDate(selectedDateData.candleDateTimeKst)}
                           <HelpIcon tooltip={`선택된 시점의 상세 가격 정보를 표시합니다. 
-                                                upbit 거래소의 가격 정보를 기반으로 합니다.
+                                                ${coin.exchange || 'UPBIT'} 거래소의 가격 정보를 기반으로 합니다.
 
                                                 차트에서 빈공간을 클릭하면 현재 데이터로 전환되어 
                                                 현재 일자의 실시간 상세 정보를 볼 수 있습니다.`} />
@@ -505,21 +505,20 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                       ) : (
                     // 현재 데이터 표시 (웹소켓 실시간 데이터)
                     <>
-                      {!hasData || !priceData ? (
-                        <div className="coin-detail-info-placeholder">
-                          데이터가 없습니다.
-                    </div>
-                      ) : (
                         <div className="coin-detail-info-details">
                           <div className="coin-detail-info-headline">
                             {formatTodayDate()}
                             <HelpIcon tooltip={`현재 시점의 상세 가격 정보를 표시합니다. 
-                                              upbit 거래소의 실시간 가격을 기반으로, 10초마다 렌더링합니다. 
+                                              ${coin.exchange || 'UPBIT'} 거래소의 실시간 가격을 기반으로, 10초마다 렌더링합니다. 
 
                                               차트에서 날짜를 클릭하면 과거 데이터로 전환되어 
                                               해당 일자의 상세 정보를 볼 수 있습니다.`} />
                           </div>
                           <div className="coin-detail-info-details-content">
+                            {!hasData || !priceData ? (
+                              <div className="coin-detail-info-details-unsupported">지원하지 않는 종목입니다.</div>
+                            ) : (
+                            <>
                             <div className="coin-detail-info-details-left">
                               <div className="coin-detail-info-detail-row">
                                 <span className="coin-detail-info-detail-label">전날 대비 가격 변화율</span>
@@ -589,9 +588,10 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                                 </span>
                               </div>
                             </div>
+                            </>
+                            )}
                           </div>
                         </div>
-                      )}
                     </>
                   )}
                 </>
@@ -627,7 +627,7 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
                     </div>
                   ) : !articlesData || !articlesData.content || articlesData.content.length === 0 ? (
                     <div className="coin-detail-info-placeholder">
-                      해당 날짜에 데이터가 없습니다.
+                      지원하지 않는 종목입니다.
                     </div>
                   ) : (
                     <>

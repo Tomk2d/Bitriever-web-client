@@ -76,7 +76,7 @@
   align-items: center;
   gap: 24px;
   padding: 0 0 16px 16px;
-  margin: 0;
+  margin: 0 0 20px 0; /* 외부 하단 공백 */
   white-space: nowrap;
   overflow-x: auto;
   scroll-behavior: auto;
@@ -163,29 +163,52 @@
 }
 
 .coin-list-currency-tabs {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 0 0 0;
+  min-width: 0;
+  padding: 10px 0 0 0;
   margin: 0;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   background-color: var(--background);
   z-index: 10;
 }
 
+/* overflow는 inner만 → 오른쪽부터 잘림(검색 → 탭 통째로) */
+.coin-list-currency-tabs-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  padding-bottom: 2px; /* active ::after가 overflow에 잘리지 않게 */
+  position: relative;
+  z-index: 1; /* 선택된 탭 active 밑줄이 라인보다 위에 그려지게 */
+}
+
+/* 탭 버튼·왼쪽 영역 절대 안 줄어듦. 줄면 이 블록 통째로 잘림 */
 .coin-list-currency-tabs-left {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .coin-list-currency-tabs-right {
   display: flex;
   align-items: center;
   margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* inner와 같은 레벨, 하단 테두리 라인. margin-top: -2px로 inner 하단과 겹침 → active가 같은 위치에서 덮어씀 */
+.coin-list-currency-tabs-line {
+  height: 2px;
+  min-width: 0;
+  margin-top: -2px; /* 회색 라인을 inner 하단 2px와 동일 위치로 올림 */
+  background-color: rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 0; /* active 밑줄보다 아래 레이어 */
 }
 
 .coin-list-search {
@@ -223,8 +246,8 @@
   color: #9e9ea4;
 }
 
-.dark .coin-list-currency-tabs {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+.dark .coin-list-currency-tabs-line {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .dark .coin-list-search {
@@ -259,6 +282,9 @@
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   position: relative;
+  white-space: nowrap;
+  overflow: visible; /* active ::after(bottom:-2px)가 잘리지 않게 */
+  text-overflow: clip;
 }
 
 .coin-list-currency-tab:hover {
@@ -269,23 +295,41 @@
   opacity: 1;
   font-weight: 620;
   color: var(--main-color);
-  border-bottom: 2px solid var(--main-color);
+  border-bottom: 2px solid transparent; /* 실제 밑줄은 ::after로 같은 위치에 덮어씀 */
 }
 
-.dark .coin-list-currency-tabs {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+/* 회색 라인과 동일한 위치에 덮어쓰기 */
+.coin-list-currency-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px; /* inner padding-bottom 영역 = 회색 라인과 동일 위치 */
+  height: 2px;
+  background-color: var(--main-color);
+  z-index: 1;
+}
+
+.dark .coin-list-currency-tabs-line {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .dark .coin-list-currency-tab.active {
   color: var(--main-color);
-  border-bottom-color: var(--main-color);
+  border-bottom-color: transparent;
+}
+
+.dark .coin-list-currency-tab.active::after {
+  background-color: var(--main-color);
 }
 
 .coin-list-header {
   display: flex;
   align-items: center;
   width: 100%;
+  min-width: 0;
   height: 40px;
+  overflow: hidden;
   background-color: var(--background);
   margin: 0;
   padding: 0;
@@ -295,10 +339,24 @@
   z-index: 9;
 }
 
+.coin-list-header-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .coin-list-header-section {
   display: flex;
   align-items: center;
   height: 100%;
+  min-width: 0;
+  overflow: hidden;
   padding: 0 12px;
   box-sizing: border-box;
 }

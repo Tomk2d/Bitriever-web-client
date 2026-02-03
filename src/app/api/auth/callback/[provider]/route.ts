@@ -24,30 +24,25 @@ export async function GET(
     const state = searchParams.get('state');
     
     if (code && state) {
-      // 인증 코드를 서버로 전달 (서버의 OAuth2 callback 엔드포인트로 리다이렉트)
       const serverCallbackUrl = `${BACKEND_URL}/login/oauth2/code/${provider}?code=${code}&state=${state}`;
       return NextResponse.redirect(serverCallbackUrl);
     }
     
-    // 서버에서 토큰을 받은 경우 (정상 플로우)
-    const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
+    // 백엔드 OAuth2 성공 후 code와 사용자 정보만 쿼리로 전달된 경우
+    const oauthCode = searchParams.get('code');
     const userId = searchParams.get('userId');
     const email = searchParams.get('email');
     const nickname = searchParams.get('nickname');
     const requiresNickname = searchParams.get('requiresNickname');
     
-    if (!accessToken || !refreshToken) {
+    if (!oauthCode) {
       return NextResponse.redirect(
-        new URL('/login?error=토큰을 받지 못했습니다.', request.url)
+        new URL('/login?error=인증 코드를 받지 못했습니다.', request.url)
       );
     }
     
-    // 토큰을 쿼리 파라미터로 전달하여 클라이언트 페이지로 리다이렉트
-    // 클라이언트 페이지에서 토큰을 받아서 localStorage에 저장
     const redirectUrl = new URL('/auth/callback', request.url);
-    redirectUrl.searchParams.set('accessToken', accessToken);
-    redirectUrl.searchParams.set('refreshToken', refreshToken);
+    redirectUrl.searchParams.set('code', oauthCode);
     if (userId) redirectUrl.searchParams.set('userId', userId);
     if (email) redirectUrl.searchParams.set('email', email);
     if (nickname) redirectUrl.searchParams.set('nickname', nickname);

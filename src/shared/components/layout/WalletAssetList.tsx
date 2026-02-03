@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import type { AssetResponse } from '@/features/asset/types';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
@@ -27,6 +28,8 @@ export default function WalletAssetList({
   selectedExchangeCode = null,
   exchanges = []
 }: WalletAssetListProps) {
+  const router = useRouter();
+  const [connectButtonHovered, setConnectButtonHovered] = useState(false);
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector((state) => state.coinPrice.prices);
   
@@ -121,7 +124,21 @@ export default function WalletAssetList({
   if (totalAssets === 0) {
     return (
       <div className="wallet-asset-list-empty">
-        보유한 암호화폐가 없습니다.
+        <style dangerouslySetInnerHTML={{ __html: `
+          .wallet-asset-list-connect-button[data-hovered="true"] { background-color: #02a262 !important; }
+          .wallet-asset-list-connect-button[data-hovered="false"] { background-color: #28c97a !important; }
+        ` }} />
+        <span>보유한 암호화폐가 없습니다.</span>
+        <button
+          type="button"
+          className="wallet-asset-list-connect-button"
+          data-hovered={connectButtonHovered}
+          onMouseEnter={() => setConnectButtonHovered(true)}
+          onMouseLeave={() => setConnectButtonHovered(false)}
+          onClick={() => router.push('/mypage/exchanges')}
+        >
+          거래소 연동하기
+        </button>
       </div>
     );
   }

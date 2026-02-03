@@ -114,8 +114,19 @@
   color: var(--text-secondary);
 }
 
-.psychology-empty {
+.psychology-empty-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 280px;
   padding: 2rem;
+}
+
+.psychology-empty-text {
+  margin: 0;
+  color: var(--text-secondary, rgba(121, 131, 140, 0.75));
+  font-size: 0.875rem;
+  font-weight: 400;
   text-align: center;
-  color: var(--text-secondary);
 }
