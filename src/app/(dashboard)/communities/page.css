@@ -34,6 +34,13 @@
   justify-content: center;
 }
 
+.communities-write-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: brightness(0) invert(1); /* 검정 아이콘을 흰색으로 표시 */
+}
+
 .communities-write-button:hover {
   background-color: var(--main-color-hover, #028a52);
   transform: scale(1.1);

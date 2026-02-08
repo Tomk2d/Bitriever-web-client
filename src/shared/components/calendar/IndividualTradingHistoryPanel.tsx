@@ -1097,7 +1097,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
                 onClick={handleEditClick}
                 aria-label="작성하기"
               >
-                📝
+                <img src="/icon/pen.png" alt="작성하기" className="individual-trading-history-write-icon" />
               </button>
             )}
             <button
@@ -1548,7 +1548,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
                       onClick={handleEditClick}
                       aria-label="작성하기"
                     >
-                      📝
+                      <img src="/icon/pen.png" alt="작성하기" className="individual-trading-history-write-icon" />
                     </button>
                   </div>
                 </div>

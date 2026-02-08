@@ -4,6 +4,13 @@ export const getKRWAsset = (assets: AssetResponse[]): AssetResponse | null => {
   return assets.find((asset) => asset.symbol === 'KRW') || null;
 };
 
+/** 모든 거래소의 KRW 보유량 합계 */
+export const getTotalKRW = (assets: AssetResponse[]): number => {
+  return assets
+    .filter((asset) => asset.symbol === 'KRW')
+    .reduce((sum, asset) => sum + (asset.quantity || 0), 0);
+};
+
 export const getUSDTAsset = (assets: AssetResponse[]): AssetResponse | null => {
   return assets.find((asset) => asset.symbol === 'USDT') || null;
 };
@@ -23,8 +30,7 @@ export const getTotalCoinAssets = (assets: AssetResponse[]): number => {
 };
 
 export const getTotalAssets = (assets: AssetResponse[]): number => {
-  const krwAsset = getKRWAsset(assets);
-  const krwValue = krwAsset ? (krwAsset.quantity || 0) : 0;
+  const krwValue = getTotalKRW(assets);
   const coinValue = getTotalCoinAssets(assets);
   return krwValue + coinValue;
 };

@@ -5,8 +5,8 @@
 }
 
 .top-coins-section {
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -69,7 +69,7 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.8) !important; /* 눈에 보이는 테두리 */
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
   box-sizing: border-box;
   background: var(--background);
   color: var(--text-secondary);
@@ -78,6 +78,15 @@
 
 .top-coins-more-button:hover {
   background: var(--hover-background, rgba(255, 255, 255, 0.04));
+}
+
+.dark .top-coins-section {
+  border: none;
+  background: transparent;
+}
+
+.dark .top-coins-more-button {
+  border: 1px solid var(--border-color);
 }
 
 .top-coins-info {

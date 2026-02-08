@@ -145,17 +145,34 @@
   border-radius: 50%;
 }
 
-.notification-observer-target {
-  height: 1px;
-  margin: 8px 0;
+.notification-load-more-wrapper {
+  width: 100%;
+  padding: 16px 0 16px 0;
 }
 
-.notification-loading-more {
-  text-align: center;
-  padding: 16px;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 12px;
+.notification-load-more-button {
+  width: 100%;
+  padding: 4px 10px;
+  font-size: 11px;
   font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, opacity 0.2s;
+  box-sizing: border-box;
+}
+
+.notification-load-more-button:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.notification-load-more-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .notification-end-message {
@@ -217,8 +234,25 @@
   border-left: none;
 }
 
-.dark .notification-loading-more {
-  color: rgba(255, 255, 255, 0.5);
+.dark .notification-type {
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.dark .notification-content {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dark .notification-load-more-button {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .notification-load-more-button:hover:not(:disabled) {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .dark .notification-end-message {

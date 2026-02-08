@@ -14,7 +14,7 @@ export default function MypageSidebar() {
 
   const menuItems: MenuItem[] = [
     { label: '프로필', path: '/mypage' },
-    { label: '내가 쓴 게시글', path: '/mypage/posts' },
+    { label: '내가 쓴 피드', path: '/mypage/posts' },
     { label: '거래소 연동', path: '/mypage/exchanges' },
   ];
 

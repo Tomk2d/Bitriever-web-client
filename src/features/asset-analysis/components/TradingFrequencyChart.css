@@ -10,14 +10,19 @@
 .trading-frequency-section {
   flex: 1;
   margin-bottom: 0;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   padding: 1.5rem 1.5rem 1rem;
 }
 
 .trading-frequency-section:last-child {
   margin-bottom: 0;
+}
+
+.dark .trading-frequency-section {
+  border: none;
+  background: transparent;
 }
 
 .trading-frequency-title {

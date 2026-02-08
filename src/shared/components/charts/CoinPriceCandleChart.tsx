@@ -34,14 +34,12 @@ export default function CoinPriceCandleChart({
     return calculateChartDateRange(selectedDate, 6);
   }, [selectedDate]);
 
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
-
   const { data: priceData = [], isLoading, error } = useQuery({
     queryKey: ['coin-price-day', coinId, dateRange.startDate, dateRange.endDate],
     queryFn: async () => {
       return coinPriceService.getByDateRange(coinId, dateRange.startDate, dateRange.endDate);
     },
-    enabled: !!coinId && !!selectedDate && hasToken,
+    enabled: !!coinId && !!selectedDate,
     staleTime: 1000 * 60 * 5,
   });
 

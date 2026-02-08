@@ -9,13 +9,13 @@
 }
 
 .button-primary {
-  background-color: var(--main-color);
+  background-color: #02a262; /* 자산/로그인 버튼과 동일 기본색 */
   color: #ffffff;
   box-shadow: 0 2px 4px rgba(2, 162, 98, 0.2);
 }
 
 .button-primary:hover:not(:disabled) {
-  background-color: #03d67a;
+  background-color: #28c97a; /* 동일 호버색 */
   box-shadow: 0 4px 8px rgba(2, 162, 98, 0.4);
 }
 
@@ -82,12 +82,12 @@
 
 /* 다크 모드 */
 .dark .button-primary {
-  background-color: var(--main-color);
+  background-color: #02a262;
   color: #ffffff;
 }
 
 .dark .button-primary:hover:not(:disabled) {
-  background-color: #03d67a;
+  background-color: #28c97a;
   box-shadow: 0 4px 8px rgba(2, 162, 98, 0.4);
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, memo, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useCoins } from '@/features/coins/hooks/useCoins';
 import { useAppSelector } from '@/store/hooks';
@@ -112,6 +112,7 @@ const isOnlyInitialConsonants = (query: string): boolean => {
 
 export default function CoinList() {
   const pathname = usePathname();
+  const router = useRouter();
   const [selectedTab, setSelectedTab] = useState<TopTab>('KRW');
   const [selectedCurrency, setSelectedCurrency] = useState<string>('KRW');
   const [selectedCoin, setSelectedCoin] = useState<CoinResponse | null>(null);
@@ -137,6 +138,9 @@ export default function CoinList() {
     enableCoinsQuery ? selectedCurrency : 'KRW'
   );
   const { data: assets = [] } = useAssets(true);
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const connectedExchanges = useAppSelector((state) => state.auth.user?.connectedExchanges || []);
+  const hasConnectedExchange = connectedExchanges.length > 0;
   
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector(selectAllPrices);
@@ -423,6 +427,45 @@ export default function CoinList() {
       return <div className="coin-list-error">{errorMessage}</div>;
     }
 
+    // 보유 종목 탭 전용 안내 UI
+    if (selectedTab === 'HOLDINGS') {
+      // 1) 비로그인 상태
+      if (!isAuthenticated) {
+        return (
+          <div className="coin-list">
+            <div className="coin-list-empty-state">
+              <p className="coin-list-empty-text">로그인 후 이용해주세요.</p>
+              <button
+                type="button"
+                className="wallet-asset-list-connect-button coin-list-empty-button"
+                onClick={() => router.push('/login')}
+              >
+                로그인
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // 2) 로그인은 되었지만 거래소 연동이 없는 경우
+      if (!hasConnectedExchange) {
+        return (
+          <div className="coin-list">
+            <div className="coin-list-empty-state">
+              <p className="coin-list-empty-text">거래소 연동 후 이용해주세요.</p>
+              <button
+                type="button"
+                className="wallet-asset-list-connect-button coin-list-empty-button"
+                onClick={() => router.push('/mypage/exchanges')}
+              >
+                거래소 연동하기
+              </button>
+            </div>
+          </div>
+        );
+      }
+    }
+
     return (
       <div className="coin-list">
         {sortedCoins.map((coin, index) => (
@@ -452,7 +495,19 @@ export default function CoinList() {
         ))}
       </div>
     );
-  }, [sortedCoins, loading, error, selectedCoin, isMounted, coins.length, isCalendarOpen]);
+  }, [
+    sortedCoins,
+    loading,
+    error,
+    selectedCoin,
+    isMounted,
+    coins.length,
+    isCalendarOpen,
+    selectedTab,
+    isAuthenticated,
+    hasConnectedExchange,
+    router,
+  ]);
 
   return (
     <div className="coin-list-container">

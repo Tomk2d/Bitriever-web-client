@@ -18,7 +18,6 @@ function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 
   // 이미지 URL 구성
   const imageBasePath = process.env.NEXT_PUBLIC_IMAGE_BASE_PATH || '';
   const imageUrl = coin.imgUrl ? `${imageBasePath}${coin.imgUrl}` : null;
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const prevPriceDataRef = useRef<number | null>(null);
   
@@ -57,11 +56,6 @@ function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 
     // 이전 가격 업데이트
     prevPriceDataRef.current = price;
   }, [price]);
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-  };
 
   const formatPrice = (value: number | null) => {
     if (value === null) return '-';
@@ -137,13 +131,6 @@ function CoinItem({ coin, rank, isSelected = false, onClick, selectedCurrency = 
       style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
       <div className="coin-item-section coin-item-info">
-        <button
-          className={`coin-item-favorite ${isFavorite ? 'active' : ''}`}
-          onClick={handleFavoriteClick}
-          aria-label={isFavorite ? '관심종목 해제' : '관심종목 설정'}
-        >
-          {isFavorite ? '❤️' : '🤍'}
-        </button>
         <div className="coin-item-rank">{rank}</div>
         {imageUrl ? (
           <img

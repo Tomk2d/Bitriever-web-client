@@ -126,8 +126,6 @@ export default function ProfitDistributionChart({ data }: ProfitDistributionChar
     return range?.rangeLabel;
   };
 
-  // 0% 기준선이 있는 구간 찾기
-  const zeroRangeLabel = findRangeForValue(0);
   // 평균 수익률이 속한 구간 찾기
   const avgProfitRangeLabel = data.averageProfitRate !== 0 ? findRangeForValue(data.averageProfitRate) : undefined;
   // 평균 손실률이 속한 구간 찾기
@@ -170,21 +168,6 @@ export default function ProfitDistributionChart({ data }: ProfitDistributionChar
               tick={{ fill: 'var(--text-secondary, rgba(121, 131, 140, 0.75))', fontSize: 11 }}
             />
             <Tooltip content={<CustomTooltip />} />
-            {/* 0% 기준선 */}
-            {zeroRangeLabel && (
-              <ReferenceLine
-                x={zeroRangeLabel}
-                stroke="var(--foreground, #171717)"
-                strokeDasharray="2 2"
-                strokeOpacity={0.5}
-                label={{
-                  value: '0%',
-                  position: 'top',
-                  fill: 'var(--text-secondary, rgba(121, 131, 140, 0.75))',
-                  fontSize: 10,
-                }}
-              />
-            )}
             {/* 평균 수익률 기준선 */}
             {avgProfitRangeLabel && data.averageProfitRate !== 0 && (
               <ReferenceLine

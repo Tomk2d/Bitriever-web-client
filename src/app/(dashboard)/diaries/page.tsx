@@ -33,7 +33,14 @@ export default function DiariesPage() {
       <div className="diaries-page-header">
         <h3 className="text-2xl font-bold mb-6 diaries-page-title">
           매매 일지
-          <HelpIcon tooltip="거래소를 연동하면 캘린더에 표시됩니다. 해당 일자를 선택하면 거래목록을 확인할 수 있습니다." />
+          <HelpIcon
+            tooltip={`거래소를 연동하면 캘린더에 거래내역이 표시됩니다.
+                      일자를 선택해서 매매일지를 작성해보세요!
+
+                      일부 암호화폐 종목은 거래내역 및 가격을 추적(지원)하지 않습니다.
+                      거래소 간 암호화폐 이동이나 이벤트를 통해 전달받은
+                      암호화폐의 수익률 측정이 정확하지 않을 수 있습니다.`}
+          />
         </h3>
         <div className="diaries-monthly-summary">
           <div className="diaries-summary-wrapper">
