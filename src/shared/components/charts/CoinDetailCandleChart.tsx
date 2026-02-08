@@ -55,8 +55,6 @@ export default function CoinDetailCandleChart({
 
   const [dateRange] = useState(getInitialDateRange());
 
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
-
   const rangeKeyForQuery = useMemo(() => {
     return getDateRangeKey(
       new Date(dateRange.startDate),
@@ -66,7 +64,7 @@ export default function CoinDetailCandleChart({
 
   // 초기 로드 트리거 (컴포넌트 마운트 시)
   useEffect(() => {
-    if (coinId && hasToken) {
+    if (coinId) {
       const initialRangeKey = rangeKeyForQuery;
       if (!loadedRangesRef.current.has(initialRangeKey) && 
           !loadingRangesRef.current.has(initialRangeKey) && 
@@ -74,13 +72,13 @@ export default function CoinDetailCandleChart({
         pendingRangesRef.current.add(initialRangeKey);
       }
     }
-  }, [coinId, hasToken, rangeKeyForQuery]);
+  }, [coinId, rangeKeyForQuery]);
 
   const shouldEnableQuery = useMemo(() => {
-    if (!coinId || !hasToken) return false;
+    if (!coinId) return false;
     const key = rangeKeyForQuery;
     return pendingRangesRef.current.has(key) || !loadedRangesRef.current.has(key);
-  }, [coinId, hasToken, rangeKeyForQuery]);
+  }, [coinId, rangeKeyForQuery]);
 
   const { data: priceDataList = [], isLoading } = useQuery<CoinPriceDayResponse[]>({
     queryKey: ['coin-price-day-range', coinId, dateRange.startDate, dateRange.endDate],

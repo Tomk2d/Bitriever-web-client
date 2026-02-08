@@ -10,8 +10,8 @@
   flex: 1;
   min-width: 220px;
   max-width: 280px;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   padding: 0rem 1.25rem;
 }
@@ -91,6 +91,11 @@
   max-width: 280px;
   pointer-events: none;
   z-index: 10;
+}
+
+.dark .portfolio-risk-card {
+  border: none;
+  background: transparent;
 }
 
 .dark .portfolio-risk-tooltip {

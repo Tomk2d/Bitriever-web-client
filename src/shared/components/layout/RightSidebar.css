@@ -355,6 +355,16 @@
   margin-bottom: 0; /* 마지막 자식 요소의 하단 마진 제거 */
 }
 
+.sidebar-panel-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  font-size: 15px;
+  opacity: 0.8;
+}
+
 .sidebar-panel-content::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
@@ -502,7 +512,7 @@
   margin-right: -16px;
   padding-left: 16px;
   padding-right: 16px;
-  padding-bottom: 0; /* 하단 패딩 제거 */
+  padding-bottom: 16px; /* 하단에 여유 공간 추가 */
   margin-bottom: 0; /* 하단 마진 제거 */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
@@ -521,27 +531,60 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   font-family: 'Pretendard', sans-serif;
   font-size: 14px;
   color: var(--foreground);
   text-align: center;
   padding: 40px 20px;
+}
+
+.wallet-asset-list.wallet-asset-list-empty {
+  min-height: 200px;
+  justify-content: center;
+}
+
+.wallet-asset-list-empty-text {
   opacity: 0.6;
 }
 
-/* 배경색은 WalletAssetList 내부 <style>에서 data-hovered로 적용 */
+.wallet-asset-list-empty span {
+  opacity: 0.6; /* 안내 문구만 흐리게, 버튼은 그대로 유지 */
+}
+
 .wallet-asset-list-connect-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-family: 'Pretendard', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 12px; /* 텍스트 크기 소폭 축소 */
+  font-weight: 600; /* 조금 더 굵게 */
   color: #ffffff;
+  background-color: #02a262; /* 기본: 진한 초록 */
   border: none;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 9px 14px; /* 내부 패딩 0.75배로 축소 */
   cursor: pointer;
   opacity: 1;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.wallet-asset-list-connect-button:hover {
+  background-color: #28c97a; /* 호버: 약간 밝은 초록 */
+  color: #ffffff;
+}
+
+/* 다크 모드에서도 동일한 버튼 색상 유지 */
+.dark .wallet-asset-list-connect-button {
+  background-color: #02a262;
+  color: #ffffff;
+}
+
+.dark .wallet-asset-list-connect-button:hover {
+  background-color: #28c97a;
+  color: #ffffff;
 }
 
 .wallet-asset-item {
@@ -804,8 +847,34 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 0 4px 0;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.wallet-asset-group-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.wallet-asset-group-header-krw {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  padding: 0;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border: none;
+  /* 자산 아이템의 "평가 손익" 라벨과 왼쪽 정렬 (아이템 padding 14px + 그리드 1열 폭) */
+  padding-left: calc(14px + (100% - 13px) / 2);
+  box-sizing: border-box;
+}
+
+.wallet-asset-group-header-krw .wallet-asset-detail-value {
+  margin-left: auto;
 }
 
 .wallet-asset-group-name {
@@ -828,6 +897,13 @@
   gap: 6px;
 }
 
+.wallet-asset-group-krw {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 11px;
+}
+
 /* 거래소 표시 행 스타일 */
 .wallet-asset-exchange-row {
   grid-column: 1 / -1;
@@ -844,7 +920,7 @@
 
 /* 다크 모드 그룹 스타일 */
 .dark .wallet-asset-group-header {
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.22);
 }
 
 .dark .wallet-asset-group-count {
@@ -852,5 +928,9 @@
 }
 
 .dark .wallet-asset-exchange-row {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .wallet-asset-group-krw {
   border-top-color: rgba(255, 255, 255, 0.08);
 }

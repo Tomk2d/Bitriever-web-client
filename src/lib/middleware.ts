@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // 보호된 라우트 목록
-const protectedRoutes = ['/dashboard', '/diaries', '/trading', '/coins'];
+const protectedRoutes = ['/diaries', '/trading', '/coins'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

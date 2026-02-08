@@ -86,7 +86,7 @@ export default function Navigation() {
   }, [isDropdownOpen]);
 
   const navItems = [
-    { label: '홈', path: '/dashboard' },
+    { label: '홈', path: '/' },
     { label: '마켓', path: '/coins' },
     { label: '매매일지', path: '/diaries' },
     { label: '피드', path: '/communities' },
@@ -94,8 +94,8 @@ export default function Navigation() {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return pathname === '/dashboard';
+    if (path === '/') {
+      return pathname === '/';
     }
     return pathname.startsWith(path);
   };
@@ -138,8 +138,8 @@ export default function Navigation() {
       <div className="navigation-container">
         <div className="navigation-content">
           <div className="navigation-left">
-            {/* 로고 섹션 */}
-            <div className="navigation-logo">
+            {/* 로고 섹션 - 렌딩 페이지로 이동 */}
+            <Link href="/" className="navigation-logo">
               <img 
                 src="/data/main-logo-ex.png" 
                 alt="Bitriever Logo" 
@@ -148,7 +148,7 @@ export default function Navigation() {
               <div className="logo-text">
                 <span className="logo-brand">Bitriever</span>
               </div>
-            </div>
+            </Link>
 
             {/* 메인 네비게이션 메뉴 */}
             <div className="navigation-menu">

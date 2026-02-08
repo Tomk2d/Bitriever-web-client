@@ -121,8 +121,8 @@ export default function LoginPage() {
         console.error('사용자 정보 조회 실패:', error);
       }
       
-      // 로그인 성공 시 대시보드로 이동
-      router.push('/dashboard');
+      // 로그인 성공 시 렌딩 페이지로 이동
+      router.push('/');
     } catch (error: any) {
       setSubmitError(
         error.message || 

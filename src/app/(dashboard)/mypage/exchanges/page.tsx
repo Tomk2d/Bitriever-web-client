@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useAppSelector } from '@/store/hooks';
-
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { exchangeService } from '@/features/exchange/services/exchangeService';
+import { authService } from '@/features/auth/services/authService';
+import { setUser } from '@/store/slices/authSlice';
 interface Exchange {
   code: number;
   name: string;
@@ -22,20 +24,20 @@ const EXCHANGES: Exchange[] = [
     isAvailable: true,
   },
   {
+    code: 2,
+    name: 'BITHUMB',
+    koreanName: '빗썸',
+    logo: '/exchanges/bithumb.png',
+    isConnected: false,
+    isAvailable: true, // 빗썸도 연동 가능
+  },
+  {
     code: 3,
     name: 'COINONE',
     koreanName: '코인원',
     logo: '/exchanges/coinone.png',
     isConnected: false,
     isAvailable: true,
-  },
-  {
-    code: 2,
-    name: 'BITHUMB',
-    koreanName: '빗썸',
-    logo: '/exchanges/bithumb.png',
-    isConnected: false,
-    isAvailable: false,
   },
   {
     code: 11,
@@ -56,6 +58,7 @@ const EXCHANGES: Exchange[] = [
 ];
 
 export default function ExchangesPage() {
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const connectedExchanges = user?.connectedExchanges || [];
 
@@ -63,6 +66,9 @@ export default function ExchangesPage() {
   const [selectedExchange, setSelectedExchange] = useState<Exchange | null>(null);
   const [apiKey, setApiKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pollingMessage, setPollingMessage] = useState<string | null>(null);
+  const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
 
   const isExchangeConnected = (exchangeName: string) => {
     return connectedExchanges.some(
@@ -74,6 +80,7 @@ export default function ExchangesPage() {
     setSelectedExchange(exchange);
     setApiKey('');
     setSecretKey('');
+    setModalErrorMessage(null);
     setShowApiModal(true);
   };
 
@@ -84,10 +91,71 @@ export default function ExchangesPage() {
 
   const handleSubmitApi = async () => {
     if (!selectedExchange || !apiKey || !secretKey) return;
-    
-    // TODO: 거래소 연동 API 호출
-    alert(`${selectedExchange.koreanName} 연동 기능은 준비 중입니다.`);
-    setShowApiModal(false);
+    setIsSubmitting(true);
+    setModalErrorMessage(null);
+    setPollingMessage('등록 및 연동을 시작했습니다...');
+    try {
+      const data = await exchangeService.create({
+        exchangeProvider: selectedExchange.code,
+        accessKey: apiKey,
+        secretKey,
+      });
+      const jobId = data.job_id ?? (data as { jobId?: string }).jobId;
+      if (!jobId) {
+        throw new Error('서버에서 job_id를 받지 못했습니다.');
+      }
+
+      setPollingMessage('자산·매매내역 연동 중... (잠시만 기다려 주세요)');
+
+      const result = await exchangeService.pollUntilComplete(jobId, (status) => {
+        if (status.status === 'PROCESSING') {
+          setPollingMessage('자산·매매내역 연동 중... (잠시만 기다려 주세요)');
+        }
+      });
+
+      if (result === null) {
+        alert('처리 시간이 초과되었습니다. 잠시 후 연동된 거래소 목록을 확인해 주세요.');
+        setShowApiModal(false);
+        const userData = await authService.getCurrentUser();
+        dispatch(setUser({
+          userId: userData.id,
+          email: userData.email,
+          nickname: userData.nickname,
+          connectedExchanges: userData.connectedExchanges || [],
+        }));
+        return;
+      }
+
+      if (result.status === 'SUCCESS') {
+        const userData = await authService.getCurrentUser();
+        dispatch(setUser({
+          userId: userData.id,
+          email: userData.email,
+          nickname: userData.nickname,
+          connectedExchanges: userData.connectedExchanges || [],
+        }));
+        alert(`${selectedExchange.koreanName} 거래소가 성공적으로 연동되었습니다.`);
+        setShowApiModal(false);
+      } else {
+        const message = result.message ?? result.error ?? '연동 실패로 등록이 취소되었습니다.';
+        setPollingMessage(null);
+        setModalErrorMessage(message);
+      }
+    } catch (error: unknown) {
+      console.error('거래소 연동 실패:', error);
+      const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      const status = err?.response?.status;
+      const message = err?.response?.data?.message ?? err?.message ?? 'API 키를 다시 확인해 주세요.';
+      setPollingMessage(null);
+      if (status === 401) {
+        setModalErrorMessage('올바르지 않은 API Key 나 Secret Key 입니다. 확인 후 재시도 해주세요.');
+      } else {
+        setModalErrorMessage(message);
+      }
+    } finally {
+      setIsSubmitting(false);
+      setPollingMessage(null);
+    }
   };
 
   return (
@@ -126,11 +194,17 @@ export default function ExchangesPage() {
                 </div>
               </div>
               <button
-                className="mypage-button mypage-button-danger"
-                style={{ padding: '6px 12px', fontSize: '13px' }}
-                onClick={() => handleDisconnect(exchange)}
+                className="mypage-button"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  backgroundColor: 'transparent',
+                  color: 'var(--muted, rgba(0,0,0,0.5))',
+                  cursor: 'default',
+                }}
+                disabled
               >
-                연동 해제
+                연동중
               </button>
             </div>
           ))
@@ -221,7 +295,10 @@ export default function ExchangesPage() {
                 type="text"
                 className="mypage-form-input"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                onChange={(e) => {
+                  setApiKey(e.target.value);
+                  if (modalErrorMessage) setModalErrorMessage(null);
+                }}
                 placeholder="API Key를 입력하세요"
               />
             </div>
@@ -232,19 +309,32 @@ export default function ExchangesPage() {
                 type="password"
                 className="mypage-form-input"
                 value={secretKey}
-                onChange={(e) => setSecretKey(e.target.value)}
+                onChange={(e) => {
+                  setSecretKey(e.target.value);
+                  if (modalErrorMessage) setModalErrorMessage(null);
+                }}
                 placeholder="Secret Key를 입력하세요"
               />
             </div>
 
+            {pollingMessage && (
+              <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--muted)' }}>
+                {pollingMessage}
+              </p>
+            )}
+            {modalErrorMessage && (
+              <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--destructive, #dc2626)' }}>
+                {modalErrorMessage}
+              </p>
+            )}
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button
                 className="mypage-button mypage-button-success"
                 style={{ flex: 1, padding: '9px 18px' }}
                 onClick={handleSubmitApi}
-                disabled={!apiKey || !secretKey}
+                disabled={!apiKey || !secretKey || isSubmitting}
               >
-                연동하기
+                {isSubmitting ? '연동 중...' : '연동하기'}
               </button>
               <button
                 className="mypage-button mypage-button-secondary"

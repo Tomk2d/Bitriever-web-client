@@ -22,6 +22,14 @@ export const communityService = {
     return response.data.data;
   },
 
+  getMyPosts: async (page: number = 0, size: number = 10): Promise<PageResponse<CommunityListResponse>> => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    const response = await apiClient.get<ApiResponse<PageResponse<CommunityListResponse>>>(`/api/communities/my?${params.toString()}`);
+    return response.data.data;
+  },
+
   getById: async (id: number): Promise<CommunityResponse> => {
     const response = await apiClient.get<ApiResponse<CommunityResponse>>(`/api/communities/${id}`);
     return response.data.data;

@@ -9,3 +9,12 @@ export const useCommunities = (category?: string, page: number = 0, size: number
     staleTime: 1000 * 30, // 30초
   });
 };
+
+export const useMyPosts = (page: number = 0, size: number = 10, enabled: boolean = true) => {
+  return useQuery<PageResponse<CommunityListResponse>>({
+    queryKey: ['communities', 'my', page, size],
+    queryFn: () => communityService.getMyPosts(page, size),
+    staleTime: 1000 * 30,
+    enabled,
+  });
+};

@@ -164,6 +164,29 @@ export const authService = {
     }
   },
 
+  setProfileUrl: async (profileUrl: string): Promise<void> => {
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+    if (!accessToken) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    const response = await fetch('/api/proxy/auth/set-profile-url', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ profileUrl }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || result.error?.message || '프로필 변경에 실패했습니다.');
+    }
+  },
+
   getCurrentUser: async (): Promise<UserResponse> => {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     
@@ -171,30 +194,55 @@ export const authService = {
       throw new Error('로그인이 필요합니다.');
     }
     
-    const response = await fetch('/api/auth/me', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const fetchMe = async (token: string) => {
+      const response = await fetch('/api/auth/me', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response;
+    };
 
-    // 401 에러 발생 시 로그아웃 처리
+    let currentToken = accessToken;
+
+    // 1차 시도
+    let response = await fetchMe(currentToken);
+
+    // access token 만료 등으로 401이면 refresh 후 한 번만 재시도
     if (response.status === 401) {
-      console.warn('사용자 정보 조회: 인증 실패 (401) - 로그아웃 처리');
+      console.warn('사용자 정보 조회: 401 - access token 갱신 시도');
+      try {
+        const authData = await authService.refreshToken();
+        currentToken = authData.accessToken;
+        response = await fetchMe(currentToken);
+      } catch (refreshError) {
+        console.warn('토큰 갱신 실패 - 로그아웃 처리');
+        await authService.logout();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        throw new Error('인증에 실패했습니다.');
+      }
+    }
+
+    // refresh 후에도 401인 경우 최종적으로 로그아웃 처리
+    if (response.status === 401) {
+      console.warn('사용자 정보 조회: refresh 후에도 401 - 로그아웃 처리');
       await authService.logout();
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
       throw new Error('인증에 실패했습니다.');
     }
-
+    
     const result = await response.json();
-
+    
     if (!response.ok) {
       throw new Error(result.message || result.error?.message || '사용자 정보를 가져오는데 실패했습니다.');
     }
-
+    
     return result.data;
   },
 };

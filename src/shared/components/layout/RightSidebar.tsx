@@ -8,6 +8,7 @@ import { useAssets } from '@/features/asset/hooks/useAssets';
 import { assetService } from '@/features/asset/services/assetService';
 import {
   getKRWAsset,
+  getTotalKRW,
   getUSDTAsset,
   getBTCAsset,
   getTotalCoinAssets,
@@ -21,7 +22,7 @@ import { useUnreadNotificationCount } from '@/features/notification/hooks/useNot
 import { useQueryClient } from '@tanstack/react-query';
 import './RightSidebar.css';
 
-type MenuType = 'wallet' | 'watchlist' | 'chatbot' | 'notification' | 'faq' | 'settings' | null;
+type MenuType = 'wallet' | 'chatbot' | 'notification' | 'faq' | 'settings' | null;
 
 type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
 
@@ -141,23 +142,12 @@ export default function RightSidebar() {
               <span className="sidebar-text">내 자산</span>
             </button>
             <button
-              className={`sidebar-menu-item ${selectedMenu === 'watchlist' && isPanelOpen ? 'active' : ''}`}
-              onClick={() => handleMenuClick('watchlist')}
-            >
-              <span className="sidebar-icon">❤️</span>
-              <span className="sidebar-text">관심</span>
-            </button>
-            <button
               className={`sidebar-menu-item ${selectedMenu === 'chatbot' && isPanelOpen ? 'active' : ''}`}
               onClick={() => handleMenuClick('chatbot')}
             >
               <span className="sidebar-icon">📜</span>
               <span className="sidebar-text">자격증</span>
             </button>
-          </div>
-
-          {/* 하단 메뉴 */}
-          <div className="sidebar-section sidebar-bottom">
             <button
               className={`sidebar-menu-item ${selectedMenu === 'notification' && isPanelOpen ? 'active' : ''}`}
               onClick={() => handleMenuClick('notification')}
@@ -170,6 +160,10 @@ export default function RightSidebar() {
                 </span>
               )}
             </button>
+          </div>
+
+          {/* 하단 메뉴 */}
+          <div className="sidebar-section sidebar-bottom">
             <button
               className={`sidebar-menu-item ${selectedMenu === 'faq' && isPanelOpen ? 'active' : ''}`}
               onClick={() => handleMenuClick('faq')}
@@ -195,7 +189,6 @@ export default function RightSidebar() {
             <div className="sidebar-panel-title-wrapper">
               <h3 className="sidebar-panel-title">
                 {selectedMenu === 'wallet' && '내 자산'}
-                {selectedMenu === 'watchlist' && '관심'}
                 {selectedMenu === 'chatbot' && '자격증'}
                 {selectedMenu === 'notification' && '알림'}
                 {selectedMenu === 'faq' && 'FAQ'}
@@ -240,7 +233,7 @@ export default function RightSidebar() {
                   <div className="wallet-card">
                     <div className="wallet-card-label">원화 KRW</div>
                     <div className="wallet-card-value">
-                      {formatCurrency(getKRWAsset(assets)?.quantity || 0)}
+                      {formatCurrency(getTotalKRW(assets))}
                     </div>
                     <div className="wallet-card-row">
                       <span className="wallet-card-label-small">USDT</span>
@@ -273,9 +266,8 @@ export default function RightSidebar() {
                         return total + (currentPrice * (asset.quantity || 0));
                       }, 0);
                     
-                    // KRW 자산 추가
-                    const krwAsset = getKRWAsset(assets);
-                    const krwValue = krwAsset ? (krwAsset.quantity || 0) : 0;
+                    // KRW 자산 추가 (모든 거래소 합계)
+                    const krwValue = getTotalKRW(assets);
                     const totalAssetsValue = krwValue + totalEvaluationAmount;
                     
                     // 총 매수금액 (매수평균가 * 보유수량)
@@ -357,9 +349,8 @@ export default function RightSidebar() {
                                     return total + (currentPrice * (asset.quantity || 0));
                                   }, 0);
                                 
-                                // KRW 자산 추가
-                                const krwAsset = getKRWAsset(filteredAssets);
-                                const krwValue = krwAsset ? (krwAsset.quantity || 0) : 0;
+                                // KRW 자산 추가 (선택된 거래소 또는 전체 합계)
+                                const krwValue = getTotalKRW(filteredAssets);
                                 const totalAssetsValue = krwValue + totalEvaluationAmount;
                                 
                                 // 총 매수금액
@@ -432,8 +423,9 @@ export default function RightSidebar() {
                 )}
               </>
             )}
-            {selectedMenu === 'watchlist' && <div>관심 컨텐츠</div>}
-            {selectedMenu === 'chatbot' && <div>자격증 컨텐츠</div>}
+            {selectedMenu === 'chatbot' && (
+              <div className="sidebar-panel-placeholder">서비스 준비중...</div>
+            )}
             {selectedMenu === 'notification' && <NotificationList />}
             {selectedMenu === 'faq' && <div>FAQ 컨텐츠</div>}
             {selectedMenu === 'settings' && (

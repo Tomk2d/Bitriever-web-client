@@ -65,11 +65,79 @@
   background-color: rgba(255, 255, 255, 0.04);
 }
 
+/* 내 게시글 카드: 배경·내부 공백 제거 */
+.mypage-card.mypage-card-posts {
+  background: none;
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+.dark .mypage-card.mypage-card-posts {
+  background: none;
+  background-color: transparent;
+}
+
+.mypage-card.mypage-card-posts .communities-list {
+  gap: 6px;
+  margin: 0;
+}
+
+/* 내 게시글 더보기 버튼: 피드 카드와 동일한 가로 너비 */
+.mypage-card-posts .mypage-posts-load-more {
+  width: 100%;
+  max-width: 768px;
+  margin-top: 6px;
+  padding: 12px 20px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+  background-color: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mypage-card-posts .mypage-posts-load-more:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.mypage-card-posts .mypage-posts-load-more:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dark .mypage-card-posts .mypage-posts-load-more {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .mypage-card-posts .mypage-posts-load-more:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
 /* 프로필 헤더 */
 .mypage-profile-header {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.mypage-profile-image-button {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 0;
+  display: block;
+}
+
+.mypage-profile-image-button:hover .mypage-profile-image {
+  border-color: var(--main-color);
+  opacity: 0.9;
 }
 
 .mypage-profile-image {
@@ -79,6 +147,7 @@
   object-fit: cover;
   background-color: #ffffff;
   border: 2px solid rgba(0, 0, 0, 0.12);
+  transition: border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .mypage-profile-info {
@@ -181,9 +250,29 @@
   border-color: var(--main-color);
 }
 
+.mypage-form-input--error,
+.mypage-form-input.mypage-form-input--error:focus {
+  border-color: #ef4444;
+}
+
+.dark .mypage-form-input--error,
+.dark .mypage-form-input.mypage-form-input--error:focus {
+  border-color: #ef4444;
+}
+
 .mypage-form-input:disabled {
   background-color: rgba(0, 0, 0, 0.04);
   cursor: not-allowed;
+}
+
+.mypage-form-error {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: #ef4444;
+}
+
+.dark .mypage-form-error {
+  color: #f87171;
 }
 
 .dark .mypage-form-input {
@@ -248,24 +337,24 @@
 
 /* 거래소 연동 페이지 전용 버튼 */
 .mypage-button-danger {
-  background-color: #f87171 !important;
+  background-color: #ef4444 !important; /* 기존 호버 색상을 기본으로 */
   color: #ffffff !important;
   border: none !important;
 }
 
 .mypage-button-danger:hover {
-  background-color: #ef4444 !important;
+  background-color: #f87171 !important; /* 기존 기본 색상을 호버로 */
   color: #ffffff !important;
 }
 
 .mypage-button-success {
-  background-color: #28c97a !important;
+  background-color: #02a262 !important; /* 기본: 다른 초록 버튼과 통일 */
   color: #ffffff !important;
   border: none !important;
 }
 
 .mypage-button-success:hover {
-  background-color: #02a262 !important;
+  background-color: #28c97a !important; /* 호버: 약간 밝은 초록 */
   color: #ffffff !important;
 }
 
@@ -298,6 +387,12 @@
   opacity: 0.5;
 }
 
+/* 계정 삭제 확인 입력창: 포커스 시 추가 강조(파란/초록 테두리·그림자) 제거 */
+.mypage-delete-confirm-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* 리스트 아이템 */
 .mypage-list-item {
   display: flex;
@@ -313,4 +408,139 @@
 
 .dark .mypage-list-item {
   border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* 프로필 선택 모달 */
+.mypage-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.mypage-modal {
+  position: relative;
+  background-color: var(--background);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.mypage-modal-title {
+  margin: 0 0 16px 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.mypage-profile-modal .mypage-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mypage-profile-option {
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.mypage-profile-option:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.mypage-profile-option--selected {
+  border: 1px solid var(--main-color);
+  box-shadow: 0 0 0 1px var(--main-color);
+}
+
+.dark .mypage-profile-option:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mypage-profile-option img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 11px;
+}
+
+.mypage-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.mypage-profile-modal .mypage-modal-actions .mypage-button {
+  min-width: 72px;
+  padding: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.mypage-profile-modal .mypage-modal-actions .mypage-button-secondary {
+  min-width: 72px;
+  padding: 5px;
+  font-weight: 600;
+}
+
+/* 프로필 모달 저장 중 로딩 */
+.mypage-profile-modal-loading {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 1;
+}
+
+.dark .mypage-profile-modal-loading {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.mypage-profile-modal-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--main-color);
+  border-radius: 50%;
+  animation: mypage-spin 0.8s linear infinite;
+}
+
+.dark .mypage-profile-modal-loading-spinner {
+  border-color: rgba(255, 255, 255, 0.15);
+  border-top-color: var(--main-color);
+}
+
+.mypage-profile-modal-loading-text {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+@keyframes mypage-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

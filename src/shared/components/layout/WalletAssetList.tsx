@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AssetResponse } from '@/features/asset/types';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
-import { formatCurrency, formatNumber, formatQuantity } from '@/features/asset/utils/assetCalculations';
+import { formatCurrency, formatNumber, formatQuantity, getTotalKRW } from '@/features/asset/utils/assetCalculations';
 import './RightSidebar.css';
 
 type SortOption = 'holdings' | 'profit-high' | 'profit-low' | 'name';
@@ -29,7 +29,6 @@ export default function WalletAssetList({
   exchanges = []
 }: WalletAssetListProps) {
   const router = useRouter();
-  const [connectButtonHovered, setConnectButtonHovered] = useState(false);
   // Redux에서 가격 데이터 가져오기
   const priceData = useAppSelector((state) => state.coinPrice.prices);
   
@@ -81,7 +80,7 @@ export default function WalletAssetList({
   const groupedAssets = useMemo(() => {
     const filtered = assets.filter((asset) => asset.symbol !== 'KRW');
     
-    // 거래소 전체 모드일 때 거래소별로 그룹화
+    // 거래소 전체 모드일 때 거래소별로 그룹화 (연동된 모든 거래소 포함, 보유 0개도 표시)
     if (selectedExchangeCode === null && exchanges.length > 0) {
       const groups: { exchangeCode: number; exchangeName: string; assets: AssetResponse[] }[] = [];
       
@@ -95,16 +94,14 @@ export default function WalletAssetList({
         exchangeGroups.get(code)!.push(asset);
       });
       
-      // 거래소 순서대로 (exchanges 배열 순서) 그룹 생성
+      // 거래소 순서대로 (exchanges 배열 순서) 그룹 생성 - 보유 종목이 없어도 그룹 표시
       exchanges.forEach((exchange) => {
-        const assetsForExchange = exchangeGroups.get(exchange.code);
-        if (assetsForExchange && assetsForExchange.length > 0) {
-          groups.push({
-            exchangeCode: exchange.code,
-            exchangeName: exchange.koreanName,
-            assets: sortAssets(assetsForExchange),
-          });
-        }
+        const assetsForExchange = exchangeGroups.get(exchange.code) ?? [];
+        groups.push({
+          exchangeCode: exchange.code,
+          exchangeName: exchange.koreanName,
+          assets: sortAssets(assetsForExchange),
+        });
       });
       
       return groups;
@@ -118,23 +115,19 @@ export default function WalletAssetList({
     }];
   }, [assets, sortOption, priceData, selectedExchangeCode, exchanges, exchangeNameMap]);
 
-  // 전체 자산이 없는지 확인
-  const totalAssets = groupedAssets.reduce((sum, group) => sum + group.assets.length, 0);
-  
-  if (totalAssets === 0) {
+  // 거래소별 KRW 보유량 (해당 거래소 assets만 사용)
+  const getKRWByExchange = (exchangeCode: number): number => {
+    return getTotalKRW(assets.filter((a) => a.exchangeCode === exchangeCode));
+  };
+
+  // 연동된 거래소가 없을 때만 빈 상태 표시 (연동되었으나 보유 0개인 거래소는 그룹으로 표시)
+  if (exchanges.length === 0) {
     return (
-      <div className="wallet-asset-list-empty">
-        <style dangerouslySetInnerHTML={{ __html: `
-          .wallet-asset-list-connect-button[data-hovered="true"] { background-color: #02a262 !important; }
-          .wallet-asset-list-connect-button[data-hovered="false"] { background-color: #28c97a !important; }
-        ` }} />
-        <span>보유한 암호화폐가 없습니다.</span>
+      <div className="wallet-asset-list wallet-asset-list-empty">
+        <span className="wallet-asset-list-empty-text">연동된 거래소가 없습니다.</span>
         <button
           type="button"
           className="wallet-asset-list-connect-button"
-          data-hovered={connectButtonHovered}
-          onMouseEnter={() => setConnectButtonHovered(true)}
-          onMouseLeave={() => setConnectButtonHovered(false)}
           onClick={() => router.push('/mypage/exchanges')}
         >
           거래소 연동하기
@@ -244,27 +237,48 @@ export default function WalletAssetList({
     );
   };
 
-  // 거래소 전체 모드이고 여러 거래소가 있을 때 그룹별로 렌더링
-  const isGroupedMode = selectedExchangeCode === null && groupedAssets.length > 1;
+  // 거래소 전체 모드일 때 그룹별로 렌더링 (1개여도 거래소명 표시)
+  const isGroupedMode = selectedExchangeCode === null && groupedAssets.length >= 1;
 
   return (
     <div className="wallet-asset-list">
       {isGroupedMode ? (
         // 거래소별 그룹화 렌더링
-        groupedAssets.map((group) => (
-          <div key={group.exchangeCode} className="wallet-asset-group">
-            <div className="wallet-asset-group-header">
-              <span className="wallet-asset-group-name">{group.exchangeName}</span>
-              <span className="wallet-asset-group-count">{group.assets.length}개</span>
+        groupedAssets.map((group) => {
+          const exchangeKRW = getKRWByExchange(group.exchangeCode);
+          return (
+            <div key={group.exchangeCode} className="wallet-asset-group">
+              <div className="wallet-asset-group-header">
+                <div className="wallet-asset-group-header-row">
+                  <span className="wallet-asset-group-name">{group.exchangeName}</span>
+                  <span className="wallet-asset-group-count">{group.assets.length}개</span>
+                </div>
+              </div>
+              <div className="wallet-asset-group-header-krw">
+                <span className="wallet-asset-detail-label">KRW</span>
+                <span className="wallet-asset-detail-value">{formatCurrency(exchangeKRW)}</span>
+              </div>
+              <div className="wallet-asset-group-items">
+                {group.assets.map((asset) => renderAssetItem(asset, false))}
+              </div>
             </div>
-            <div className="wallet-asset-group-items">
-              {group.assets.map((asset) => renderAssetItem(asset, false))}
-            </div>
-          </div>
-        ))
+          );
+        })
       ) : (
-        // 단일 목록 렌더링 (특정 거래소 선택 시)
-        groupedAssets[0]?.assets.map((asset) => renderAssetItem(asset, false))
+        // 단일 목록 렌더링 (특정 거래소 선택 시) + 해당 거래소 KRW 상단 표시 후 코인 리스트
+        <>
+          {groupedAssets[0] && (selectedExchangeCode !== null || groupedAssets.length === 1) && (
+            <div className="wallet-asset-group-header-krw">
+              <span className="wallet-asset-detail-label">KRW</span>
+              <span className="wallet-asset-detail-value">
+                {formatCurrency(
+                  getKRWByExchange(selectedExchangeCode ?? groupedAssets[0].exchangeCode)
+                )}
+              </span>
+            </div>
+          )}
+          {groupedAssets[0]?.assets.map((asset) => renderAssetItem(asset, false))}
+        </>
       )}
     </div>
   );

@@ -152,7 +152,7 @@ export default function CommunitiesPage() {
           className="communities-write-button"
           aria-label="글쓰기"
         >
-          ✏️
+          <img src="/icon/pen.png" alt="글쓰기" className="communities-write-icon" />
         </button>
       )}
 
