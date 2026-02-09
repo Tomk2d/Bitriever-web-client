@@ -430,7 +430,6 @@ export default function ProfilePage() {
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: '8px',
-                border: '1px solid rgba(0, 19, 43, 0.16)',
                 marginBottom: deleteError ? 8 : 16,
                 fontFamily: 'Pretendard, sans-serif',
                 fontSize: '14px',

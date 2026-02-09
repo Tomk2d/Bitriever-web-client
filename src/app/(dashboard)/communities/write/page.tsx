@@ -14,7 +14,6 @@ const categoryLabels: Record<Category, string> = {
   [Category.GOOD_BAD_NEWS]: '호재/악재',
   [Category.PROFIT_PROOF]: '손익인증',
   [Category.CHART_ANALYSIS]: '차트분석',
-  [Category.NEWS]: '뉴스',
 };
 
 export default function CommunityWritePage() {
@@ -33,6 +32,11 @@ export default function CommunityWritePage() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  const getProfileImageUrl = (profileUrl: string | null | undefined) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -291,7 +295,7 @@ export default function CommunityWritePage() {
   };
 
   const handleHashtagKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       const tag = hashtagInput.trim().replace(/^#/, '');
       if (tag && !hashtags.includes(tag)) {
@@ -462,9 +466,11 @@ export default function CommunityWritePage() {
             {/* 프로필 사진 */}
             <div className="write-form-profile">
               <div className="comment-profile-image">
-                <span className="comment-profile-initial">
-                  {user?.nickname ? user.nickname.charAt(0).toUpperCase() : '익'}
-                </span>
+                <img
+                  src={getProfileImageUrl(user?.profileUrl)}
+                  alt="프로필"
+                  className="comment-profile-img"
+                />
               </div>
             </div>
 
@@ -507,7 +513,7 @@ export default function CommunityWritePage() {
                 </button>
                 {categoryDropdownOpen && (
                   <div className="write-category-menu">
-                    {Object.values(Category).map((cat) => (
+                    {[Category.FREE, Category.GOOD_BAD_NEWS, Category.PROFIT_PROOF, Category.CHART_ANALYSIS].map((cat) => (
                       <button
                         key={cat}
                         type="button"
@@ -547,7 +553,7 @@ export default function CommunityWritePage() {
                 onChange={(e) => setHashtagInput(e.target.value)}
                 onKeyPress={handleHashtagKeyPress}
                 className="form-input"
-                placeholder="해시태그를 입력하고 Enter 또는 쉼표를 누르세요"
+                placeholder="해시태그를 입력하고 Enter 를 누르세요"
               />
               {hashtags.length > 0 && (
                 <div className="hashtags-list">

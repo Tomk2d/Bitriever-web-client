@@ -341,7 +341,7 @@
 
 .sidebar-panel-content {
   flex: 1;
-  padding: 30px 16px 0 16px; /* 위 패딩, 하단 패딩 0 */
+  padding: 20px 16px 20px 16px; /* 상하단 내부 공백 */
   overflow-y: scroll; /* 항상 스크롤바 공간 확보 */
   color: var(--foreground);
   scrollbar-width: none; /* Firefox */
@@ -794,43 +794,109 @@
   color: #f04452;
 }
 
-/* 설정 페이지 테마 전환 버튼 */
+/* 설정 페이지 테마 전환 (토글 스위치) */
 .settings-theme-toggle-wrapper {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: 0;
+  padding-top: 0;
 }
 
-.settings-theme-toggle-button {
-  width: 100%;
-  padding: 12px 16px;
-  background-color: #e5e7eb;
-  color: #1f2937;
-  border: none;
-  border-radius: 6px;
+.settings-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-theme-label {
   font-family: 'Pretendard', sans-serif;
   font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-weight: 550;
+  color: #374151;
 }
 
-.settings-theme-toggle-button:hover {
+.settings-theme-switch {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-theme-switch-track {
+  display: block;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
   background-color: #d1d5db;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.settings-theme-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.settings-theme-switch.is-dark .settings-theme-switch-track {
+  background-color: var(--main-color, #02a262);
+}
+
+.settings-theme-switch.is-dark .settings-theme-switch-thumb {
+  transform: translateX(20px);
+}
+
+.settings-theme-switch:hover .settings-theme-switch-track {
+  background-color: #9ca3af;
+}
+
+.settings-theme-switch.is-dark:hover .settings-theme-switch-track {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.settings-theme-hint {
+  margin: 2px 0 0 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.4;
 }
 
 /* 다크 모드 스타일 */
-.dark .settings-theme-toggle-wrapper {
-  border-top-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark .settings-theme-toggle-button {
-  background-color: #374151;
+.dark .settings-theme-label {
   color: #e5e7eb;
 }
 
-.dark .settings-theme-toggle-button:hover {
+.dark .settings-theme-switch-track {
   background-color: #4b5563;
+}
+
+.dark .settings-theme-switch.is-dark .settings-theme-switch-track {
+  background-color: var(--main-color, #02a262);
+}
+
+.dark .settings-theme-switch-thumb {
+  background-color: #f3f4f6;
+}
+
+.dark .settings-theme-switch:hover .settings-theme-switch-track {
+  background-color: #6b7280;
+}
+
+.dark .settings-theme-switch.is-dark:hover .settings-theme-switch-track {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.dark .settings-theme-hint {
+  color: #9ca3af;
 }
 
 /* 거래소별 그룹 스타일 */
@@ -933,4 +999,241 @@
 
 .dark .wallet-asset-group-krw {
   border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* FAQ 섹션 스타일 */
+.faq-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.faq-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-section-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faq-item {
+  background-color: rgba(2, 32, 71, 0.035);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.faq-item.open {
+  background-color: rgba(2, 32, 71, 0.05);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.faq-question:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.faq-question-text {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--foreground);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.faq-arrow {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  color: rgba(0, 19, 43, 0.5);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.faq-answer {
+  padding: 8px 16px 8px 16px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: rgba(0, 19, 43, 0.7);
+  line-height: 1.6;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 피드백 섹션 스타일 */
+.faq-feedback-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-feedback-textarea {
+  width: 100%;
+  padding: 12px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--foreground);
+  background-color: var(--background);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.faq-feedback-textarea:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+  box-shadow: 0 0 0 2px rgba(2, 162, 98, 0.1);
+}
+
+.faq-feedback-textarea::placeholder {
+  color: rgba(0, 19, 43, 0.4);
+}
+
+.faq-feedback-submit {
+  align-self: flex-end;
+  padding: 6px 14px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--main-color, #02a262);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.faq-feedback-submit:hover {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.faq-feedback-submit:active {
+  transform: scale(0.98);
+}
+
+.faq-feedback-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.faq-feedback-error {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #c53030;
+  background-color: rgba(197, 48, 48, 0.1);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.faq-feedback-thanks {
+  padding: 8px 12px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--main-color, #02a262);
+  background-color: rgba(2, 162, 98, 0.1);
+  border-radius: 6px;
+  animation: fadeIn 0.2s ease;
+}
+
+/* FAQ 인라인 링크 스타일 */
+.faq-inline-link {
+  font-weight: 600;
+  text-decoration: underline;
+  color: var(--main-color, #02a262);
+}
+
+.faq-inline-link:hover {
+  text-decoration: underline;
+  color: var(--main-color-hover, #028a52);
+}
+
+/* 다크 모드 FAQ 스타일 */
+.dark .faq-item {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .faq-item.open {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .faq-question:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .faq-arrow {
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .faq-answer {
+  color: rgba(237, 237, 237, 0.7);
+}
+
+.dark .faq-feedback-textarea {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--foreground);
+}
+
+.dark .faq-feedback-textarea:focus {
+  border-color: var(--main-color, #02a262);
+}
+
+.dark .faq-feedback-textarea::placeholder {
+  color: rgba(237, 237, 237, 0.4);
+}
+
+.dark .faq-feedback-thanks {
+  background-color: rgba(2, 162, 98, 0.2);
+  color: var(--main-color, #02a262);
+}
+
+.dark .faq-feedback-error {
+  color: #fc8181;
+  background-color: rgba(252, 129, 129, 0.15);
 }

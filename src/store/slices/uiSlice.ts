@@ -6,8 +6,14 @@ interface UiState {
   loading: boolean;
 }
 
+function getInitialTheme(): 'light' | 'dark' {
+  if (typeof window === 'undefined') return 'light';
+  const saved = localStorage.getItem('theme');
+  return saved === 'dark' ? 'dark' : 'light';
+}
+
 const initialState: UiState = {
-  theme: 'light',
+  theme: getInitialTheme(),
   sidebarOpen: false,
   loading: false,
 };

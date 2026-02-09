@@ -7,7 +7,7 @@ import { useCommunities } from '@/features/community/hooks/useCommunities';
 import { Category, ReactionType } from '@/features/community/types';
 import { communityService } from '@/features/community/services/communityService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLatestArticles } from '@/features/articles/hooks/useArticles';
+import { articleService } from '@/features/articles/services/articleService';
 import Link from 'next/link';
 import './page.css';
 
@@ -35,24 +35,45 @@ export default function CommunitiesPage() {
   const [newsPage, setNewsPage] = useState(0);
   const [allArticles, setAllArticles] = useState<any[]>([]);
   const [hasMoreNews, setHasMoreNews] = useState(true);
+  const [isLoadingArticles, setIsLoadingArticles] = useState(false);
   const newsObserverTargetRef = useRef<HTMLDivElement>(null);
   
-  // 뉴스 데이터 조회 (최신순만)
-  const { data: articlesData, isLoading: isLoadingArticles } = useLatestArticles(newsPage);
-  
-  // 뉴스 데이터 누적
+  // 뉴스 데이터 조회 (최신순, 프론트 캐시 없이 항상 서버에서 가져오기)
   useEffect(() => {
-    if (isNewsCategory && articlesData) {
-      if (newsPage === 0) {
-        // 첫 페이지는 초기화
-        setAllArticles(articlesData.content);
-      } else {
-        // 이후 페이지는 누적
-        setAllArticles((prev) => [...prev, ...articlesData.content]);
+    if (!isNewsCategory) return;
+
+    let cancelled = false;
+    const fetchArticles = async () => {
+      try {
+        setIsLoadingArticles(true);
+        const articlesData = await articleService.getLatestArticles(newsPage, 10);
+        if (cancelled) return;
+
+        if (newsPage === 0) {
+          // 첫 페이지는 초기화
+          setAllArticles(articlesData.content);
+        } else {
+          // 이후 페이지는 누적
+          setAllArticles((prev) => [...prev, ...articlesData.content]);
+        }
+        setHasMoreNews(!articlesData.last);
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[CommunitiesPage] 뉴스 조회 실패:', error);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingArticles(false);
+        }
       }
-      setHasMoreNews(!articlesData.last);
-    }
-  }, [articlesData, newsPage, isNewsCategory]);
+    };
+
+    fetchArticles();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isNewsCategory, newsPage]);
   
   // 카테고리 변경 시 뉴스 초기화
   useEffect(() => {
@@ -187,7 +208,7 @@ export default function CommunitiesPage() {
           onClick={() => handleCategoryChange(Category.NEWS)}
           className={`category-tab ${selectedCategory === Category.NEWS ? 'active' : ''}`}
         >
-          최신 뉴스
+          뉴스 피드
         </button>
       </div>
 

@@ -260,7 +260,7 @@ export default function CoinList() {
     const baseList =
       selectedTab === 'HOLDINGS'
         ? holdingCoins
-        : coins;
+        : coins.filter((coin) => coin.marketCode !== 'KRW-KRW' && coin.symbol !== 'KRW');
 
     if (!debouncedSearchQuery.trim()) return baseList;
 
@@ -460,6 +460,17 @@ export default function CoinList() {
               >
                 거래소 연동하기
               </button>
+            </div>
+          </div>
+        );
+      }
+
+      // 3) 거래소는 연동되었지만 보유 종목이 없는 경우
+      if (sortedCoins.length === 0) {
+        return (
+          <div className="coin-list">
+            <div className="coin-list-empty-state">
+              <p className="coin-list-empty-text">연동된 거래소에 보유한 암호화폐가 없습니다.</p>
             </div>
           </div>
         );
