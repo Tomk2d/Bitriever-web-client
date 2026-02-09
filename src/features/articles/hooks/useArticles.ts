@@ -1,14 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { articleService, ArticleResponse, PageResponse } from '../services/articleService';
 
+/** fetch-server 블록미디어 기사 크롤링 주기(10분)와 동일 */
+const ARTICLE_CRAWL_INTERVAL_MS = 10 * 60 * 1000;
+
 export const useLatestArticles = (page: number = 0) => {
   return useQuery<PageResponse<ArticleResponse>>({
     queryKey: ['articles', 'latest', page],
     queryFn: () => articleService.getLatestArticles(page, 10),
-    staleTime: 1000 * 60 * 5, // 5분
-    gcTime: 1000 * 60 * 30, // 30분
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
     retry: 1,
+    refetchInterval: ARTICLE_CRAWL_INTERVAL_MS, // 10분마다 크롤링 주기와 맞춰 재조회
   });
 };
 
@@ -44,11 +47,11 @@ export const useArticlesByDateRange = (date: string | null, page: number = 0) =>
 
       return articleService.getArticlesByDateRange(startDateStr, endDateStr, page, 10);
     },
-    enabled: true, // 항상 활성화 (date가 null이어도 최신 기사 조회)
-    staleTime: 1000 * 60 * 5, // 5분
-    gcTime: 1000 * 60 * 30, // 30분
-    refetchOnWindowFocus: false,
+    enabled: true,
+    staleTime: 0,
+    gcTime: 0,
     retry: 1,
+    refetchInterval: ARTICLE_CRAWL_INTERVAL_MS, // 10분마다 크롤링 주기와 맞춰 재조회
   });
 };
 

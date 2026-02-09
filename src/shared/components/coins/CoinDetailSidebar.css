@@ -212,9 +212,9 @@
   font-weight: 500;
   padding: 3px 8px;
   border-radius: 3px;
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: rgba(0, 0, 0, 0.12);
   color: var(--foreground);
-  opacity: 0.7;
+  opacity: 0.85;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   flex-shrink: 0;
@@ -223,6 +223,11 @@
   cursor: help;
   position: relative;
   transition: opacity 0.2s ease;
+}
+
+.dark .coin-detail-exchange-marker {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #e5e7eb;
 }
 
 .coin-detail-exchange-marker:hover {
@@ -1067,7 +1072,7 @@
 
 /* 다크 모드 */
 .dark .coin-detail-long-short-container {
-  background-color: rgba(2, 32, 71, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .dark .coin-detail-long-short-header {

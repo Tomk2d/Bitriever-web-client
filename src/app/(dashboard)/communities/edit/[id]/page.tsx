@@ -728,6 +728,11 @@ export default function CommunityEditPage() {
     );
   }
 
+  const getProfileImageUrl = (profileUrl: string | null | undefined) => {
+    if (!profileUrl) return '/profile/profile1.png';
+    return `/profile${profileUrl}.png`;
+  };
+
   return (
     <div className="container mx-auto pt-8 pb-8">
       <div className="community-write">
@@ -747,9 +752,11 @@ export default function CommunityEditPage() {
             {/* 프로필 사진 */}
             <div className="write-form-profile">
               <div className="comment-profile-image">
-                <span className="comment-profile-initial">
-                  {user?.nickname ? user.nickname.charAt(0).toUpperCase() : '익'}
-                </span>
+                <img
+                  src={getProfileImageUrl(user?.profileUrl)}
+                  alt="프로필"
+                  className="comment-profile-img"
+                />
               </div>
             </div>
 

@@ -51,14 +51,27 @@
 }
 
 .write-form-profile .comment-profile-image {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--main-color, #02a262) 0%, #028a52 100%);
+  background: none;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.write-form-profile .comment-profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.dark .write-form-profile .comment-profile-img {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .write-form-profile .comment-profile-initial {

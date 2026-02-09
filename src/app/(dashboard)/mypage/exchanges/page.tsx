@@ -70,6 +70,14 @@ export default function ExchangesPage() {
   const [pollingMessage, setPollingMessage] = useState<string | null>(null);
   const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
 
+  const hasWhitespaceInKeys = /\s/.test(apiKey) || /\s/.test(secretKey);
+  const submitDisabled =
+    !apiKey ||
+    !secretKey ||
+    isSubmitting ||
+    hasWhitespaceInKeys ||
+    !!modalErrorMessage;
+
   const isExchangeConnected = (exchangeName: string) => {
     return connectedExchanges.some(
       (ex) => ex.name.toLowerCase() === exchangeName.toLowerCase()
@@ -194,12 +202,13 @@ export default function ExchangesPage() {
                 </div>
               </div>
               <button
-                className="mypage-button"
+                className="mypage-button mypage-button-connected-badge"
                 style={{
                   padding: '6px 12px',
                   fontSize: '13px',
-                  backgroundColor: 'transparent',
-                  color: 'var(--muted, rgba(0,0,0,0.5))',
+                  backgroundColor: '#28c97a',
+                  color: '#ffffff',
+                  border: 'none',
                   cursor: 'default',
                 }}
                 disabled
@@ -322,6 +331,11 @@ export default function ExchangesPage() {
                 {pollingMessage}
               </p>
             )}
+            {hasWhitespaceInKeys && (
+              <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--destructive, #dc2626)' }}>
+                key 에는 공백이 포함될 수 없습니다.
+              </p>
+            )}
             {modalErrorMessage && (
               <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--destructive, #dc2626)' }}>
                 {modalErrorMessage}
@@ -332,7 +346,7 @@ export default function ExchangesPage() {
                 className="mypage-button mypage-button-success"
                 style={{ flex: 1, padding: '9px 18px' }}
                 onClick={handleSubmitApi}
-                disabled={!apiKey || !secretKey || isSubmitting}
+                disabled={submitDisabled}
               >
                 {isSubmitting ? '연동 중...' : '연동하기'}
               </button>

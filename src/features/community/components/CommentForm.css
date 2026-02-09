@@ -38,8 +38,11 @@
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.22);
+}
+
+.dark .comment-profile-img {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .comment-form-textarea {

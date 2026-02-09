@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { EconomicIndexResponse } from '@/features/economicIndex/types';
 
 interface MarketIndicatorChartProps {
@@ -12,16 +11,6 @@ export default function MarketIndicatorChart({
   data,
   isPositive,
 }: MarketIndicatorChartProps) {
-  const [backgroundColor, setBackgroundColor] = useState<string>('transparent');
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const computedStyle = getComputedStyle(document.documentElement);
-      const bgColor = computedStyle.getPropertyValue('--background').trim() || '#ffffff';
-      setBackgroundColor(bgColor);
-    }
-  }, []);
-
   if (!data || data.length === 0) {
     return (
       <div
@@ -102,13 +91,13 @@ export default function MarketIndicatorChart({
             <stop offset="100%" stopColor={fillColor} stopOpacity="0" />
           </linearGradient>
         </defs>
-        {/* 웹사이트 배경색과 동일한 배경 */}
+        {/* 테마 배경색(라이트/다크)에 맞춤 */}
         <rect
           x="0"
           y="0"
           width="100"
           height="40"
-          fill={backgroundColor}
+          fill="var(--background, #ffffff)"
         />
         <path
           d={areaPath}

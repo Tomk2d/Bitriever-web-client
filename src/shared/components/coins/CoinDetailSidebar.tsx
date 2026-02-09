@@ -1046,9 +1046,9 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
 
                                         롱 포지션 비율이 높으면 상승 기대감이 크고, 
                                         숏 포지션 비율이 높으면 하락 우려가 큰 것으로 해석할 수 있습니다.
-
-                                        최신 30개의 데이터를 제공하며, 
-                                        binance 거래소의 고래 선물 지표를 따릅니다.`} />
+                                        
+                                        최신 30개의 데이터를 제공하며,
+                                        'Binance의 상위 20% 트레이더(마진 잔고 기준)의 선물 거래 포지션 비중'을 따릅니다.`} />
                   </div>
                   <div className="coin-detail-info-controls">
                     {(['1h', '4h', '12h', '1d'] as LongShortPeriod[]).map((period) => (
