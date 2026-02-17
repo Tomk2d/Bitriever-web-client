@@ -229,7 +229,7 @@ export default function CommunityDetailPage() {
         {/* 댓글 섹션 */}
         <div className="community-detail-comments">
           {isAuthenticated && (
-            <CommentForm communityId={community.id} userNickname={user?.nickname} userProfileUrl={user?.profileUrl} />
+            <CommentForm communityId={community.id} userNickname={user?.nickname ?? undefined} userProfileUrl={user?.profileUrl ?? undefined} />
           )}
           <div className="comments-title-wrapper">
             <h3 className="comments-title">댓글 {commentsData?.totalElements || 0}개</h3>

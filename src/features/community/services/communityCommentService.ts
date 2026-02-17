@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/axios';
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 import type {
   CommunityCommentRequest,
   CommunityCommentResponse,
@@ -18,26 +19,11 @@ export const communityCommentService = {
   },
 
   createComment: async (communityId: number, data: CommunityCommentRequest): Promise<CommunityCommentResponse> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch(`/api/proxy/communities/${communityId}/comments`, {
+    const response = await authenticatedFetch(`/api/proxy/communities/${communityId}/comments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-
-    if (response.status === 401) {
-      console.warn('댓글 작성: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 
@@ -51,26 +37,11 @@ export const communityCommentService = {
   },
 
   updateComment: async (communityId: number, id: number, data: Partial<CommunityCommentRequest>): Promise<CommunityCommentResponse> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch(`/api/proxy/communities/${communityId}/comments/${id}`, {
+    const response = await authenticatedFetch(`/api/proxy/communities/${communityId}/comments/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-
-    if (response.status === 401) {
-      console.warn('댓글 수정: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     let result;
     try {
@@ -103,26 +74,11 @@ export const communityCommentService = {
   },
 
   addReaction: async (communityId: number, id: number, reactionType: string): Promise<void> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch(`/api/proxy/communities/${communityId}/comments/${id}/reactions`, {
+    const response = await authenticatedFetch(`/api/proxy/communities/${communityId}/comments/${id}/reactions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reactionType }),
     });
-
-    if (response.status === 401) {
-      console.warn('댓글 반응 추가: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 
@@ -134,25 +90,10 @@ export const communityCommentService = {
   },
 
   removeReaction: async (communityId: number, id: number): Promise<void> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch(`/api/proxy/communities/${communityId}/comments/${id}/reactions`, {
+    const response = await authenticatedFetch(`/api/proxy/communities/${communityId}/comments/${id}/reactions`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
-
-    if (response.status === 401) {
-      console.warn('댓글 반응 삭제: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 

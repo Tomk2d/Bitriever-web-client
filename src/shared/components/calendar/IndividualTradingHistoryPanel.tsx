@@ -5,6 +5,9 @@ import type { TradingHistoryResponse } from '@/features/trading/services/trading
 import { formatCurrency, formatQuantity } from '@/features/asset/utils/assetCalculations';
 import { diaryService, type DiaryResponse } from '@/features/diary/services/diaryService';
 import { parseContentToText, textToContentBlocks } from '@/features/diary/utils/contentParser';
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
+import { requestTradeEvaluationWithPolling } from '@/features/tradeEvaluation/services/tradeEvaluationService';
+import type { TradeEvaluationStatusResponse } from '@/features/tradeEvaluation/types';
 import type { ParsedDiaryContent } from '@/features/diary/types';
 import CoinPriceLineChart from '@/shared/components/charts/CoinPriceLineChart';
 import CoinPriceCandleChart from '@/shared/components/charts/CoinPriceCandleChart';
@@ -13,6 +16,12 @@ import './IndividualTradingHistoryPanel.css';
 interface IndividualTradingHistoryPanelProps {
   tradingHistory: TradingHistoryResponse | null;
   onClose: () => void;
+  /** 다른 매매일지에서 분석 진행 중이면 true → AI 분석 버튼 비활성화 */
+  isAnalysisInProgress?: boolean;
+  /** 분석 시작/종료 시 호출 (전역에서 한 번에 하나만 진행되도록) */
+  onAnalysisProgressChange?: (inProgress: boolean) => void;
+  /** 분석 완료 시 결과 전달 (우측 결과 패널 렌더링용) */
+  onAnalysisResult?: (data: TradeEvaluationStatusResponse) => void;
 }
 
 // exchangeCode를 거래소 이름으로 변환하는 함수
@@ -30,7 +39,7 @@ const getExchangeName = (exchangeCode: number | undefined): string => {
   return exchangeMap[exchangeCode] || '-';
 };
 
-interface IndividualTradingHistoryPanelRef {
+export interface IndividualTradingHistoryPanelRef {
   hasUnsavedChanges: () => boolean;
   handleSave: () => Promise<void>;
 }
@@ -38,6 +47,9 @@ interface IndividualTradingHistoryPanelRef {
 const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRef, IndividualTradingHistoryPanelProps>(({
   tradingHistory,
   onClose: originalOnClose,
+  isAnalysisInProgress = false,
+  onAnalysisProgressChange,
+  onAnalysisResult,
 }, ref) => {
   if (!tradingHistory) {
     return null;
@@ -198,8 +210,6 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
       if (!parsed.blocks) return;
 
       const loadImages = async () => {
-        const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-        
         for (const block of parsed.blocks) {
           if (block.type === 'image' && block.path) {
             const filename = block.path.split('/').pop() || '';
@@ -208,11 +218,7 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
             if (!imageUrls[imageKey]) {
               try {
                 const imageUrl = diaryService.getImageUrl(diary.id, filename);
-                const response = await fetch(imageUrl, {
-                  headers: {
-                    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-                  },
-                });
+                const response = await authenticatedFetch(imageUrl);
                 
                 if (response.ok) {
                   const blob = await response.blob();
@@ -274,6 +280,33 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
     hasUnsavedChanges,
     handleSave,
   }));
+
+  // AI 매매 분석 요청
+  const handleAiAnalysisClick = async () => {
+    if (!tradingHistory || isAnalysisInProgress) return;
+    const targetDate = tradingHistory.tradeTime
+      ? new Date(tradingHistory.tradeTime).toISOString().slice(0, 10)
+      : '';
+    if (!targetDate) {
+      alert('거래 일시를 확인할 수 없습니다.');
+      return;
+    }
+    const body = {
+      tradeId: tradingHistory.id,
+      targetDate,
+      coinId: tradingHistory.coinId,
+    };
+    onAnalysisProgressChange?.(true);
+    try {
+      const data = await requestTradeEvaluationWithPolling(body);
+      onAnalysisProgressChange?.(false);
+      onAnalysisResult?.(data);
+    } catch (err) {
+      onAnalysisProgressChange?.(false);
+      const message = err instanceof Error ? err.message : '매매 분석 요청에 실패했습니다.';
+      alert(message);
+    }
+  };
 
   // 작성하기 모드로 전환
   const handleEditClick = () => {
@@ -675,13 +708,8 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
           // 이미지 로드 시도
           const loadImage = async () => {
             try {
-              const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
               const imageUrl = diaryService.getImageUrl(diaryId, filename);
-              const response = await fetch(imageUrl, {
-                headers: {
-                  ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-                },
-              });
+              const response = await authenticatedFetch(imageUrl);
               
               if (response.ok) {
                 const blob = await response.blob();
@@ -1092,13 +1120,29 @@ const IndividualTradingHistoryPanel = forwardRef<IndividualTradingHistoryPanelRe
           </div>
           <div className="individual-trading-history-panel-header-right">
             {!isEditMode && (
-              <button
-                className="individual-trading-history-write-button-header"
-                onClick={handleEditClick}
-                aria-label="작성하기"
-              >
-                <img src="/icon/pen.png" alt="작성하기" className="individual-trading-history-write-icon" />
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="individual-trading-history-ai-analysis-button-header"
+                  onClick={handleAiAnalysisClick}
+                  disabled={isAnalysisInProgress}
+                  aria-label="AI 분석하기"
+                  title="AI 분석하기"
+                >
+                  {isAnalysisInProgress ? (
+                    <span className="individual-trading-history-ai-analysis-spinner" aria-hidden />
+                  ) : (
+                    <span className="individual-trading-history-ai-analysis-label">AI 분석</span>
+                  )}
+                </button>
+                <button
+                  className="individual-trading-history-write-button-header"
+                  onClick={handleEditClick}
+                  aria-label="작성하기"
+                >
+                  <img src="/icon/pen.png" alt="작성하기" className="individual-trading-history-write-icon" />
+                </button>
+              </>
             )}
             <button
               className="individual-trading-history-panel-close"

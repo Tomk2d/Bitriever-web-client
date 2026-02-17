@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/axios';
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 
 export interface CoinResponse {
   id: number;
@@ -25,25 +26,10 @@ export const coinService = {
   },
 
   getAllByQuoteCurrency: async (quoteCurrency: string): Promise<CoinResponse[]> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch(`/api/proxy/coins/quote-currency?quoteCurrency=${encodeURIComponent(quoteCurrency)}`, {
+    const response = await authenticatedFetch(`/api/proxy/coins/quote-currency?quoteCurrency=${encodeURIComponent(quoteCurrency)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
-
-    if (response.status === 401) {
-      console.warn('코인 목록 조회: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 

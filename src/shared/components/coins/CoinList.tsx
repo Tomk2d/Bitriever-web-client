@@ -477,6 +477,12 @@ export default function CoinList() {
       }
     }
 
+    // 보유 종목 탭: 각 코인의 마켓 기준 통화(KRW-BTC→KRW, BTC-ETH→BTC)로 표시
+    const getDisplayCurrency = (coin: CoinResponse) =>
+      selectedTab === 'HOLDINGS'
+        ? (coin.marketCode?.split('-')[0] || selectedCurrency)
+        : selectedCurrency;
+
     return (
       <div className="coin-list">
         {sortedCoins.map((coin, index) => (
@@ -485,7 +491,7 @@ export default function CoinList() {
             coin={coin} 
             rank={index + 1}
             isSelected={selectedCoin?.id === coin.id}
-            selectedCurrency={selectedCurrency}
+            selectedCurrency={getDisplayCurrency(coin)}
             onClick={() => {
               // 같은 코인을 다시 클릭하면 선택 해제
               if (selectedCoin?.id === coin.id) {

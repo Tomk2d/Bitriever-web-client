@@ -120,17 +120,30 @@ export default function WalletAssetList({
     return getTotalKRW(assets.filter((a) => a.exchangeCode === exchangeCode));
   };
 
-  // 연동된 거래소가 없을 때만 빈 상태 표시 (연동되었으나 보유 0개인 거래소는 그룹으로 표시)
-  if (exchanges.length === 0) {
+  // 로그인 여부: Redux auth
+  const user = useAppSelector((state) => state.auth.user);
+
+  // 로그인 안 됨 또는 연동된 거래소 없음 → 빈 상태 표시
+  const isLoggedIn = !!user;
+  const hasNoExchanges = exchanges.length === 0;
+  if (!isLoggedIn || hasNoExchanges) {
+    const handleClick = () => {
+      if (!isLoggedIn) router.push('/login');
+      else router.push('/mypage/exchanges');
+    };
+    const buttonLabel = !isLoggedIn ? '로그인 하기' : '거래소 연동하기';
+    const emptyText = !isLoggedIn
+      ? '로그인 후 자산을 확인할 수 있습니다.'
+      : '연동된 거래소가 없습니다.';
     return (
       <div className="wallet-asset-list wallet-asset-list-empty">
-        <span className="wallet-asset-list-empty-text">연동된 거래소가 없습니다.</span>
+        <span className="wallet-asset-list-empty-text">{emptyText}</span>
         <button
           type="button"
           className="wallet-asset-list-connect-button"
-          onClick={() => router.push('/mypage/exchanges')}
+          onClick={handleClick}
         >
-          거래소 연동하기
+          {buttonLabel}
         </button>
       </div>
     );

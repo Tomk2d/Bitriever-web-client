@@ -10,11 +10,8 @@ export default function CalendarPreloader() {
     // 캘린더 라이브러리를 미리 로드
     const preloadCalendar = async () => {
       try {
-        // react-calendar와 CSS를 동적으로 import하여 미리 로드
-        await Promise.all([
-          import('react-calendar'),
-          import('react-calendar/dist/Calendar.css'),
-        ]);
+        // react-calendar JS를 미리 로드 (CSS는 매매일지 페이지 진입 시 MonthlyCalendar에서 로드됨)
+        await import('react-calendar');
       } catch (error) {
         // 에러는 조용히 처리 (이미 로드되었을 수 있음)
         console.debug('Calendar preload:', error);

@@ -1,3 +1,5 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
+
 export interface ArticleResponse {
   id: number;
   articleId: number;
@@ -24,8 +26,6 @@ export interface PageResponse<T> {
 
 export const articleService = {
   getLatestArticles: async (page: number = 0, size: number = 10): Promise<PageResponse<ArticleResponse>> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -33,23 +33,10 @@ export const articleService = {
       direction: 'DESC',
     });
 
-    const response = await fetch(`/api/proxy/articles/latest?${params.toString()}`, {
+    const response = await authenticatedFetch(`/api/proxy/articles/latest?${params.toString()}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
-
-    if (response.status === 401) {
-      console.warn('최신 기사 조회: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 
@@ -67,8 +54,6 @@ export const articleService = {
     page: number = 0,
     size: number = 10
   ): Promise<PageResponse<ArticleResponse>> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
     const params = new URLSearchParams({
       startDate,
       endDate,
@@ -78,23 +63,10 @@ export const articleService = {
       direction: 'DESC',
     });
 
-    const response = await fetch(`/api/proxy/articles/date-range?${params.toString()}`, {
+    const response = await authenticatedFetch(`/api/proxy/articles/date-range?${params.toString()}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
-
-    if (response.status === 401) {
-      console.warn('날짜 범위별 기사 조회: 인증 실패 (401) - 로그아웃 처리');
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 

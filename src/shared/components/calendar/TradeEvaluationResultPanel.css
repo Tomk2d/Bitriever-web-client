@@ -1,0 +1,636 @@
+/* 매매일지 패널(500px) 우측에 펼쳐지는 AI 분석 결과 패널 */
+.trade-evaluation-result-panel {
+  position: fixed;
+  left: 750px; /* 왼쪽 사이드(250) + 매매일지 패널(500) */
+  top: 70px;
+  width: 440px;
+  height: calc(100vh - 70px);
+  background-color: var(--sidebar-bg, #ffffff);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 997;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trade-evaluation-result-panel-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trade-evaluation-result-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* 매매일지 패널 타이틀(.individual-trading-history-panel-title)과 동일 */
+.trade-evaluation-result-panel-title {
+  font-family: 'Pretendard', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.trade-evaluation-result-panel-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.trade-evaluation-result-panel-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.trade-evaluation-result-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 16px 0;
+  color: var(--foreground);
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.trade-evaluation-result-panel-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trade-evaluation-result-panel-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 3px;
+}
+
+.trade-evaluation-result-panel-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.trade-evaluation-result-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 전문가별 블록: 프로필 이미지 + 라벨 + 내용 */
+.trade-evaluation-result-experts {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.trade-evaluation-result-expert {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-evaluation-result-expert-collapsible {
+  gap: 0;
+}
+
+.trade-evaluation-result-expert-collapsible .trade-evaluation-result-expert-body-inner {
+  padding-top: 0;
+}
+
+.trade-evaluation-result-expert-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--sidebar-bg, #ffffff);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin: 0 -16px;
+  padding: 16px 16px 16px 16px;
+  margin-bottom: -1px;
+}
+
+.trade-evaluation-result-expert-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.trade-evaluation-result-expert-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 기사 전문가 아코디언: 헤더 버튼 (상·하 16px로 상단/하단 내부 공백 확보) */
+.trade-evaluation-result-expert-header-button {
+  width: 100%;
+  padding: 14px 16px;
+  margin: 0;
+  border: none;
+  background-color: var(--sidebar-bg, #ffffff);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s ease;
+  border-radius: 6px;
+}
+
+.trade-evaluation-result-expert-header-button:hover {
+  background-color: #f0f2f5;
+}
+
+.trade-evaluation-result-expert-chevron {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid currentColor;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+  opacity: 0.7;
+}
+
+.trade-evaluation-result-expert-header-button.is-open .trade-evaluation-result-expert-chevron {
+  transform: rotate(180deg);
+}
+
+/* 아코디언 본문: 닫을 때 0, 열릴 때 펼쳐짐 */
+.trade-evaluation-result-expert-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease-out;
+  position: relative;
+  z-index: 0;
+}
+
+.trade-evaluation-result-expert-body.is-open {
+  grid-template-rows: 1fr;
+}
+
+.trade-evaluation-result-expert-body-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 4px;
+}
+
+.trade-evaluation-result-expert-profile-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: rgba(0, 19, 43, 0.06);
+}
+
+.trade-evaluation-result-expert-profile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trade-evaluation-result-expert-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.trade-evaluation-result-expert-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(0, 19, 43, 0.85);
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding-left: 0;
+}
+
+.trade-evaluation-result-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-evaluation-result-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trade-evaluation-result-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 19, 43, 0.6);
+  text-transform: capitalize;
+}
+
+.trade-evaluation-result-value {
+  font-size: 14px;
+  color: var(--foreground);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 기사 전문가 유저 친화적 렌더: 시장 상황(뱃지), 시장 분석, 단기적/장기적 의견 */
+.trade-evaluation-expert-friendly {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 12px 12px 12px 12px;
+}
+
+.trade-evaluation-expert-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trade-evaluation-expert-field-label {
+  font-size: 13px;
+  font-weight: 650;
+  color: rgba(0, 19, 43, 0.65);
+}
+
+.trade-evaluation-expert-field-value {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(0, 19, 43, 0.85);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.trade-evaluation-expert-field-value.has-bg {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background-color: rgba(2, 32, 71, 0.035);
+}
+
+/* **키워드** 파싱 시 적용되는 볼드 (강도 완화) */
+.trade-evaluation-expert-bold {
+  font-weight: 600;
+}
+
+.trade-evaluation-expert-json-block {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background-color: rgba(2, 32, 71, 0.035);
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(0, 19, 43, 0.85);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* 차트 전문가 주목할 기간: title + 그래프 블록 */
+.trade-evaluation-notable-period-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trade-evaluation-notable-period-chart-block {
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: rgba(2, 32, 71, 0.02);
+}
+
+.trade-evaluation-notable-period-chart-title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  border-bottom: 1px solid rgba(0, 19, 43, 0.06);
+}
+
+.trade-evaluation-notable-period-chart-wrap {
+  width: 100%;
+  min-height: 184px;
+  padding: 4px 8px 0px;
+}
+
+.trade-evaluation-notable-period-chart-container {
+  display: block;
+  min-height: 184px;
+}
+
+.trade-evaluation-notable-period-chart-empty {
+  padding: 24px 12px;
+  font-size: 12px;
+  color: rgba(0, 19, 43, 0.5);
+  text-align: center;
+}
+
+.trade-evaluation-verdict-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: rgba(0, 19, 43, 0.08);
+  color: var(--foreground);
+}
+
+.trade-evaluation-verdict-badge.verdict-positive {
+  background-color: rgba(2, 162, 98, 0.15);
+  color: var(--main-color, #02a262);
+}
+
+.trade-evaluation-verdict-badge.verdict-neutral {
+  background-color: rgba(0, 19, 43, 0.1);
+  color: rgba(0, 19, 43, 0.75);
+}
+
+.trade-evaluation-verdict-badge.verdict-negative {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+/* 주목할 기간: 클릭 시 펼쳐지는 패널 + 기사 카드 */
+.trade-evaluation-notable-periods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-evaluation-notable-period {
+  border: 1px solid rgba(0, 19, 43, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.trade-evaluation-notable-period-header {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: rgba(2, 32, 71, 0.035);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 8px;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.trade-evaluation-notable-period-header:hover {
+  background: rgba(0, 19, 43, 0.08);
+}
+
+.trade-evaluation-notable-period-header.is-open {
+  background: rgba(2, 32, 71, 0.035);
+}
+
+.trade-evaluation-notable-period-title {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.trade-evaluation-notable-period-text {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 12px;
+  color: rgba(0, 19, 43, 0.6);
+}
+
+.trade-evaluation-notable-period-chevron {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: center;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.trade-evaluation-notable-period-header.is-open .trade-evaluation-notable-period-chevron {
+  transform: rotate(180deg);
+}
+
+.trade-evaluation-notable-period-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.2s ease-out;
+  overflow: hidden;
+  visibility: hidden;
+  min-height: 0;
+  max-height: 0;
+}
+
+.trade-evaluation-notable-period-body.is-open {
+  grid-template-rows: 1fr;
+  max-height: none;
+  visibility: visible;
+}
+
+.trade-evaluation-notable-period-body-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-evaluation-notable-article-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.trade-evaluation-notable-article-link-placeholder {
+  display: block;
+}
+
+.trade-evaluation-notable-article-card {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(2, 32, 71, 0.035);
+  border: 1px solid rgba(0, 19, 43, 0.08);
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.trade-evaluation-notable-article-link:hover .trade-evaluation-notable-article-card {
+  background: rgba(0, 19, 43, 0.08);
+  border-color: rgba(2, 162, 98, 0.25);
+}
+
+.trade-evaluation-notable-article-date {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(0, 19, 43, 0.5);
+  margin-bottom: 4px;
+}
+
+.trade-evaluation-notable-article-summary {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(0, 19, 43, 0.85);
+  display: block;
+}
+
+/* 다크 모드 */
+.dark .trade-evaluation-result-panel {
+  background-color: var(--sidebar-bg, #17171c);
+  border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .trade-evaluation-result-panel-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .trade-evaluation-result-panel-close:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .trade-evaluation-result-label {
+  color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .trade-evaluation-result-expert-profile-wrap {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .trade-evaluation-result-expert-header {
+  background-color: var(--sidebar-bg, #1a1a1a);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .trade-evaluation-result-expert-header-button {
+  background-color: var(--sidebar-bg, #17171c);
+}
+
+.dark .trade-evaluation-result-expert-header-button:hover {
+  background-color: #25252e;
+}
+
+.dark .trade-evaluation-result-expert-content {
+  color: rgba(237, 237, 237, 0.85);
+}
+
+.dark .trade-evaluation-expert-field-label {
+  color: rgba(237, 237, 237, 0.65);
+}
+
+.dark .trade-evaluation-expert-field-value {
+  color: rgba(237, 237, 237, 0.85);
+}
+
+.dark .trade-evaluation-expert-field-value.has-bg {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .trade-evaluation-expert-json-block {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(237, 237, 237, 0.85);
+}
+
+.dark .trade-evaluation-notable-period-chart-block {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.04);
+  --trade-evaluation-chart-bg-line: rgba(255, 255, 255, 0.25);
+}
+
+.dark .trade-evaluation-notable-period-chart-title {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .trade-evaluation-notable-period-chart-empty {
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .trade-evaluation-verdict-badge.verdict-neutral {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: rgba(237, 237, 237, 0.9);
+}
+
+.dark .trade-evaluation-verdict-badge.verdict-positive {
+  background-color: rgba(2, 162, 98, 0.25);
+  color: var(--main-color, #02a262);
+}
+
+.dark .trade-evaluation-verdict-badge.verdict-negative {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.dark .trade-evaluation-notable-period {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .trade-evaluation-notable-period-header {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .trade-evaluation-notable-period-header:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dark .trade-evaluation-notable-period-header.is-open {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .trade-evaluation-notable-period-text {
+  color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .trade-evaluation-notable-article-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .trade-evaluation-notable-article-link:hover .trade-evaluation-notable-article-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(2, 162, 98, 0.3);
+}
+
+.dark .trade-evaluation-notable-article-date {
+  color: rgba(237, 237, 237, 0.5);
+}
+
+.dark .trade-evaluation-notable-article-summary {
+  color: rgba(237, 237, 237, 0.85);
+}
+
+.dark .trade-evaluation-result-panel-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .trade-evaluation-result-panel-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}

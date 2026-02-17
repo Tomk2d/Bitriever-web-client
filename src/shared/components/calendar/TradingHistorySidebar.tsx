@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import type { TradingHistoryResponse } from '@/features/trading/services/tradingHistoryService';
 import { formatCurrency, formatNumber, formatQuantity, truncateIfLong, truncateNumberWithUnit } from '@/features/asset/utils/assetCalculations';
 import IndividualTradingHistoryPanel, { type IndividualTradingHistoryPanelRef } from './IndividualTradingHistoryPanel';
+import TradeEvaluationResultPanel from './TradeEvaluationResultPanel';
+import type { TradeEvaluationStatusResponse } from '@/features/tradeEvaluation/types';
 import './TradingHistorySidebar.css';
 
 type SortOption = 'latest' | 'oldest' | 'amount' | 'name' | 'profitHigh' | 'profitLow';
@@ -37,12 +39,22 @@ export default function TradingHistorySidebar({
   const [selectedExchange, setSelectedExchange] = useState<number | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('latest');
   const [selectedTradingHistory, setSelectedTradingHistory] = useState<TradingHistoryResponse | null>(null);
+  const [isTradeEvaluationInProgress, setTradeEvaluationInProgress] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState<{ data: TradeEvaluationStatusResponse; tradeId: number } | null>(null);
   const panelRef = useRef<IndividualTradingHistoryPanelRef>(null);
 
-  // selectedDate가 변경되면 선택된 거래 내역 초기화
+  // selectedDate가 변경되면 선택된 거래 내역 및 분석 결과 초기화
   useEffect(() => {
     setSelectedTradingHistory(null);
+    setEvaluationResult(null);
   }, [selectedDate]);
+
+  // 다른 매매일지 선택 시 분석 결과 패널 초기화
+  useEffect(() => {
+    if (selectedTradingHistory && evaluationResult && evaluationResult.tradeId !== selectedTradingHistory.id) {
+      setEvaluationResult(null);
+    }
+  }, [selectedTradingHistory?.id, evaluationResult?.tradeId]);
 
   // 패널이 열릴 때 body에 padding-left 추가
   useEffect(() => {
@@ -356,9 +368,29 @@ export default function TradingHistorySidebar({
           ref={panelRef}
           key={selectedTradingHistory.id}
           tradingHistory={selectedTradingHistory}
-          onClose={() => setSelectedTradingHistory(null)}
+          onClose={() => {
+            setSelectedTradingHistory(null);
+            setEvaluationResult(null);
+          }}
+          isAnalysisInProgress={isTradeEvaluationInProgress}
+          onAnalysisProgressChange={setTradeEvaluationInProgress}
+          onAnalysisResult={(data) => setEvaluationResult({ data, tradeId: selectedTradingHistory.id })}
         />
       )}
+      {evaluationResult && (() => {
+        const trade = tradingHistories.find((h) => h.id === evaluationResult.tradeId);
+        const targetDate = trade?.tradeTime ? trade.tradeTime.trim().slice(0, 10) : undefined;
+        const coinId = trade?.coinId;
+        return (
+          <TradeEvaluationResultPanel
+            result={evaluationResult.data}
+            tradeId={evaluationResult.tradeId}
+            targetDate={targetDate}
+            coinId={coinId}
+            onClose={() => setEvaluationResult(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

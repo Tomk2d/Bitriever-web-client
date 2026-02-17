@@ -1,3 +1,5 @@
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
+
 export interface CoinResponse {
   id: number;
   symbol: string;
@@ -35,29 +37,14 @@ export interface TradingHistoryDateRangeRequest {
 
 export const tradingHistoryService = {
   getByDateRange: async (startDate: string, endDate: string): Promise<TradingHistoryResponse[]> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch('/api/proxy/trading-histories/range', {
+    const response = await authenticatedFetch('/api/proxy/trading-histories/range', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         startDate,
         endDate,
       }),
     });
-
-    // 401 에러 발생 시 로그아웃 처리
-    if (response.status === 401) {
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다.');
-    }
 
     const result = await response.json();
 

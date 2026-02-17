@@ -136,11 +136,9 @@ export default function CoinPriceLineChart({
         },
         rightPriceScale: {
           borderColor: borderColor,
-          fontSize: 9,
         },
         timeScale: {
           borderColor: borderColor,
-          fontSize: 9,
           timeVisible: false,
         },
         crosshair: {
@@ -166,7 +164,6 @@ export default function CoinPriceLineChart({
         handleScale: {
           axisPressedMouseMove: false,
           axisDoubleClickReset: false,
-          axisTouchDrag: false,
           mouseWheel: false,
           pinch: false,
         },
@@ -188,7 +185,7 @@ export default function CoinPriceLineChart({
         priceLineRef.current = lineSeries.createPriceLine({
           price: tradingPrice,
           color: priceLineColor,
-          lineWidth: 1.5,
+          lineWidth: 2,
           lineStyle: 0,
           axisLabelVisible: true,
           title: '',
@@ -199,7 +196,7 @@ export default function CoinPriceLineChart({
         avgBuyPriceLineRef.current = lineSeries.createPriceLine({
           price: avgBuyPrice,
           color: '#ef4444',
-          lineWidth: 1.5,
+          lineWidth: 2,
           lineStyle: 0,
           axisLabelVisible: true,
           title: '',
@@ -251,11 +248,9 @@ export default function CoinPriceLineChart({
         },
         rightPriceScale: {
           borderColor: borderColor,
-          fontSize: 9,
         },
         timeScale: {
           borderColor: borderColor,
-          fontSize: 9,
           timeVisible: false,
         },
         crosshair: {
@@ -281,7 +276,6 @@ export default function CoinPriceLineChart({
         handleScale: {
           axisPressedMouseMove: false,
           axisDoubleClickReset: false,
-          axisTouchDrag: false,
           mouseWheel: false,
           pinch: false,
         },
@@ -308,7 +302,7 @@ export default function CoinPriceLineChart({
           priceLineRef.current = series.createPriceLine({
             price: tradingPrice,
             color: priceLineColor,
-            lineWidth: 1.5,
+            lineWidth: 2,
             lineStyle: 0,
             axisLabelVisible: true,
             title: '',
@@ -325,7 +319,7 @@ export default function CoinPriceLineChart({
           avgBuyPriceLineRef.current = series.createPriceLine({
             price: avgBuyPrice,
             color: '#ef4444',
-            lineWidth: 1.5,
+            lineWidth: 2,
             lineStyle: 0,
             axisLabelVisible: true,
             title: '',

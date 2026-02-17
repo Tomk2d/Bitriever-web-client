@@ -38,6 +38,18 @@ export interface DateRange {
   endDate: string;
 }
 
+/** 해당 날짜(23:59:59) 기준 이전 6개월 구간 (startDate ~ endDate, ISO8601: YYYY-MM-DDTHH:mm:ss) */
+export const getSixMonthRangeBefore = (targetDateStr: string): { startDate: string; endDate: string } => {
+  const end = new Date(targetDateStr.trim().slice(0, 10) + 'T23:59:59');
+  const start = new Date(end);
+  start.setMonth(start.getMonth() - 6);
+  start.setHours(0, 0, 0, 0);
+  return {
+    startDate: formatDateToISO8601(start),
+    endDate: formatDateToISO8601(end),
+  };
+};
+
 export const calculateChartDateRange = (selectedDate: string, monthsRange: number = 6): DateRange => {
   const selected = new Date(selectedDate);
   const today = new Date();

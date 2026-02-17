@@ -2,6 +2,7 @@
  * 문의 API 서비스.
  * content는 textarea 값 그대로 전송되며, 줄바꿈(\n)은 JSON 내 문자열에 포함되어 서버에 전달됩니다.
  */
+import { authenticatedFetch } from '@/lib/authenticatedFetch';
 
 export interface InquiryCreateRequest {
   /** 문의 내용 (줄바꿈 포함) */
@@ -17,26 +18,11 @@ export interface InquiryResponse {
 
 export const inquiryService = {
   create: async (data: InquiryCreateRequest): Promise<InquiryResponse> => {
-    const accessToken =
-      typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-    const response = await fetch('/api/proxy/inquiries', {
+    const response = await authenticatedFetch('/api/proxy/inquiries', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-
-    if (response.status === 401) {
-      const { authService } = await import('@/features/auth/services/authService');
-      await authService.logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('인증에 실패했습니다. 다시 로그인해 주세요.');
-    }
 
     const result = await response.json();
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useNotificationSSE } from '../hooks/useNotificationSSE';
-import { NotificationResponse } from '../types';
+import { NotificationResponse, TradeEvaluationEventPayload } from '../types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
@@ -170,13 +170,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     console.log('[NotificationProvider] SSE 연결됨');
   };
 
+  const handleTradeEvaluation = (payload: TradeEvaluationEventPayload) => {
+    console.log('[NotificationProvider] 매매 분석 이벤트:', payload.symbol, payload.success ? '완료' : '실패', payload);
+  };
+
   const handleError = (error: Event) => {
     console.error('[NotificationProvider] SSE 에러:', error);
   };
 
-  // SSE 연결
+  // SSE 연결 (notification + trade-evaluation 동일 스트림)
   useNotificationSSE({
     onNotification: handleNotification,
+    onTradeEvaluation: handleTradeEvaluation,
     onConnect: handleConnect,
     onError: handleError,
     autoConnect: true,
