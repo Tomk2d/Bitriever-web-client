@@ -14,6 +14,7 @@ const categoryLabels: Record<Category, string> = {
   [Category.GOOD_BAD_NEWS]: '호재/악재',
   [Category.PROFIT_PROOF]: '손익인증',
   [Category.CHART_ANALYSIS]: '차트분석',
+  [Category.NEWS]: '뉴스',
 };
 
 export default function CommunityWritePage() {

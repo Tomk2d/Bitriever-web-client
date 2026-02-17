@@ -81,13 +81,8 @@ export const useEconomicIndices = () => {
               type: changeValue >= 0 ? 'positive' as const : 'negative' as const,
               indexType: type,
               data: data.sort((a, b) => {
-                // 5분 단위 데이터이므로 dateString에 시간 정보가 포함되어 있을 수 있음
-                const timeA = a.dateString 
-                  ? new Date(a.dateString).getTime()
-                  : new Date(a.date).getTime();
-                const timeB = b.dateString
-                  ? new Date(b.dateString).getTime()
-                  : new Date(b.date).getTime();
+                const timeA = new Date(a.dateTimeString ?? a.dateTime).getTime();
+                const timeB = new Date(b.dateTimeString ?? b.dateTime).getTime();
                 return timeA - timeB;
               }),
             } as MarketIndicator;

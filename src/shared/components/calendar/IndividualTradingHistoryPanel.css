@@ -40,7 +40,7 @@
 .individual-trading-history-panel-header-right {
   display: flex;
   align-items: center;
-  gap: 0px;
+  gap: 4px;
 }
 
 .individual-trading-history-panel-title {
@@ -493,6 +493,56 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* AI 분석하기 버튼 (작성하기 버튼 좌측) - main-color 배경 */
+.individual-trading-history-ai-analysis-button-header {
+  width: auto;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border: none;
+  background-color: var(--main-color, #02a262);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.individual-trading-history-ai-analysis-button-header:hover:not(:disabled) {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.individual-trading-history-ai-analysis-button-header:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.individual-trading-history-ai-analysis-label {
+  color: #ffffff;
+}
+
+.individual-trading-history-ai-analysis-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: diary-spinner 0.8s linear infinite;
+}
+
+.dark .individual-trading-history-ai-analysis-button-header:hover:not(:disabled) {
+  background-color: var(--main-color-hover, #028a52);
+}
+
+.dark .individual-trading-history-ai-analysis-label {
+  color: #ffffff;
+}
+
 .individual-trading-history-write-button-header {
   width: 32px;
   height: 32px;
@@ -509,6 +559,10 @@
 
 .individual-trading-history-write-button-header:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .individual-trading-history-write-button-header .individual-trading-history-write-icon {
+  filter: invert(1);
 }
 
 .dark .individual-trading-history-write-button-header:hover {

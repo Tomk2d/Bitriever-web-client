@@ -92,7 +92,8 @@ export default function LoginPage() {
       dispatch(setUserFromAuthResponse({
         userId: response.userId,
         email: response.email,
-        nickname: response.nickname,
+        nickname: response.nickname ?? '',
+        profileUrl: response.profileUrl ?? '',
       }));
       
       // /api/auth/me 호출하여 전체 사용자 정보 가져오기
@@ -104,6 +105,7 @@ export default function LoginPage() {
           userId: userData.id,
           email: userData.email,
           nickname: userData.nickname,
+          profileUrl: userData.profileUrl ?? null,
           connectedExchanges: userData.connectedExchanges || [],
         }));
         

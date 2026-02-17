@@ -276,17 +276,6 @@ export default function CoinDetailLineChart({
         }
       });
 
-      // crosshair 날짜 포맷 설정
-      chart.timeScale().applyOptions({
-        timeFormatter: (time: any) => {
-          const date = typeof time === 'string' ? new Date(time) : new Date(time * 1000);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        },
-      } as any);
-
       chartRef.current = chart;
       seriesRef.current = lineSeries;
     }
@@ -300,16 +289,6 @@ export default function CoinDetailLineChart({
       series.applyOptions({
         color: currentMainColor,
       });
-
-      chart.timeScale().applyOptions({
-        timeFormatter: (time: any) => {
-          const date = typeof time === 'string' ? new Date(time) : new Date(time * 1000);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        },
-      } as any);
 
       const isDarkMode = container.closest('.dark') !== null;
       chart.applyOptions({

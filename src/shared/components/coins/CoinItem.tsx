@@ -176,6 +176,7 @@ export default memo(CoinItem, (prevProps, nextProps) => {
     prevProps.coin.id === nextProps.coin.id &&
     prevProps.rank === nextProps.rank &&
     prevProps.isSelected === nextProps.isSelected &&
+    prevProps.selectedCurrency === nextProps.selectedCurrency &&
     prevProps.onClick === nextProps.onClick
   );
 });

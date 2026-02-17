@@ -51,7 +51,8 @@ export default function AuthCallbackPage() {
           dispatch(setUserFromAuthResponse({
             userId: authData.userId,
             email: authData.email,
-            nickname: authData.nickname || '',
+            nickname: authData.nickname ?? '',
+            profileUrl: authData.profileUrl ?? '',
           }));
 
           authService.getCurrentUser()
@@ -60,6 +61,7 @@ export default function AuthCallbackPage() {
                 userId: userData.id,
                 email: userData.email,
                 nickname: userData.nickname,
+                profileUrl: userData.profileUrl ?? null,
                 connectedExchanges: userData.connectedExchanges || [],
               }));
               if (userData.isConnectExchange === true &&

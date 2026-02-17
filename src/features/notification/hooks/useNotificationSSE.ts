@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { NotificationResponse } from '../types';
+import { NotificationResponse, TradeEvaluationEventPayload } from '../types';
 
 interface UseNotificationSSEOptions {
   onNotification?: (notification: NotificationResponse) => void;
+  /** 매매 분석 완료/실패 이벤트 (이벤트명: trade-evaluation) */
+  onTradeEvaluation?: (payload: TradeEvaluationEventPayload) => void;
   onConnect?: () => void;
   onError?: (error: Event) => void;
   onDisconnect?: () => void;
@@ -12,6 +14,7 @@ interface UseNotificationSSEOptions {
 export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
   const {
     onNotification,
+    onTradeEvaluation,
     onConnect,
     onError,
     onDisconnect,
@@ -68,6 +71,17 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
       }
     });
 
+    // 매매 분석 완료/실패 수신 (notifications와 동일 연결, 이벤트명만 다름)
+    eventSource.addEventListener('trade-evaluation', (event) => {
+      try {
+        const payload = JSON.parse(event.data) as TradeEvaluationEventPayload;
+        console.log('[SSE] 매매 분석 이벤트 수신:', payload);
+        onTradeEvaluation?.(payload);
+      } catch (error) {
+        console.error('[SSE] 매매 분석 이벤트 파싱 실패:', error);
+      }
+    });
+
     // Heartbeat 수신
     eventSource.addEventListener('heartbeat', (event) => {
       console.log('[SSE] Heartbeat 수신:', event.data);
@@ -91,7 +105,7 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
         onDisconnect?.();
       }
     };
-  }, [onNotification, onConnect, onError, onDisconnect]);
+  }, [onNotification, onTradeEvaluation, onConnect, onError, onDisconnect]);
 
   const disconnect = useCallback(() => {
     if (eventSourceRef.current) {

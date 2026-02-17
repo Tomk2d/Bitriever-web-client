@@ -66,7 +66,10 @@ export interface MonthlyFrequency {
   count: number;
 }
 
-// (삭제됨) 거래소별 사용 패턴
+// 거래소별 사용 패턴
+export interface ExchangeUsageResponse {
+  exchangeStats: { exchangeCode: number; exchangeName: string; tradeCount: number }[];
+}
 
 // 거래 스타일 분석
 export interface TradingStyleResponse {

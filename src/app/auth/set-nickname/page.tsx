@@ -91,6 +91,7 @@ export default function SetNicknamePage() {
         userId: userData.id,
         email: userData.email,
         nickname: userData.nickname,
+        profileUrl: userData.profileUrl ?? null,
         connectedExchanges: userData.connectedExchanges || [],
       }));
       

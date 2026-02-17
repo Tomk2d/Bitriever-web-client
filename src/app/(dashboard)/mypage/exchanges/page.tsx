@@ -129,6 +129,7 @@ export default function ExchangesPage() {
           userId: userData.id,
           email: userData.email,
           nickname: userData.nickname,
+          profileUrl: userData.profileUrl ?? null,
           connectedExchanges: userData.connectedExchanges || [],
         }));
         return;
@@ -140,6 +141,7 @@ export default function ExchangesPage() {
           userId: userData.id,
           email: userData.email,
           nickname: userData.nickname,
+          profileUrl: userData.profileUrl ?? null,
           connectedExchanges: userData.connectedExchanges || [],
         }));
         alert(`${selectedExchange.koreanName} 거래소가 성공적으로 연동되었습니다.`);

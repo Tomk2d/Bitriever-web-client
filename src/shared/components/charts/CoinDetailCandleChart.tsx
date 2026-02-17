@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { createChart, IChartApi, ISeriesApi, IPriceLine } from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, IPriceLine, TickMarkType } from 'lightweight-charts';
 import { coinPriceService, CoinPriceDayResponse } from '@/features/coins/services/coinPriceService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
@@ -226,8 +226,8 @@ export default function CoinDetailCandleChart({
         timeScale: {
           borderColor: borderColor,
           timeVisible: true,
-          timeFormatter: (time: any) => {
-            const date = typeof time === 'string' ? new Date(time) : new Date(time * 1000);
+          tickMarkFormatter: (time: string | number, _tickMarkType: TickMarkType, _locale: string) => {
+            const date = typeof time === 'string' ? new Date(time) : new Date(typeof time === 'number' && time < 1e12 ? time * 1000 : time);
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
@@ -290,17 +290,6 @@ export default function CoinDetailCandleChart({
         }
       });
 
-      // crosshair 날짜 포맷 설정
-      chart.timeScale().applyOptions({
-        timeFormatter: (time: any) => {
-          const date = typeof time === 'string' ? new Date(time) : new Date(time * 1000);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        },
-      });
-
       // 커스텀 툴팁 생성
       const formatPriceForTooltip = (price: number): string => {
         if (Math.abs(price) < 100) {
@@ -339,16 +328,6 @@ export default function CoinDetailCandleChart({
         downColor: currentPriceDownColor,
         wickUpColor: currentPriceUpColor,
         wickDownColor: currentPriceDownColor,
-      });
-
-      chart.timeScale().applyOptions({
-        timeFormatter: (time: any) => {
-          const date = typeof time === 'string' ? new Date(time) : new Date(time * 1000);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        },
       });
 
       const isDarkMode = container.closest('.dark') !== null;
