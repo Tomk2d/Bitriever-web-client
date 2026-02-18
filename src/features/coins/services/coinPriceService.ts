@@ -36,6 +36,7 @@ export interface CoinTickerPriceDto {
   signedChangePrice?: number; // 전일 종가 대비 가격 변화 (부호 포함)
   accTradePrice24h: number; // 24시간 누적 거래 금액
   accTradeVolume24h?: number; // 24시간 누적 거래량
+  openingPrice?: number; // 시가 (당일 캔들 open용)
   highPrice?: number; // 고가
   lowPrice?: number; // 저가
   prevClosingPrice?: number; // 전일 종가
