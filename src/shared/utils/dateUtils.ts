@@ -33,6 +33,11 @@ export const getDateKey = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+/** 오늘 날짜(UTC) YYYY-MM-DD. 차트 당일 봉 키/비교용 */
+export const getTodayUtcString = (): string => {
+  return new Date().toISOString().slice(0, 10);
+};
+
 export interface DateRange {
   startDate: string;
   endDate: string;

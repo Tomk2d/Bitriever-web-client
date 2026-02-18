@@ -6,6 +6,7 @@ import { createChart, IChartApi, ISeriesApi, IPriceLine } from 'lightweight-char
 import { coinPriceService, CoinPriceDayResponse } from '@/features/coins/services/coinPriceService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
+import { getTodayUtcString } from '@/shared/utils/dateUtils';
 
 interface CoinDetailLineChartProps {
   coinId: number;
@@ -107,11 +108,7 @@ export default function CoinDetailLineChart({
       );
       
       priceDataList.forEach((item) => {
-        const date = new Date(item.candleDateTimeKst);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const timeString = `${year}-${month}-${day}`;
+        const timeString = item.candleDateTimeUtc.slice(0, 10);
         allChartData.current.set(timeString, item);
       });
       
@@ -140,29 +137,38 @@ export default function CoinDetailLineChart({
     }
 
     if (chartRef.current && seriesRef.current && allChartData.current.size > 0) {
-      const formattedData = Array.from(allChartData.current.values())
+      const todayUtc = getTodayUtcString();
+      const endDateUtc = dateRange.endDate.slice(0, 10);
+      const rangeIncludesToday = endDateUtc >= todayUtc;
+
+      let formattedData = Array.from(allChartData.current.values())
         .sort((a, b) => {
-          const dateA = new Date(a.candleDateTimeKst).getTime();
-          const dateB = new Date(b.candleDateTimeKst).getTime();
+          const dateA = new Date(a.candleDateTimeUtc).getTime();
+          const dateB = new Date(b.candleDateTimeUtc).getTime();
           return dateA - dateB;
         })
         .map((item) => {
-          const date = new Date(item.candleDateTimeKst);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          const timeString = `${year}-${month}-${day}`;
-
+          const timeString = item.candleDateTimeUtc.slice(0, 10);
+          const isToday = timeString === todayUtc;
+          if (isToday && priceData) {
+            return { time: timeString as string, value: Number(priceData.tradePrice) };
+          }
           return {
             time: timeString as string,
             value: Number(item.tradePrice),
           };
         });
 
+      if (rangeIncludesToday && priceData && !formattedData.some((d) => d.time === todayUtc)) {
+        formattedData = [...formattedData, { time: todayUtc as string, value: Number(priceData.tradePrice) }].sort(
+          (a, b) => (a.time as string).localeCompare(b.time as string)
+        );
+      }
+
       seriesRef.current.setData(formattedData);
     }
 
-  }, [priceDataList, dateRange, isLoading]);
+  }, [priceDataList, dateRange, isLoading, priceData]);
 
   const checkAndLoadData = useCallback((visibleFrom: Date, visibleTo: Date) => {
     // 드래그 시 추가 조회 로직 제거 - 초기 로드에서 전체 데이터를 조회하므로 불필요

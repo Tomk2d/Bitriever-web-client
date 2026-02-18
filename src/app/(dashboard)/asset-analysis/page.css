@@ -126,7 +126,19 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  gap: 12px;
   color: var(--text-secondary);
+}
+
+.asset-analysis-empty-text {
+  font-size: 14px;
+  color: var(--foreground);
+  opacity: 0.85;
+}
+
+.asset-analysis-empty-button {
+  margin-top: 4px;
+  font-weight: 600;
 }
 
 .asset-analysis-error-message {

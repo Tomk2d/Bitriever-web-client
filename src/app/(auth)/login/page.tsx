@@ -364,15 +364,6 @@ export default function LoginPage() {
               >
                 {loading ? '로그인 중...' : '로그인'}
               </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="lg"
-                    className="signup-button"
-                    onClick={handleSwitchToSignup}
-                  >
-                    회원가입
-              </Button>
             </div>
           </form>
           

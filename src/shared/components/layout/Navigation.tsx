@@ -86,19 +86,13 @@ export default function Navigation() {
   }, [isDropdownOpen]);
 
   const navItems = [
-    { label: '홈', path: '/' },
     { label: '마켓', path: '/coins' },
     { label: '매매일지', path: '/diaries' },
     { label: '피드', path: '/communities' },
     { label: '자산 분석', path: '/asset-analysis' },
   ];
 
-  const isActive = (path: string) => {
-    if (path === '/') {
-      return pathname === '/';
-    }
-    return pathname.startsWith(path);
-  };
+  const isActive = (path: string) => pathname.startsWith(path);
 
   const handleLogout = async () => {
     try {
@@ -138,8 +132,8 @@ export default function Navigation() {
       <div className="navigation-container">
         <div className="navigation-content">
           <div className="navigation-left">
-            {/* 로고 섹션 - 렌딩 페이지로 이동 */}
-            <Link href="/" className="navigation-logo">
+            {/* 로고 클릭 시 마켓(/coins)으로 이동 (루트는 /coins로 리다이렉트) */}
+            <Link href="/coins" className="navigation-logo">
               <img 
                 src="/data/main-logo-ex.png" 
                 alt="Bitriever Logo" 

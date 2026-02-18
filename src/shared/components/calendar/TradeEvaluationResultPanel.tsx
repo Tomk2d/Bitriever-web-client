@@ -935,9 +935,12 @@ export default function TradeEvaluationResultPanel({
                         </div>
                         <div className="trade-evaluation-result-expert-header-right">
                           {expertVerdict ? (
-                            <span className={`trade-evaluation-verdict-badge ${getVerdictBadgeClass(expertVerdict)}`}>
-                              {expertVerdict}
-                            </span>
+                            <>
+                              <span className="trade-evaluation-verdict-label">시장 상황</span>
+                              <span className={`trade-evaluation-verdict-badge ${getVerdictBadgeClass(expertVerdict)}`}>
+                                {expertVerdict}
+                              </span>
+                            </>
                           ) : null}
                           <span className="trade-evaluation-result-expert-chevron" aria-hidden />
                         </div>
@@ -969,6 +972,7 @@ export default function TradeEvaluationResultPanel({
                       </div>
                       {expertVerdict ? (
                         <div className="trade-evaluation-result-expert-header-right">
+                          <span className="trade-evaluation-verdict-label">시장 상황</span>
                           <span className={`trade-evaluation-verdict-badge ${getVerdictBadgeClass(expertVerdict)}`}>
                             {expertVerdict}
                           </span>

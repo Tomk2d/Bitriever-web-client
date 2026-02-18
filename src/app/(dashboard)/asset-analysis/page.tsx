@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/store/hooks';
 import { useAssetAnalysis } from '@/features/asset-analysis/hooks/useAssetAnalysis';
 import SummaryCards from '@/features/asset-analysis/components/SummaryCards';
 import AssetValueTrendChart from '@/features/asset-analysis/components/AssetValueTrendChart';
@@ -15,6 +17,11 @@ import PortfolioRiskSummary from '@/features/asset-analysis/components/Portfolio
 import './page.css';
 
 export default function AssetAnalysisPage() {
+  const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const connectedExchanges = useAppSelector((state) => state.auth.user?.connectedExchanges || []);
+  const hasConnectedExchange = connectedExchanges.length > 0;
+
   const { data, isLoading, error } = useAssetAnalysis();
 
   if (isLoading) {
@@ -42,7 +49,31 @@ export default function AssetAnalysisPage() {
     return (
       <div className="asset-analysis-page">
         <div className="asset-analysis-empty">
-          <p>자산 분석 데이터가 없습니다.</p>
+          {!isAuthenticated ? (
+            <>
+              <p className="asset-analysis-empty-text">로그인 후 이용해주세요.</p>
+              <button
+                type="button"
+                className="wallet-asset-list-connect-button asset-analysis-empty-button"
+                onClick={() => router.push('/login')}
+              >
+                로그인
+              </button>
+            </>
+          ) : !hasConnectedExchange ? (
+            <>
+              <p className="asset-analysis-empty-text">거래소 연동 후 이용해주세요.</p>
+              <button
+                type="button"
+                className="wallet-asset-list-connect-button asset-analysis-empty-button"
+                onClick={() => router.push('/mypage/exchanges')}
+              >
+                거래소 연동하기
+              </button>
+            </>
+          ) : (
+            <p className="asset-analysis-empty-text">자산 분석 데이터가 없습니다.</p>
+          )}
         </div>
       </div>
     );
