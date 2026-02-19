@@ -30,3 +30,14 @@ export function getBackendUrl(): string {
 export function getWebSocketUrl(): string {
   return `${getBackendUrl()}/ws/coins`;
 }
+
+/** 프론트엔드 공개 URL (OAuth 콜백 등 리다이렉트용). 프록시 뒤에서는 request.url이 내부 주소가 되므로 환경변수 사용 */
+const DEFAULT_FRONTEND_URL = 'http://localhost:3000';
+
+export function getFrontendUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.APP_URL ||
+    DEFAULT_FRONTEND_URL
+  );
+}

@@ -1,4 +1,4 @@
-import { getBackendUrl } from '@/lib/env';
+import { getBackendUrl, getFrontendUrl } from '@/lib/env';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
   } catch (error) {
     console.error('OAuth2 redirect error:', error);
     return NextResponse.redirect(
-      new URL('/login?error=OAuth2 인증 시작에 실패했습니다.', request.url)
+      new URL('/login?error=OAuth2 인증 시작에 실패했습니다.', getFrontendUrl())
     );
   }
 }

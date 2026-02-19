@@ -1,10 +1,11 @@
-import { getBackendUrl } from '@/lib/env';
+import { getBackendUrl, getFrontendUrl } from '@/lib/env';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
+  const baseUrl = getFrontendUrl();
   try {
     const { provider } = await params;
     const searchParams = request.nextUrl.searchParams;
@@ -14,7 +15,7 @@ export async function GET(
     if (error) {
       const errorMessage = searchParams.get('message') || 'OAuth2 인증에 실패했습니다.';
       return NextResponse.redirect(
-        new URL(`/login?error=${encodeURIComponent(errorMessage)}`, request.url)
+        new URL(`/login?error=${encodeURIComponent(errorMessage)}`, baseUrl)
       );
     }
     
@@ -36,11 +37,11 @@ export async function GET(
     
     if (!oauthCode) {
       return NextResponse.redirect(
-        new URL('/login?error=인증 코드를 받지 못했습니다.', request.url)
+        new URL('/login?error=인증 코드를 받지 못했습니다.', baseUrl)
       );
     }
     
-    const redirectUrl = new URL('/auth/callback', request.url);
+    const redirectUrl = new URL('/auth/callback', baseUrl);
     redirectUrl.searchParams.set('code', oauthCode);
     if (userId) redirectUrl.searchParams.set('userId', userId);
     if (email) redirectUrl.searchParams.set('email', email);
@@ -51,7 +52,7 @@ export async function GET(
   } catch (error) {
     console.error('OAuth2 callback error:', error);
     return NextResponse.redirect(
-      new URL('/login?error=인증 처리 중 오류가 발생했습니다.', request.url)
+      new URL('/login?error=인증 처리 중 오류가 발생했습니다.', baseUrl)
     );
   }
 }
