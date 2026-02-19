@@ -110,18 +110,20 @@
 
 /* 검색바 */
 .navigation-search {
-  width: 160px;
   height: 35px;
+  min-width: 200px;
   background-color: #f5f5f5;
   border: 1px solid rgba(217, 217, 255, 0.11);
   border-radius: 8.75px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 8px 0 12px;
+  gap: 6px;
 }
 
-.search-input {
-  width: 100%;
+.navigation-search .search-input {
+  flex: 1;
+  min-width: 0;
   height: 100%;
   background: transparent;
   border: none;
@@ -134,8 +136,29 @@
   color: #333d4b;
 }
 
-.search-input::placeholder {
+.navigation-search .search-input::placeholder {
   color: #9e9ea4;
+}
+
+.navigation-search-button {
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 10px;
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 18px;
+  color: #333d4b;
+  background-color: rgba(2, 162, 98, 0.15);
+  border: 1px solid rgba(2, 162, 98, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.navigation-search-button:hover {
+  background-color: rgba(2, 162, 98, 0.25);
+  border-color: #02a262;
 }
 
 /* 테마 토글 버튼 */
@@ -221,12 +244,24 @@
   border-color: rgba(217, 217, 255, 0.2);
 }
 
-.dark .search-input {
+.dark .navigation-search .search-input {
   color: #ededed;
 }
 
-.dark .search-input::placeholder {
+.dark .navigation-search .search-input::placeholder {
   color: #666666;
+}
+
+.dark .navigation-search-button {
+  color: #e0e0e0;
+  background-color: rgba(2, 162, 98, 0.2);
+  border-color: rgba(2, 162, 98, 0.5);
+}
+
+.dark .navigation-search-button:hover {
+  background-color: rgba(2, 162, 98, 0.35);
+  border-color: #02a262;
+  color: #fff;
 }
 
 .dark .login-button {

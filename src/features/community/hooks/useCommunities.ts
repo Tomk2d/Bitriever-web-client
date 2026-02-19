@@ -10,6 +10,20 @@ export const useCommunities = (category?: string, page: number = 0, size: number
   });
 };
 
+export const useCommunitiesByHashtag = (
+  hashtag: string | null,
+  category?: string,
+  page: number = 0,
+  size: number = 20
+) => {
+  return useQuery<PageResponse<CommunityListResponse>>({
+    queryKey: ['communities', 'hashtag', hashtag, category, page, size],
+    queryFn: () => communityService.searchByHashtag(hashtag!, category, page, size),
+    staleTime: 1000 * 30,
+    enabled: Boolean(hashtag?.trim()),
+  });
+};
+
 export const useMyPosts = (page: number = 0, size: number = 10, enabled: boolean = true) => {
   return useQuery<PageResponse<CommunityListResponse>>({
     queryKey: ['communities', 'my', page, size],
