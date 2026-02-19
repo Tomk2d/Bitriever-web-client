@@ -1,8 +1,8 @@
 import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { getWebSocketUrl } from '@/lib/env';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-const WS_URL = `${API_BASE_URL}/ws/coins`;
+const WS_URL = getWebSocketUrl();
 
 export interface WebSocketMessage {
   type: string;

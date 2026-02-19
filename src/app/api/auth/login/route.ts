@@ -1,6 +1,5 @@
+import { getBackendUrl } from '@/lib/env';
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +12,7 @@ export async function POST(request: NextRequest) {
       headers['Cookie'] = cookieHeader;
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+    const response = await fetch(`${getBackendUrl()}/api/auth/login`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),

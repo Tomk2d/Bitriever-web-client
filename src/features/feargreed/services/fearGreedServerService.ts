@@ -1,10 +1,9 @@
+import { getBackendUrl } from '@/lib/env';
 import { FearGreedResponse } from './fearGreedService';
-
-const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export const fearGreedServerService = {
   getHistory: async (authToken?: string): Promise<FearGreedResponse[]> => {
-    const url = `${BACKEND_URL}/api/fear-greed/history`;
+    const url = `${getBackendUrl()}/api/fear-greed/history`;
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -29,7 +28,7 @@ export const fearGreedServerService = {
   },
   
   getToday: async (authToken?: string): Promise<FearGreedResponse> => {
-    const url = `${BACKEND_URL}/api/fear-greed/today`;
+    const url = `${getBackendUrl()}/api/fear-greed/today`;
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',

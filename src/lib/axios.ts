@@ -1,10 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authService } from '@/features/auth/services/authService';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+import { getBackendUrl } from '@/lib/env';
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getBackendUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

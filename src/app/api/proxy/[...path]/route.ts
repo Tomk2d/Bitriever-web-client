@@ -1,6 +1,5 @@
+import { getBackendUrl } from '@/lib/env';
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function GET(
   request: NextRequest,
@@ -15,8 +14,8 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const queryString = searchParams.toString();
     const url = queryString 
-      ? `${BACKEND_URL}/api/${path}?${queryString}`
-      : `${BACKEND_URL}/api/${path}`;
+      ? `${getBackendUrl()}/api/${path}?${queryString}`
+      : `${getBackendUrl()}/api/${path}`;
 
     // Authorization 헤더 가져오기 (쿠키보다 우선)
     const authHeader = request.headers.get('Authorization');
@@ -48,7 +47,7 @@ export async function GET(
         
         console.error('이미지 조회 실패:', {
           path,
-          url: `${BACKEND_URL}/api/${path}`,
+          url: `${getBackendUrl()}/api/${path}`,
           status: response.status,
           statusText: response.statusText,
           hasAuth: !!(authHeader || token),
@@ -160,7 +159,7 @@ export async function POST(
       }
       
       // FormData를 전달할 때는 Content-Type 헤더를 설정하지 않음 (boundary 자동 설정)
-      const response = await fetch(`${BACKEND_URL}/api/${path}`, {
+      const response = await fetch(`${getBackendUrl()}/api/${path}`, {
         method: 'POST',
         headers,
         body: formData,
@@ -173,7 +172,7 @@ export async function POST(
         console.error('Non-JSON response (POST - multipart):', {
           status: response.status,
           contentType: responseContentType,
-          url: `${BACKEND_URL}/api/${path}`,
+          url: `${getBackendUrl()}/api/${path}`,
           hasAuth: !!(authHeader || token),
           text: text.substring(0, 500),
         });
@@ -220,7 +219,7 @@ export async function POST(
       fetchOptions.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/${path}`, fetchOptions);
+    const response = await fetch(`${getBackendUrl()}/api/${path}`, fetchOptions);
 
     const responseContentType = response.headers.get('content-type');
     
@@ -229,7 +228,7 @@ export async function POST(
       console.error('Non-JSON response (POST):', {
         status: response.status,
         contentType: responseContentType,
-        url: `${BACKEND_URL}/api/${path}`,
+        url: `${getBackendUrl()}/api/${path}`,
         hasAuth: !!(authHeader || token),
         text: text.substring(0, 500),
       });
@@ -280,7 +279,7 @@ export async function PUT(
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/${path}`, {
+    const response = await fetch(`${getBackendUrl()}/api/${path}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(body),
@@ -293,7 +292,7 @@ export async function PUT(
       console.error('Non-JSON response (PUT):', {
         status: response.status,
         contentType: responseContentType,
-        url: `${BACKEND_URL}/api/${path}`,
+        url: `${getBackendUrl()}/api/${path}`,
         hasAuth: !!(authHeader || token),
         text: text.substring(0, 500),
       });
@@ -343,7 +342,7 @@ export async function DELETE(
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/${path}`, {
+    const response = await fetch(`${getBackendUrl()}/api/${path}`, {
       method: 'DELETE',
       headers,
     });
@@ -355,7 +354,7 @@ export async function DELETE(
       console.error('Non-JSON response (DELETE):', {
         status: response.status,
         contentType: responseContentType,
-        url: `${BACKEND_URL}/api/${path}`,
+        url: `${getBackendUrl()}/api/${path}`,
         hasAuth: !!(authHeader || token),
         text: text.substring(0, 500),
       });
