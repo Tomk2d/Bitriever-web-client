@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getBackendUrl } from '@/lib/env';
 import { NotificationResponse, TradeEvaluationEventPayload } from '../types';
 
 interface UseNotificationSSEOptions {
@@ -44,10 +45,7 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
       return;
     }
 
-    const API_BASE_URL =
-      process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-    // 쿼리 파라미터로 토큰 전달
-    const url = `${API_BASE_URL}/api/sse/notifications?token=${encodeURIComponent(token)}`;
+    const url = `${getBackendUrl()}/api/sse/notifications?token=${encodeURIComponent(token)}`;
 
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;

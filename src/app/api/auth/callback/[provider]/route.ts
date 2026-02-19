@@ -1,6 +1,5 @@
+import { getBackendUrl } from '@/lib/env';
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function GET(
   request: NextRequest,
@@ -24,7 +23,7 @@ export async function GET(
     const state = searchParams.get('state');
     
     if (code && state) {
-      const serverCallbackUrl = `${BACKEND_URL}/login/oauth2/code/${provider}?code=${code}&state=${state}`;
+      const serverCallbackUrl = `${getBackendUrl()}/login/oauth2/code/${provider}?code=${code}&state=${state}`;
       return NextResponse.redirect(serverCallbackUrl);
     }
     

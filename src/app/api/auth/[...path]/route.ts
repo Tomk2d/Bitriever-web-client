@@ -1,6 +1,5 @@
+import { getBackendUrl } from '@/lib/env';
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.APP_SERVER_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function POST(
   request: NextRequest,
@@ -46,7 +45,7 @@ export async function POST(
       fetchOptions.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/auth/${path}`, fetchOptions);
+    const response = await fetch(`${getBackendUrl()}/api/auth/${path}`, fetchOptions);
 
     const data = await response.json();
 
@@ -83,8 +82,8 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const queryString = searchParams.toString();
     const url = queryString 
-      ? `${BACKEND_URL}/api/auth/${path}?${queryString}`
-      : `${BACKEND_URL}/api/auth/${path}`;
+      ? `${getBackendUrl()}/api/auth/${path}?${queryString}`
+      : `${getBackendUrl()}/api/auth/${path}`;
 
     // Authorization 헤더 가져오기 (쿠키보다 우선)
     const authHeader = request.headers.get('Authorization');
