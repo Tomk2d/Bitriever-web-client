@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -158,16 +158,9 @@ export default function Navigation() {
             </div>
           </div>
 
-          {/* 오른쪽 섹션 (검색바 + 로그인) */}
+          {/* 오른쪽 섹션 (로그인) */}
           <div className="navigation-right">
             <NewsHeadlineRotator />
-            <div className="navigation-search">
-              <input
-                type="text"
-                placeholder="검색어를 입력하세요"
-                className="search-input"
-              />
-            </div>
             {isAuthenticated && user ? (
               <div className="profile-menu-container" ref={dropdownRef}>
                 <button

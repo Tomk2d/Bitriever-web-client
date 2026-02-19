@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
-import { useCommunities } from '@/features/community/hooks/useCommunities';
+import { useCommunities, useCommunitiesByHashtag } from '@/features/community/hooks/useCommunities';
 import { Category, ReactionType } from '@/features/community/types';
 import { communityService } from '@/features/community/services/communityService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import './page.css';
 
 export default function CommunitiesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
@@ -20,14 +21,97 @@ export default function CommunitiesPage() {
     if (!profileUrl) return '/profile/profile1.png';
     return `/profile${profileUrl}.png`;
   };
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+
+  const categoryFromUrl = searchParams.get('category') ?? undefined;
+  const hashtagFromUrl = searchParams.get('hashtag') ?? null;
+
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(categoryFromUrl);
   const [page, setPage] = useState(0);
   const [feedDropdownOpen, setFeedDropdownOpen] = useState(false);
   const feedDropdownRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showHashtagHint, setShowHashtagHint] = useState(false);
   const size = 20;
+  const hashtagHintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data, isLoading, error } = useCommunities(selectedCategory, page, size);
-  
+  const isFeedActive = selectedCategory !== Category.NEWS;
+
+  const handleHashtagSearch = useCallback(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed.startsWith('#')) return;
+    const term = trimmed.slice(1).trim();
+    if (!term) return;
+    const next = new URLSearchParams(searchParams);
+    next.set('hashtag', term);
+    next.delete('category');
+    router.push(`/communities?${next.toString()}`);
+  }, [searchQuery, searchParams, router]);
+
+  const hideHashtagHint = useCallback(() => {
+    setShowHashtagHint(false);
+    if (hashtagHintTimeoutRef.current) {
+      clearTimeout(hashtagHintTimeoutRef.current);
+      hashtagHintTimeoutRef.current = null;
+    }
+  }, []);
+
+  const onSearchSubmit = useCallback(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      // 빈칸 + 엔터: 해시태그 검색 해제 후 전체 피드로
+      const next = new URLSearchParams(searchParams);
+      next.delete('hashtag');
+      router.push(`/communities?${next.toString()}`);
+      setSearchQuery('');
+      setPage(0);
+      hideHashtagHint();
+      return;
+    }
+    if (!trimmed.startsWith('#')) {
+      setShowHashtagHint(true);
+      if (hashtagHintTimeoutRef.current) clearTimeout(hashtagHintTimeoutRef.current);
+      hashtagHintTimeoutRef.current = setTimeout(hideHashtagHint, 3000);
+      return;
+    }
+    handleHashtagSearch();
+  }, [searchQuery, searchParams, router, handleHashtagSearch, hideHashtagHint]);
+
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onSearchSubmit();
+      }
+    },
+    [onSearchSubmit]
+  );
+
+  useEffect(() => () => {
+    if (hashtagHintTimeoutRef.current) clearTimeout(hashtagHintTimeoutRef.current);
+  }, []);
+
+  const inHashtagSearch = Boolean(hashtagFromUrl?.trim());
+
+  const { data: listData, isLoading, error } = useCommunities(
+    inHashtagSearch ? undefined : selectedCategory,
+    page,
+    size
+  );
+  const { data: hashtagData, isLoading: isLoadingHashtag } = useCommunitiesByHashtag(
+    inHashtagSearch ? hashtagFromUrl : null,
+    selectedCategory,
+    page,
+    size
+  );
+
+  const data = inHashtagSearch ? hashtagData : listData;
+  const isLoadingList = inHashtagSearch ? isLoadingHashtag : isLoading;
+
+  // URL과 selectedCategory 동기화
+  useEffect(() => {
+    setSelectedCategory(categoryFromUrl);
+  }, [categoryFromUrl]);
+
   // 뉴스 카테고리인지 확인
   const isNewsCategory = selectedCategory === Category.NEWS;
   
@@ -118,7 +202,11 @@ export default function CommunitiesPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['communities', selectedCategory, page, size] });
+      if (inHashtagSearch && hashtagFromUrl) {
+        queryClient.invalidateQueries({ queryKey: ['communities', 'hashtag', hashtagFromUrl, selectedCategory, page, size] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['communities', selectedCategory, page, size] });
+      }
     },
   });
 
@@ -135,6 +223,14 @@ export default function CommunitiesPage() {
     setSelectedCategory(category);
     setPage(0);
     setFeedDropdownOpen(false);
+    const next = new URLSearchParams(searchParams);
+    if (category != null) {
+      next.set('category', category);
+    } else {
+      next.delete('category');
+    }
+    next.delete('hashtag');
+    router.replace(`/communities?${next.toString()}`, { scroll: false });
   };
 
   const handleFeedClick = () => {
@@ -177,39 +273,67 @@ export default function CommunitiesPage() {
         </button>
       )}
 
-      {/* 카테고리 필터 */}
+      {/* 카테고리 필터 + 검색 (피드 활성화 시 검색 우측 끝) */}
       <div className="communities-category-filter">
-        {/* 피드 (드롭다운) */}
-        <div className="category-tab-dropdown" ref={feedDropdownRef}>
+        <div className="communities-category-filter-tabs">
+          {/* 피드 (드롭다운) */}
+          <div className="category-tab-dropdown" ref={feedDropdownRef}>
+            <button
+              onClick={handleFeedClick}
+              className={`category-tab ${feedSubCategories.some(sub => sub.value === selectedCategory) ? 'active' : ''}`}
+            >
+              피드{' '}
+              <span className={`dropdown-arrow ${feedDropdownOpen ? 'open' : ''}`}>▼</span>
+            </button>
+            {feedDropdownOpen && (
+              <div className="category-dropdown-menu">
+                {feedSubCategories.map((subCategory) => (
+                  <button
+                    key={subCategory.value || 'all'}
+                    onClick={() => handleCategoryChange(subCategory.value)}
+                    className={`category-dropdown-item ${selectedCategory === subCategory.value ? 'active' : ''}`}
+                  >
+                    {subCategory.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 최신 뉴스 */}
           <button
-            onClick={handleFeedClick}
-            className={`category-tab ${feedSubCategories.some(sub => sub.value === selectedCategory) ? 'active' : ''}`}
+            onClick={() => handleCategoryChange(Category.NEWS)}
+            className={`category-tab ${selectedCategory === Category.NEWS ? 'active' : ''}`}
           >
-            피드{' '}
-            <span className={`dropdown-arrow ${feedDropdownOpen ? 'open' : ''}`}>▼</span>
+            뉴스 피드
           </button>
-          {feedDropdownOpen && (
-            <div className="category-dropdown-menu">
-              {feedSubCategories.map((subCategory) => (
-                <button
-                  key={subCategory.value || 'all'}
-                  onClick={() => handleCategoryChange(subCategory.value)}
-                  className={`category-dropdown-item ${selectedCategory === subCategory.value ? 'active' : ''}`}
-                >
-                  {subCategory.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* 최신 뉴스 */}
-        <button
-          onClick={() => handleCategoryChange(Category.NEWS)}
-          className={`category-tab ${selectedCategory === Category.NEWS ? 'active' : ''}`}
-        >
-          뉴스 피드
-        </button>
+        {isFeedActive && (
+          <div className="communities-search-wrap">
+            {showHashtagHint && (
+              <div className="communities-hashtag-hint" role="status" aria-live="polite">
+                # 를 포함하여 검색해보세요.
+              </div>
+            )}
+            <div className="communities-search">
+              <input
+                type="text"
+                placeholder="#해시태그 검색 (엔터)"
+                className="communities-search-input"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  hideHashtagHint();
+                }}
+                onFocus={hideHashtagHint}
+                onBlur={hideHashtagHint}
+                onKeyDown={handleSearchKeyDown}
+                aria-label="해시태그 검색"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 게시글 목록 또는 뉴스 목록 */}
@@ -268,7 +392,7 @@ export default function CommunitiesPage() {
         </div>
       ) : (
         <div className="communities-list">
-          {isLoading && <div className="communities-loading">로딩 중...</div>}
+          {isLoadingList && <div className="communities-loading">로딩 중...</div>}
           {error && <div className="communities-error">게시글을 불러오는데 실패했습니다.</div>}
           {data && (
             <>

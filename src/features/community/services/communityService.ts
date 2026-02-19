@@ -156,6 +156,25 @@ export const communityService = {
     return response.data.data;
   },
 
+  searchByHashtag: async (
+    hashtag: string,
+    category?: string,
+    page: number = 0,
+    size: number = 20
+  ): Promise<PageResponse<CommunityListResponse>> => {
+    const params = new URLSearchParams();
+    params.append('hashtag', hashtag);
+    if (category) {
+      params.append('category', category);
+    }
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    const response = await apiClient.get<ApiResponse<PageResponse<CommunityListResponse>>>(
+      `/api/communities/search/by-hashtag?${params.toString()}`
+    );
+    return response.data.data;
+  },
+
   uploadImage: async (id: number, file: File): Promise<CommunityResponse> => {
     const formData = new FormData();
     formData.append('file', file);
