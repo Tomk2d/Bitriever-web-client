@@ -221,6 +221,8 @@ export default function CommentItem({ comment, communityId, isAuthenticated, dep
             parentId={comment.id}
             onSuccess={handleReplySuccess}
             onCancel={() => setIsReplying(false)}
+            userNickname={user?.nickname ?? undefined}
+            userProfileUrl={user?.profileUrl ?? undefined}
           />
         </div>
       )}
