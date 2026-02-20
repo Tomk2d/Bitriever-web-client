@@ -175,6 +175,19 @@
   margin-bottom: 20px;
 }
 
+/* API 키 모달: API Key / Secret Key 폼 그룹 사이 여백 (기본의 1/4) */
+.mypage-api-key-fields .mypage-form-group:first-child {
+  margin-bottom: 5px;
+}
+/* API 키 모달: Secret Key 아래 ~ 책임 동의 체크박스 사이 여백 절반 */
+.mypage-api-key-fields .mypage-form-group:last-child {
+  margin-bottom: 10px;
+}
+/* API 키 모달: API Key / Secret Key 라벨 볼드 */
+.mypage-api-key-fields .mypage-form-label {
+  font-weight: 700;
+}
+
 .mypage-form-label {
   font-family: 'Pretendard', sans-serif;
   font-size: 12px;
@@ -552,8 +565,163 @@
   color: var(--foreground);
 }
 
+/* 거래소 연동 동의 팝업 (1단계) */
+.mypage-exchange-agreement-modal {
+  max-width: 400px;
+}
+
+.mypage-exchange-agreement-desc {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: var(--muted, rgba(0, 0, 0, 0.6));
+  line-height: 1.45;
+}
+
+.mypage-exchange-agreement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mypage-exchange-agreement-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--foreground);
+  user-select: none;
+}
+
+.mypage-exchange-agreement-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--main-color);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mypage-exchange-agreement-item-all {
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .mypage-exchange-agreement-item-all {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
 @keyframes mypage-spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* API 키 입력 모달(2단계): 하는 방법 안내 영역 */
+.mypage-api-guide {
+  margin-bottom: 10px;
+}
+
+.mypage-api-guide-title {
+  margin: 0 0 12px 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.mypage-api-guide-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .mypage-api-guide-scroll {
+  border-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.mypage-api-guide-step {
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.mypage-api-guide-step:last-child {
+  margin-bottom: 0;
+}
+
+.mypage-api-guide-step-desc {
+  margin: 0 0 8px 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  color: var(--foreground);
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.mypage-api-guide-step-warning {
+  margin: 0 0 8px 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  color: var(--destructive, #dc2626);
+  font-weight: 700;
+  text-decoration: underline;
+  line-height: 1.4;
+}
+
+.mypage-api-guide-step img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dark .mypage-api-guide-step img {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mypage-api-guide-step-caption {
+  margin: 6px 0 0 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  color: var(--foreground);
+  opacity: 0.6;
+  line-height: 1.35;
+}
+
+.mypage-api-guide-link {
+  color: var(--primary, #2563eb);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.mypage-api-guide-link:hover {
+  opacity: 0.85;
+}
+
+.mypage-api-responsibility-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px 0;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  color: var(--foreground);
+  line-height: 1.4;
+}
+
+.mypage-api-responsibility-check input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.mypage-api-responsibility-check span {
+  flex: 1;
+  min-width: 0;
 }
