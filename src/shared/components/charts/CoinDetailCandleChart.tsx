@@ -195,6 +195,7 @@ export default function CoinDetailCandleChart({
       for (const entry of entries) {
         if (entry.target !== container) continue;
         const { width, height } = entry.contentRect;
+        console.log('[CoinDetailCandleChart] ResizeObserver', width, height);
         setContainerSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
         break;
       }
@@ -223,6 +224,7 @@ export default function CoinDetailCandleChart({
     const container = chartContainerRef.current;
     const width = containerSize.width || container.clientWidth;
     const height = containerSize.height || container.clientHeight;
+    console.log('[CoinDetailCandleChart] chart effect run', width, height);
 
     if (width === 0 || height === 0) return;
 

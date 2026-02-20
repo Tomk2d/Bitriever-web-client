@@ -184,6 +184,7 @@ export default function CoinDetailLineChart({
       for (const entry of entries) {
         if (entry.target !== container) continue;
         const { width, height } = entry.contentRect;
+        console.log('[CoinDetailLineChart] ResizeObserver', width, height);
         setContainerSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
         break;
       }
@@ -212,6 +213,7 @@ export default function CoinDetailLineChart({
     const container = chartContainerRef.current;
     const width = containerSize.width || container.clientWidth;
     const height = containerSize.height || container.clientHeight;
+    console.log('[CoinDetailLineChart] chart effect run', width, height);
 
     if (width === 0 || height === 0) return;
 
