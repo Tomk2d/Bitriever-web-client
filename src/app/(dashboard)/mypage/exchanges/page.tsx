@@ -14,6 +14,38 @@ interface Exchange {
   isAvailable: boolean;
 }
 
+/** 거래소별 API 키 생성 페이지 URL (UPBIT, BITHUMB, COINONE) */
+const API_KEY_URL_BY_EXCHANGE: Record<string, string> = {
+  UPBIT: 'https://upbit.com/mypage/open_api_management',
+  BITHUMB: 'https://www.bithumb.com/react/api-support/management-api',
+  COINONE: 'https://coinone.co.kr/user/api/management/personal-api',
+};
+
+/** API 키 발급 안내 이미지/문구 (UPBIT, BITHUMB, COINONE만 사용) */
+const API_GUIDE_BY_EXCHANGE: Record<
+  string,
+  { createImage: string; getImage: string; createDesc: string; getDesc: string }
+> = {
+  UPBIT: {
+    createImage: '/exchange/upbit_api_key_create.png',
+    getImage: '/exchange/upbit_api_key_get.png',
+    createDesc: 'API 키 발급 페이지에서 새 API 키를 생성합니다.',
+    getDesc: '해당 화면을 닫지 마시고, API Key 와 Secret Key 를 복사하여 본인만 볼 수 있는 공간에 저장하세요. 이후 아래의 입력창에 입력해주세요.',
+  },
+  BITHUMB: {
+    createImage: '/exchange/bithumb_api_key_create.png',
+    getImage: '/exchange/bithumb_api_key_get.png',
+    createDesc: 'API 관리 메뉴에서 새 API 키를 발급합니다.',
+    getDesc: '해당 화면을 닫지 마시고, API Key 와 Secret Key 를 복사하여 본인만 볼 수 있는 공간에 저장하세요. 이후 아래의 입력창에 입력해주세요.',
+  },
+  COINONE: {
+    createImage: '/exchange/coinone_api_key_create.png',
+    getImage: '/exchange/coinone_api_key_get.png',
+    createDesc: 'API 키 발급 화면에서 새 API 키를 생성합니다.',
+    getDesc: '해당 화면을 닫지 마시고, API Key 와 Secret Key 를 복사하여 본인만 볼 수 있는 공간에 저장하세요. 이후 아래의 입력창에 입력해주세요.',
+  },
+};
+
 const EXCHANGES: Exchange[] = [
   {
     code: 1,
@@ -62,18 +94,34 @@ export default function ExchangesPage() {
   const user = useAppSelector((state) => state.auth.user);
   const connectedExchanges = user?.connectedExchanges || [];
 
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [showApiModal, setShowApiModal] = useState(false);
   const [selectedExchange, setSelectedExchange] = useState<Exchange | null>(null);
   const [apiKey, setApiKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
+  const [responsibilityAgreed, setResponsibilityAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pollingMessage, setPollingMessage] = useState<string | null>(null);
   const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
+
+  /** 1단계: 동의 팝업 항목 (기획에 따라 문구/항목 수정 가능) */
+  const AGREEMENT_ITEMS = [
+    { id: 'security', label: 'API 키 보안 유의사항에 동의합니다.' },
+    { id: 'thirdParty', label: '제3자(거래소) 제공 및 이용에 동의합니다.' },
+    { id: 'terms', label: '서비스 이용약관 및 개인정보 처리방침에 동의합니다.' },
+  ] as const;
+  const [agreementChecks, setAgreementChecks] = useState<Record<string, boolean>>(
+    AGREEMENT_ITEMS.reduce((acc, { id }) => ({ ...acc, [id]: false }), {})
+  );
+  const allAgreed = AGREEMENT_ITEMS.every(({ id }) => agreementChecks[id]);
+  const setAllAgreed = (value: boolean) =>
+    setAgreementChecks(AGREEMENT_ITEMS.reduce((acc, { id }) => ({ ...acc, [id]: value }), {}));
 
   const hasWhitespaceInKeys = /\s/.test(apiKey) || /\s/.test(secretKey);
   const submitDisabled =
     !apiKey ||
     !secretKey ||
+    !responsibilityAgreed ||
     isSubmitting ||
     hasWhitespaceInKeys ||
     !!modalErrorMessage;
@@ -88,7 +136,20 @@ export default function ExchangesPage() {
     setSelectedExchange(exchange);
     setApiKey('');
     setSecretKey('');
+    setResponsibilityAgreed(false);
     setModalErrorMessage(null);
+    setAgreementChecks(AGREEMENT_ITEMS.reduce((acc, { id }) => ({ ...acc, [id]: false }), {}));
+    setShowAgreementModal(true);
+  };
+
+  const handleAgreementCancel = () => {
+    setShowAgreementModal(false);
+    setSelectedExchange(null);
+  };
+
+  const handleAgreementConfirm = () => {
+    if (!allAgreed) return;
+    setShowAgreementModal(false);
     setShowApiModal(true);
   };
 
@@ -270,7 +331,62 @@ export default function ExchangesPage() {
         ))}
       </div>
 
-      {/* API 키 입력 모달 */}
+      {/* 1단계: 동의 팝업 */}
+      {showAgreementModal && selectedExchange && (
+        <div className="mypage-modal-overlay">
+          <div className="mypage-modal mypage-exchange-agreement-modal">
+            <h3 className="mypage-modal-title">
+              {selectedExchange.koreanName} API 연동 동의
+            </h3>
+            <p className="mypage-exchange-agreement-desc">
+              거래소 연동을 위해 아래 내용을 확인하고 동의해 주세요.
+            </p>
+            <div className="mypage-exchange-agreement-list">
+              <label className="mypage-exchange-agreement-item mypage-exchange-agreement-item-all">
+                <input
+                  type="checkbox"
+                  checked={allAgreed}
+                  onChange={(e) => setAllAgreed(e.target.checked)}
+                />
+                <span>모두 동의</span>
+              </label>
+              {AGREEMENT_ITEMS.map(({ id, label }) => (
+                <label key={id} className="mypage-exchange-agreement-item">
+                  <input
+                    type="checkbox"
+                    checked={!!agreementChecks[id]}
+                    onChange={(e) =>
+                      setAgreementChecks((prev) => ({ ...prev, [id]: e.target.checked }))
+                    }
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="mypage-modal-actions" style={{ marginTop: '24px' }}>
+              <button
+                type="button"
+                className="mypage-button mypage-button-success"
+                style={{ flex: 1, padding: '9px 18px' }}
+                onClick={handleAgreementConfirm}
+                disabled={!allAgreed}
+              >
+                동의하고 연동하기
+              </button>
+              <button
+                type="button"
+                className="mypage-button mypage-button-secondary"
+                style={{ flex: 1, padding: '9px 18px' }}
+                onClick={handleAgreementCancel}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2단계: API 키 입력 모달 */}
       {showApiModal && selectedExchange && (
         <div style={{
           position: 'fixed',
@@ -289,33 +405,81 @@ export default function ExchangesPage() {
             borderRadius: '12px',
             padding: '24px',
             width: '100%',
-            maxWidth: '400px',
+            maxWidth: '480px',
             margin: '0 20px',
           }}>
-            <h3 style={{ 
-              margin: '0 0 20px 0', 
-              fontSize: '18px', 
-              fontWeight: 600 
-            }}>
-              {selectedExchange.koreanName} API 연동
-            </h3>
-            
-            <div className="mypage-form-group">
-              <label className="mypage-form-label">API Key</label>
-              <input
-                type="text"
-                className="mypage-form-input"
-                value={apiKey}
-                onChange={(e) => {
-                  setApiKey(e.target.value);
-                  if (modalErrorMessage) setModalErrorMessage(null);
-                }}
-                placeholder="API Key를 입력하세요"
-              />
-            </div>
+            {API_GUIDE_BY_EXCHANGE[selectedExchange.name] && (
+              <div className="mypage-api-guide">
+                <h4 className="mypage-api-guide-title">
+                  {selectedExchange.koreanName} 거래소 키 발급 방법
+                </h4>
+                <div className="mypage-api-guide-scroll">
+                  <div className="mypage-api-guide-step">
+                    <p className="mypage-api-guide-step-desc">
+                      <strong>1. {selectedExchange.koreanName} 에 로그인 합니다.</strong>
+                    </p>
+                  </div>
+                  <div className="mypage-api-guide-step">
+                    <p className="mypage-api-guide-step-desc">
+                      <strong>2. 아래 주소에 접속하여 API 키 생성을 시작합니다.</strong>
+                    </p>
+                    {API_KEY_URL_BY_EXCHANGE[selectedExchange.name] && (
+                      <p className="mypage-api-guide-step-desc">
+                        <a
+                          href={API_KEY_URL_BY_EXCHANGE[selectedExchange.name]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mypage-api-guide-link"
+                        >
+                          {API_KEY_URL_BY_EXCHANGE[selectedExchange.name]}
+                        </a>
+                      </p>
+                    )}
+                  </div>
+                  <div className="mypage-api-guide-step">
+                    <p className="mypage-api-guide-step-desc">
+                      <strong>3. {API_GUIDE_BY_EXCHANGE[selectedExchange.name].createDesc}</strong>
+                    </p>
+                    <p className="mypage-api-guide-step-warning">
+                      절대 거래 기능이나 입금, 출금하기 기능을 체크하지 않아야 합니다.
+                    </p>
+                    <img
+                      src={API_GUIDE_BY_EXCHANGE[selectedExchange.name].createImage}
+                      alt="API 키 발급 화면"
+                    />
+                    <p className="mypage-api-guide-step-caption">API 키 발급/생성 화면</p>
+                  </div>
+                  <div className="mypage-api-guide-step">
+                    <p className="mypage-api-guide-step-desc">
+                      <strong>4. {API_GUIDE_BY_EXCHANGE[selectedExchange.name].getDesc}</strong>
+                    </p>
+                    <img
+                      src={API_GUIDE_BY_EXCHANGE[selectedExchange.name].getImage}
+                      alt="API 키 확인 화면"
+                    />
+                    <p className="mypage-api-guide-step-caption">API 키 확인/복사 화면</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <div className="mypage-form-group">
-              <label className="mypage-form-label">Secret Key</label>
+            <div className="mypage-api-key-fields">
+              <div className="mypage-form-group">
+                <label className="mypage-form-label">API Key</label>
+                <input
+                  type="text"
+                  className="mypage-form-input"
+                  value={apiKey}
+                  onChange={(e) => {
+                    setApiKey(e.target.value);
+                    if (modalErrorMessage) setModalErrorMessage(null);
+                  }}
+                  placeholder="API Key를 입력하세요"
+                />
+              </div>
+
+              <div className="mypage-form-group">
+                <label className="mypage-form-label">Secret Key</label>
               <input
                 type="password"
                 className="mypage-form-input"
@@ -326,7 +490,17 @@ export default function ExchangesPage() {
                 }}
                 placeholder="Secret Key를 입력하세요"
               />
+              </div>
             </div>
+
+            <label className="mypage-api-responsibility-check">
+              <input
+                type="checkbox"
+                checked={responsibilityAgreed}
+                onChange={(e) => setResponsibilityAgreed(e.target.checked)}
+              />
+              <span>거래하기, 입금, 출금 기능을 체크하지 않았다면 체크해주세요.<br />사용자의 부주의로 인한 손실은 책임지지 않습니다.</span>
+            </label>
 
             {pollingMessage && (
               <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--muted)' }}>
@@ -343,7 +517,7 @@ export default function ExchangesPage() {
                 {modalErrorMessage}
               </p>
             )}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
               <button
                 className="mypage-button mypage-button-success"
                 style={{ flex: 1, padding: '9px 18px' }}
