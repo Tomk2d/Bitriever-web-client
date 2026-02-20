@@ -184,8 +184,11 @@ export default function CoinDetailLineChart({
       for (const entry of entries) {
         if (entry.target !== container) continue;
         const { width, height } = entry.contentRect;
-        console.log('[CoinDetailLineChart] ResizeObserver', width, height);
-        setContainerSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
+        const w = Math.round(width);
+        const h = Math.round(height);
+        setContainerSize((prev) =>
+          prev.width === w && prev.height === h ? prev : { width: w, height: h }
+        );
         break;
       }
     });
@@ -194,10 +197,12 @@ export default function CoinDetailLineChart({
     const rafId = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (!chartContainerRef.current) return;
-        const w = chartContainerRef.current.clientWidth;
-        const h = chartContainerRef.current.clientHeight;
+        const w = Math.round(chartContainerRef.current.clientWidth);
+        const h = Math.round(chartContainerRef.current.clientHeight);
         if (w > 0 && h > 0) {
-          setContainerSize((prev) => (prev.width === w && prev.height === h ? prev : { width: w, height: h }));
+          setContainerSize((prev) =>
+            prev.width === w && prev.height === h ? prev : { width: w, height: h }
+          );
         }
       });
     });
@@ -213,7 +218,6 @@ export default function CoinDetailLineChart({
     const container = chartContainerRef.current;
     const width = containerSize.width || container.clientWidth;
     const height = containerSize.height || container.clientHeight;
-    console.log('[CoinDetailLineChart] chart effect run', width, height);
 
     if (width === 0 || height === 0) return;
 
@@ -318,6 +322,36 @@ export default function CoinDetailLineChart({
 
       chartRef.current = chart;
       seriesRef.current = lineSeries;
+
+      // 차트 생성 직후 데이터 동기화 (effect 실행 순서에 따라 setData가 안 불릴 수 있음 → 두 번째 진입 시 빈 차트 방지)
+      if (allChartData.current.size > 0) {
+        const todayUtc = getTodayUtcString();
+        const endDateUtc = dateRange.endDate.slice(0, 10);
+        const rangeIncludesToday = endDateUtc >= todayUtc;
+        let formattedData = Array.from(allChartData.current.values())
+          .sort((a, b) => {
+            const dateA = new Date(a.candleDateTimeUtc).getTime();
+            const dateB = new Date(b.candleDateTimeUtc).getTime();
+            return dateA - dateB;
+          })
+          .map((item) => {
+            const timeString = item.candleDateTimeUtc.slice(0, 10);
+            const isToday = timeString === todayUtc;
+            if (isToday && priceData) {
+              return { time: timeString as string, value: Number(priceData.tradePrice) };
+            }
+            return {
+              time: timeString as string,
+              value: Number(item.tradePrice),
+            };
+          });
+        if (rangeIncludesToday && priceData && !formattedData.some((d) => d.time === todayUtc)) {
+          formattedData = [...formattedData, { time: todayUtc as string, value: Number(priceData.tradePrice) }].sort(
+            (a, b) => (a.time as string).localeCompare(b.time as string)
+          );
+        }
+        lineSeries.setData(formattedData);
+      }
     }
 
     const chart = chartRef.current;
