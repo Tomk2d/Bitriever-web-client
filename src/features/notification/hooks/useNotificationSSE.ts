@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { getBackendUrl } from '@/lib/env';
+import { authService } from '@/features/auth/services/authService';
 import { NotificationResponse, TradeEvaluationEventPayload } from '../types';
+
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 interface UseNotificationSSEOptions {
   onNotification?: (notification: NotificationResponse) => void;
@@ -25,8 +28,12 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Event | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const isReconnectingRef = useRef(false);
+  const disconnectRequestedRef = useRef(false);
 
   const connect = useCallback(() => {
+    disconnectRequestedRef.current = false;
     if (eventSourceRef.current?.readyState === EventSource.OPEN) {
       return;
     }
@@ -53,6 +60,7 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
     // 연결 성공
     eventSource.onopen = () => {
       console.log('[SSE] 연결됨');
+      reconnectAttemptsRef.current = 0;
       setIsConnected(true);
       setError(null);
       onConnect?.();
@@ -90,22 +98,49 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
       console.log('[SSE] 연결 확인:', event.data);
     });
 
-    // 에러 처리
+    // 에러 처리: 토큰 만료 등으로 끊기면 refresh 후 새 토큰으로 재연결
     eventSource.onerror = (err) => {
       console.error('[SSE] 연결 에러:', err);
       setError(err);
       setIsConnected(false);
       onError?.(err);
 
-      // 연결이 끊기면 재연결 시도 (EventSource는 자동 재연결을 시도함)
       if (eventSource.readyState === EventSource.CLOSED) {
         console.log('[SSE] 연결 종료됨');
-        onDisconnect?.();
       }
+
+      // 사용자가 disconnect() 호출로 끊은 경우 재연결하지 않음
+      if (disconnectRequestedRef.current) return;
+      // 이미 재연결 중이면 중복 실행 방지
+      if (isReconnectingRef.current) return;
+
+      eventSource.close();
+      eventSourceRef.current = null;
+
+      isReconnectingRef.current = true;
+      (async () => {
+        try {
+          await authService.refreshToken();
+          reconnectAttemptsRef.current += 1;
+          if (reconnectAttemptsRef.current <= MAX_RECONNECT_ATTEMPTS) {
+            console.log('[SSE] 토큰 갱신 후 재연결 시도:', reconnectAttemptsRef.current);
+            connect();
+          } else {
+            console.warn('[SSE] 재연결 최대 횟수 초과');
+            onDisconnect?.();
+          }
+        } catch (e) {
+          console.error('[SSE] 토큰 갱신 실패, 재연결 중단:', e);
+          onDisconnect?.();
+        } finally {
+          isReconnectingRef.current = false;
+        }
+      })();
     };
   }, [onNotification, onTradeEvaluation, onConnect, onError, onDisconnect]);
 
   const disconnect = useCallback(() => {
+    disconnectRequestedRef.current = true;
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
