@@ -35,6 +35,8 @@ export default function CoinDetailLineChart({
   const endReachedRef = useRef<boolean>(false);
   const [visibleRange, setVisibleRange] = useState<{ from: Date; to: Date } | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  /** 컨테이너 크기: 0→양수로 바뀔 때 차트 생성 effect 재실행 (두 번째 열 때 레이아웃 지연 대응) */
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const priceData = useAppSelector(selectPriceByMarket(marketCode));
   const currentPrice = priceData?.tradePrice || null;
@@ -174,12 +176,28 @@ export default function CoinDetailLineChart({
     // 드래그 시 추가 조회 로직 제거 - 초기 로드에서 전체 데이터를 조회하므로 불필요
   }, []);
 
+  // 컨테이너 크기 감지: 레이아웃 완료 후 크기가 잡히면 차트 생성 effect 재실행
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target !== container) continue;
+        const { width, height } = entry.contentRect;
+        setContainerSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
+        break;
+      }
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
     const container = chartContainerRef.current;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width = containerSize.width || container.clientWidth;
+    const height = containerSize.height || container.clientHeight;
 
     if (width === 0 || height === 0) return;
 
@@ -371,7 +389,7 @@ export default function CoinDetailLineChart({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [checkAndLoadData]);
+  }, [checkAndLoadData, containerSize.width, containerSize.height]);
 
   useEffect(() => {
     if (currentPrice !== null && seriesRef.current) {
