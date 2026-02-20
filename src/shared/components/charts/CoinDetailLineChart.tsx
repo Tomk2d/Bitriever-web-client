@@ -189,7 +189,21 @@ export default function CoinDetailLineChart({
       }
     });
     ro.observe(container);
-    return () => ro.disconnect();
+    // 운영 등에서 ResizeObserver가 0으로만 오거나 늦게 올 때 대비: 레이아웃 후 한 번 더 크기 보정
+    const rafId = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!chartContainerRef.current) return;
+        const w = chartContainerRef.current.clientWidth;
+        const h = chartContainerRef.current.clientHeight;
+        if (w > 0 && h > 0) {
+          setContainerSize((prev) => (prev.width === w && prev.height === h ? prev : { width: w, height: h }));
+        }
+      });
+    });
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
   }, []);
 
   useEffect(() => {
