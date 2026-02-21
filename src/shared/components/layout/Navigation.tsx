@@ -135,7 +135,7 @@ export default function Navigation() {
             {/* 로고 클릭 시 마켓(/coins)으로 이동 (루트는 /coins로 리다이렉트) */}
             <Link href="/coins" className="navigation-logo">
               <img 
-                src="/data/main-logo-ex.png" 
+                src="/data/logo.png" 
                 alt="Bitriever Logo" 
                 className="logo-image"
               />
