@@ -421,6 +421,7 @@ export default function ExchangesPage() {
                   </div>
                   <div className="mypage-api-guide-step">
                     <p className="mypage-api-guide-step-desc">
+                      <br />
                       <strong>2. 아래 주소에 접속하여 API 키 생성을 시작합니다.</strong>
                     </p>
                     {API_KEY_URL_BY_EXCHANGE[selectedExchange.name] && (
@@ -438,6 +439,7 @@ export default function ExchangesPage() {
                   </div>
                   <div className="mypage-api-guide-step">
                     <p className="mypage-api-guide-step-desc">
+                      <br />
                       <strong>3. {API_GUIDE_BY_EXCHANGE[selectedExchange.name].createDesc}</strong>
                     </p>
                     <p className="mypage-api-guide-step-warning">
@@ -451,6 +453,7 @@ export default function ExchangesPage() {
                   </div>
                   <div className="mypage-api-guide-step">
                     <p className="mypage-api-guide-step-desc">
+                      <br />
                       <strong>4. {API_GUIDE_BY_EXCHANGE[selectedExchange.name].getDesc}</strong>
                     </p>
                     <img
