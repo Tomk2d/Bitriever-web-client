@@ -14,6 +14,9 @@ interface Exchange {
   isAvailable: boolean;
 }
 
+/** API 키 등록 시 허용할 서버 IP (거래소 API 설정에 입력) */
+const SERVER_IP = '1.231.74.66';
+
 /** 거래소별 API 키 생성 페이지 URL (UPBIT, BITHUMB, COINONE) */
 const API_KEY_URL_BY_EXCHANGE: Record<string, string> = {
   UPBIT: 'https://upbit.com/mypage/open_api_management',
@@ -35,7 +38,7 @@ const API_GUIDE_BY_EXCHANGE: Record<
   BITHUMB: {
     createImage: '/exchange/bithumb_api_key_create.png',
     getImage: '/exchange/bithumb_api_key_get.png',
-    createDesc: 'API 관리 메뉴에서 새 API 키를 발급합니다.',
+    createDesc: 'API 관리 메뉴에서 새 API 키를 발급합니다. (아래의 이미지 참고)',
     getDesc: '해당 화면을 닫지 마시고, API Key 와 Secret Key 를 복사하여 본인만 볼 수 있는 공간에 저장하세요. 이후 아래의 입력창에 입력해주세요.',
   },
   COINONE: {
@@ -103,6 +106,17 @@ export default function ExchangesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pollingMessage, setPollingMessage] = useState<string | null>(null);
   const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
+  const [ipCopied, setIpCopied] = useState(false);
+
+  const copyServerIp = async () => {
+    try {
+      await navigator.clipboard.writeText(SERVER_IP);
+      setIpCopied(true);
+      setTimeout(() => setIpCopied(false), 2000);
+    } catch {
+      setIpCopied(false);
+    }
+  };
 
   /** 1단계: 동의 팝업 항목 (기획에 따라 문구/항목 수정 가능) */
   const AGREEMENT_ITEMS = [
@@ -442,6 +456,19 @@ export default function ExchangesPage() {
                       <br />
                       <strong>3. {API_GUIDE_BY_EXCHANGE[selectedExchange.name].createDesc}</strong>
                     </p>
+                    <p className="mypage-api-guide-step-desc" style={{ marginTop: '8px' }}>
+                      API 키 등록 시 허용 IP에 아래 주소를 입력해주세요.
+                    </p>
+                    <div className="mypage-api-guide-ip-form">
+                      <span className="mypage-api-guide-ip-value">{SERVER_IP}</span>
+                      <button
+                        type="button"
+                        onClick={copyServerIp}
+                        className="mypage-api-guide-ip-copy"
+                      >
+                        {ipCopied ? '복사됨' : '복사'}
+                      </button>
+                    </div>
                     <p className="mypage-api-guide-step-warning">
                       절대 거래 기능이나 입금, 출금하기 기능을 체크하지 않아야 합니다.
                     </p>

@@ -704,6 +704,57 @@
   opacity: 0.85;
 }
 
+/* API 키 안내 - 서버 IP 복사 폼 */
+.mypage-api-guide-ip-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dark .mypage-api-guide-ip-form {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mypage-api-guide-ip-value {
+  flex: 1;
+  user-select: all;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.mypage-api-guide-ip-copy {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 5px;
+  background-color: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mypage-api-guide-ip-copy:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.dark .mypage-api-guide-ip-copy {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark .mypage-api-guide-ip-copy:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
 .mypage-api-responsibility-check {
   display: flex;
   align-items: flex-start;
