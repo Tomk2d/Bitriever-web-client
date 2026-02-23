@@ -385,7 +385,8 @@ export default function LoginPage() {
                 </span>
                 <span className="social-text">카카오 로그인</span>
               </button>
-              <button
+              {/* 네이버 로그인 (추후 재반영 예정) */}
+              {/* <button
                 type="button"
                 onClick={handleNaverLogin}
                 className="social-button-unified naver-btn"
@@ -397,7 +398,7 @@ export default function LoginPage() {
                   </svg>
                 </span>
                 <span className="social-text">네이버 로그인</span>
-              </button>
+              </button> */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
