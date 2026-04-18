@@ -103,17 +103,47 @@ function parseOhlcValue(valueStr: string): { open: number; high: number; low: nu
   return null;
 }
 
+/**
+ * 차트/정렬용 날짜 키 정규화 (YYYY-MM-DD).
+ * LLM·백엔드에서 키 형식이 섞이면 localeCompare만으로 순서가 어긋날 수 있어 Date로 보정한다.
+ */
+function normalizeChartDateKey(raw: string | null | undefined): string | null {
+  if (raw == null) return null;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return null;
+
+  const ymdCandidate = trimmed
+    .slice(0, 10)
+    .replace(/\//g, '-')
+    .replace(/\./g, '-');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(ymdCandidate)) {
+    return ymdCandidate;
+  }
+
+  const t = Date.parse(trimmed);
+  if (!Number.isFinite(t)) return null;
+  const d = new Date(t);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function compareChartDateKeys(a: string, b: string): number {
+  return a.localeCompare(b);
+}
+
 const CHART_HEIGHT = 184;
 
 /** API 일봉 → lightweight-charts 라인 데이터 (time: YYYY-MM-DD, value: 종가) */
 function sixMonthToLineData(rows: CoinPriceDayResponse[]): { time: string; value: number }[] {
   return rows
     .map((r) => {
-      const t = r.candleDateTimeKst?.trim().slice(0, 10);
+      const t = normalizeChartDateKey(r.candleDateTimeKst);
       return t ? { time: t, value: Number(r.tradePrice) } : null;
     })
     .filter((d): d is { time: string; value: number } => d != null)
-    .sort((a, b) => a.time.localeCompare(b.time));
+    .sort((a, b) => compareChartDateKeys(a.time, b.time));
 }
 
 /** 주목할 기간 1개: title + 6개월 라인(배경) + 주목 기간 캔들(강조) */
@@ -135,13 +165,14 @@ function CoinPriceNotablePeriodChart({
     () =>
       rawList
         .flatMap((item) => Object.entries(item))
-        .map(([date, valueStr]) => {
+        .map(([dateRaw, valueStr]) => {
+          const date = normalizeChartDateKey(dateRaw);
           const ohlc = parseOhlcValue(valueStr);
-          if (!ohlc) return null;
+          if (!date || !ohlc) return null;
           return { date, ...ohlc };
         })
         .filter((d): d is NonNullable<typeof d> => d != null)
-        .sort((a, b) => a.date.localeCompare(b.date)),
+        .sort((a, b) => compareChartDateKeys(a.date, b.date)),
     [period]
   );
 
@@ -378,7 +409,17 @@ function NotablePeriodRow({ period, index, isOpen, onToggle }: {
 }) {
   const title = period.title ?? '';
   const periodText = period.period_text ?? '';
-  const items = Array.isArray(period.period_data) ? period.period_data : [];
+  const items = useMemo(() => {
+    const list = Array.isArray(period.period_data) ? period.period_data : [];
+    return [...list].sort((a, b) => {
+      const ka = normalizeChartDateKey(a.date);
+      const kb = normalizeChartDateKey(b.date);
+      if (ka && kb) return compareChartDateKeys(ka, kb);
+      if (ka) return -1;
+      if (kb) return 1;
+      return 0;
+    });
+  }, [period.period_data]);
   return (
     <div className="trade-evaluation-notable-period">
       <button
@@ -468,8 +509,20 @@ function ArticleExpertContent({ data }: { data: ArticleExpertData }) {
 /** period_data에서 가장 늦은 날짜(YYYY-MM-DD) 반환 */
 function getPeriodEndDate(period: CoinPriceNotablePeriod): string {
   const raw = period.period_data ?? [];
-  const dates = raw.flatMap((item) => Object.keys(item));
-  return dates.length > 0 ? dates.sort((a, b) => a.localeCompare(b))[dates.length - 1]! : '';
+  const dates = raw
+    .flatMap((item) => Object.keys(item))
+    .map((k) => normalizeChartDateKey(k))
+    .filter((k): k is string => k != null);
+  return dates.length > 0 ? dates.sort(compareChartDateKeys)[dates.length - 1]! : '';
+}
+
+function getFearGreedPeriodEndDate(period: FearGreedNotablePeriod): string {
+  const raw = period.period_data ?? [];
+  const dates = raw
+    .flatMap((item) => Object.keys(item))
+    .map((k) => normalizeChartDateKey(k))
+    .filter((k): k is string => k != null);
+  return dates.length > 0 ? dates.sort(compareChartDateKeys)[dates.length - 1]! : '';
 }
 
 /** 코인가격 전문가: 기사 전문가와 동일 구성·디자인. 주목할 기간은 title + period_data 그래프, 끝날짜 기준 오름차순 */
@@ -529,7 +582,10 @@ function FearGreedNotablePeriodChart({
   const title = period.title ?? '';
   const rawList = period.period_data ?? [];
   const notableDateSet = useMemo(() => {
-    const dates = rawList.flatMap((item) => Object.keys(item));
+    const dates = rawList
+      .flatMap((item) => Object.keys(item))
+      .map((k) => normalizeChartDateKey(k))
+      .filter((k): k is string => k != null);
     return new Set(dates);
   }, [period]);
 
@@ -538,7 +594,7 @@ function FearGreedNotablePeriodChart({
     if (Array.isArray(rangeData) && rangeData.length > 0) {
       return rangeData
         .map((r) => {
-          const date = String(r.date).trim().slice(0, 10);
+          const date = normalizeChartDateKey(String(r.date));
           const value = Number(r.value);
           if (!date || !Number.isFinite(value)) return null;
           return {
@@ -549,15 +605,16 @@ function FearGreedNotablePeriodChart({
           };
         })
         .filter((d): d is NonNullable<typeof d> => d != null)
-        .sort((a, b) => a.date.localeCompare(b.date));
+        .sort((a, b) => compareChartDateKeys(a.date, b.date));
     }
 
     // fallback: notable 기간 데이터만 라인
     return rawList
       .flatMap((item) => Object.entries(item))
-      .map(([date, value]) => {
+      .map(([dateRaw, value]) => {
+        const date = normalizeChartDateKey(dateRaw);
         const n = Number(value);
-        if (!Number.isFinite(n)) return null;
+        if (!date || !Number.isFinite(n)) return null;
         return {
           date,
           displayDate: date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$2/$3'),
@@ -566,7 +623,7 @@ function FearGreedNotablePeriodChart({
         };
       })
       .filter((d): d is NonNullable<typeof d> => d != null)
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .sort((a, b) => compareChartDateKeys(a.date, b.date));
   }, [rangeData, period, notableDateSet]);
 
   if (chartData.length === 0) {
@@ -668,7 +725,10 @@ function FearGreedExpertContent({
   const marketFlow = data.market_flow_analysis ?? '';
   const perspective = data.short_long_term_perspective ?? '';
   const notablePeriods = data.notable_periods ?? null;
-  const periodList = Array.isArray(notablePeriods) ? notablePeriods : [];
+  const periodList = useMemo(() => {
+    const list = Array.isArray(notablePeriods) ? notablePeriods : [];
+    return [...list].sort((a, b) => getFearGreedPeriodEndDate(a).localeCompare(getFearGreedPeriodEndDate(b)));
+  }, [notablePeriods]);
 
   return (
     <div className="trade-evaluation-expert-friendly">

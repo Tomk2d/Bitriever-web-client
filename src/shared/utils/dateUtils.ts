@@ -56,38 +56,25 @@ export const getSixMonthRangeBefore = (targetDateStr: string): { startDate: stri
 };
 
 export const calculateChartDateRange = (selectedDate: string, monthsRange: number = 6): DateRange => {
-  const selected = new Date(selectedDate);
   const today = new Date();
   today.setHours(23, 59, 59, 999);
-  
-  const selectedDateOnly = new Date(selected);
-  selectedDateOnly.setHours(0, 0, 0, 0);
-  
-  const todayDateOnly = new Date(today);
-  todayDateOnly.setHours(0, 0, 0, 0);
-  
-  const halfRangeMonths = Math.floor(monthsRange / 2);
-  
-  let startDate = new Date(selectedDateOnly);
-  startDate.setMonth(startDate.getMonth() - halfRangeMonths);
-  startDate.setHours(0, 0, 0, 0);
-  
-  let endDate = new Date(selectedDateOnly);
-  endDate.setMonth(endDate.getMonth() + halfRangeMonths);
+
+  const parsedSelected = new Date(selectedDate);
+  const isInvalidSelected = Number.isNaN(parsedSelected.getTime());
+
+  // selectedDate가 비정상 값이면 오늘 날짜를 기준으로 fallback
+  const safeSelectedDate = isInvalidSelected ? new Date(today) : parsedSelected;
+  safeSelectedDate.setHours(0, 0, 0, 0);
+
+  // 미래 날짜를 선택했을 때는 오늘까지로 보정
+  const endDate = safeSelectedDate > today ? new Date(today) : new Date(safeSelectedDate);
   endDate.setHours(23, 59, 59, 999);
-  
-  const isSelectedDateTodayOrFuture = selectedDateOnly >= todayDateOnly;
-  const isEndDateAfterToday = endDate > today;
-  
-  if (isSelectedDateTodayOrFuture || isEndDateAfterToday) {
-    endDate = new Date(today);
-    endDate.setHours(23, 59, 59, 999);
-    
-    startDate = new Date(endDate);
-    startDate.setMonth(startDate.getMonth() - monthsRange);
-    startDate.setHours(0, 0, 0, 0);
-  }
-  
+
+  const safeMonthsRange = Number.isFinite(monthsRange) && monthsRange > 0 ? Math.floor(monthsRange) : 6;
+  const startDate = new Date(endDate);
+  startDate.setMonth(startDate.getMonth() - safeMonthsRange);
+  startDate.setHours(0, 0, 0, 0);
+
   return {
     startDate: formatDateToISO8601(startDate),
     endDate: formatDateToISO8601(endDate),
