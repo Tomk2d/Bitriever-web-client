@@ -24,6 +24,7 @@
     "react-redux": "^9.2.0",
     "recharts": "^3.7.0",
     "sockjs-client": "^1.6.1",
+    "technicalindicators": "^3.1.0",
     "use-gauge": "^0.7.0",
     "zod": "^3.25.76"
   },

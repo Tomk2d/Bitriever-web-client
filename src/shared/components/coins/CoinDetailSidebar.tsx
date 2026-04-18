@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useLayoutEffect, type CSSProperties } from 'react';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
@@ -12,6 +12,7 @@ import { LongShortPeriod } from '@/features/longshort/services/longShortService'
 import { useArticlesByDateRange } from '@/features/articles/hooks/useArticles';
 import CoinDetailCandleChart from '@/shared/components/charts/CoinDetailCandleChart';
 import CoinDetailLineChart from '@/shared/components/charts/CoinDetailLineChart';
+import { CHART_INDICATOR_PERIODS } from '@/features/coins/utils/chartTechnicalIndicators';
 import { HelpIcon } from '@/shared/components/ui';
 import './CoinDetailSidebar.css';
 
@@ -99,6 +100,12 @@ function TooltipPositioner({ mouseX, mouseY, dateTimeString, longAccountPercent,
 
 export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: CoinDetailSidebarProps) {
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
+  const [showSmaEma, setShowSmaEma] = useState(true);
+  const [showRsi, setShowRsi] = useState(true);
+  const [indicatorMenuOpen, setIndicatorMenuOpen] = useState(false);
+  const indicatorTriggerRef = useRef<HTMLButtonElement>(null);
+  const indicatorPanelRef = useRef<HTMLDivElement>(null);
+  const [indicatorPanelStyle, setIndicatorPanelStyle] = useState<CSSProperties>({});
   const [detailTab, setDetailTab] = useState<'detail' | 'memo'>('detail');
   const [selectedDateData, setSelectedDateData] = useState<CoinPriceDayResponse | null>(null);
   const [longShortPeriod, setLongShortPeriod] = useState<LongShortPeriod>('1h');
@@ -109,6 +116,67 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [newsPage, setNewsPage] = useState(0);
   
+  useEffect(() => {
+    if (chartType === 'line') {
+      setIndicatorMenuOpen(false);
+    }
+  }, [chartType]);
+
+  useLayoutEffect(() => {
+    if (!indicatorMenuOpen) return;
+    const el = indicatorTriggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setIndicatorPanelStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      minWidth: Math.max(rect.width, 168),
+      zIndex: 10001,
+    });
+  }, [indicatorMenuOpen]);
+
+  useEffect(() => {
+    if (!indicatorMenuOpen) return;
+    const reposition = () => {
+      const trigger = indicatorTriggerRef.current;
+      if (!trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      setIndicatorPanelStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        minWidth: Math.max(rect.width, 168),
+        zIndex: 10001,
+      });
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const node = e.target as Node;
+      if (indicatorTriggerRef.current?.contains(node) || indicatorPanelRef.current?.contains(node)) {
+        return;
+      }
+      setIndicatorMenuOpen(false);
+    };
+    window.addEventListener('resize', reposition);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    const scrollParent = indicatorTriggerRef.current?.closest('.coin-detail-sidebar-body');
+    scrollParent?.addEventListener('scroll', reposition, { passive: true });
+    return () => {
+      window.removeEventListener('resize', reposition);
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      scrollParent?.removeEventListener('scroll', reposition);
+    };
+  }, [indicatorMenuOpen]);
+
+  useEffect(() => {
+    if (!indicatorMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIndicatorMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [indicatorMenuOpen]);
+
   const dateString = useMemo(() => {
     if (!selectedDateData) return null;
     const date = new Date(selectedDateData.candleDateTimeKst);
@@ -381,19 +449,70 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
         </div>
         <div className="coin-detail-sidebar-body">
 
-          <div className="coin-detail-chart-controls">
-            <button
-              className={`coin-detail-chart-type-button ${chartType === 'candle' ? 'active' : ''}`}
-              onClick={() => setChartType('candle')}
-            >
-              캔들
-            </button>
-            <button
-              className={`coin-detail-chart-type-button ${chartType === 'line' ? 'active' : ''}`}
-              onClick={() => setChartType('line')}
-            >
-              라인
-            </button>
+          <div className="coin-detail-chart-toolbar">
+            {chartType === 'candle' ? (
+              <div className="coin-detail-chart-indicators">
+                <button
+                  ref={indicatorTriggerRef}
+                  type="button"
+                  className="coin-detail-chart-indicators-trigger"
+                  id="coin-detail-chart-indicators-trigger"
+                  aria-expanded={indicatorMenuOpen}
+                  aria-haspopup="menu"
+                  aria-controls="coin-detail-chart-indicators-panel"
+                  onClick={() => setIndicatorMenuOpen((open) => !open)}
+                >
+                  <span>기술적 지표</span>
+                  <span
+                    className={`coin-detail-chart-indicators-chevron${indicatorMenuOpen ? ' is-open' : ''}`}
+                    aria-hidden
+                  />
+                </button>
+                {indicatorMenuOpen ? (
+                  <div
+                    ref={indicatorPanelRef}
+                    id="coin-detail-chart-indicators-panel"
+                    className="coin-detail-chart-indicators-panel"
+                    style={indicatorPanelStyle}
+                    role="menu"
+                    aria-labelledby="coin-detail-chart-indicators-trigger"
+                  >
+                    <label className="coin-detail-chart-indicator-row" role="menuitemcheckbox">
+                      <input
+                        type="checkbox"
+                        checked={showSmaEma}
+                        onChange={(e) => setShowSmaEma(e.target.checked)}
+                      />
+                      <span>SMA·EMA ({CHART_INDICATOR_PERIODS.sma})</span>
+                    </label>
+                    <label className="coin-detail-chart-indicator-row" role="menuitemcheckbox">
+                      <input
+                        type="checkbox"
+                        checked={showRsi}
+                        onChange={(e) => setShowRsi(e.target.checked)}
+                      />
+                      <span>RSI ({CHART_INDICATOR_PERIODS.rsi})</span>
+                    </label>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="coin-detail-chart-indicators-spacer" aria-hidden />
+            )}
+            <div className="coin-detail-chart-controls">
+              <button
+                className={`coin-detail-chart-type-button ${chartType === 'candle' ? 'active' : ''}`}
+                onClick={() => setChartType('candle')}
+              >
+                캔들
+              </button>
+              <button
+                className={`coin-detail-chart-type-button ${chartType === 'line' ? 'active' : ''}`}
+                onClick={() => setChartType('line')}
+              >
+                라인
+              </button>
+            </div>
           </div>
 
           {chartType === 'line' ? (
@@ -411,6 +530,8 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
               marketCode={coin.marketCode}
               containerClassName="coin-detail-chart"
               onDateClick={handleDateClick}
+              showSmaEma={showSmaEma}
+              showRsi={showRsi}
             />
           )}
 
