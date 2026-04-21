@@ -1,6 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useLayoutEffect,
+  useCallback,
+  type CSSProperties,
+} from 'react';
 import { CoinResponse } from '@/features/coins/services/coinService';
 import { useAppSelector } from '@/store/hooks';
 import { selectPriceByMarket } from '@/store/slices/coinPriceSlice';
@@ -12,8 +20,38 @@ import { LongShortPeriod } from '@/features/longshort/services/longShortService'
 import { useArticlesByDateRange } from '@/features/articles/hooks/useArticles';
 import CoinDetailCandleChart from '@/shared/components/charts/CoinDetailCandleChart';
 import CoinDetailLineChart from '@/shared/components/charts/CoinDetailLineChart';
+import {
+  CHART_BB_STD_DEV_DEFAULT,
+  CHART_BB_STD_DEV_LIMITS,
+  CHART_INDICATOR_COLOR_PICKER_SEED,
+  CHART_INDICATOR_LINE_WIDTH_OPTIONS,
+  CHART_INDICATOR_PERIOD_LIMITS,
+  CHART_INDICATOR_PERIODS,
+  clampBbStdDev,
+  clampIndicatorPeriod,
+  type ChartIndicatorLineWidthPreset,
+} from '@/features/coins/utils/chartTechnicalIndicators';
 import { HelpIcon } from '@/shared/components/ui';
 import './CoinDetailSidebar.css';
+
+const INDICATOR_LINE_WIDTH_LABELS: readonly string[] = ['얇게', '보통', '굵게', '매우 굵게'];
+
+type IndicatorSettingsTab = 'value' | 'appearance';
+
+const INDICATOR_ROW_TOOLTIPS = {
+  sma:
+    '지정한 일수만큼의 종가를 같은 비중으로 평균낸 선입니다.\n가격의 대략적인 추세와 지지·저항을 보는 데 쓰이며, \n서로 다른 기간의 이동평균이 교차할 때(골든크로스·데드크로스 등) 추세 전환 신호로 참고하기도 합니다.',
+  ema:
+    '최근 종가에 더 큰 가중치를 두어 계산한 이동평균입니다.\n같은 기간이라도 단순 이동평균보다 최근 가격 변화에 빠르게 반응해, 추세가 바뀔 때 선이 더 민감하게 움직입니다.',
+  rsi:
+    '일정 기간 동안의 상승 폭과 하락 폭을 비교해 \n 0~100 사이로 나타낸 모멘텀 지표입니다.\n일반적으로 70을 넘으면 과매수(과열) 구간, \n 30 아래면 과매도(침체) 구간으로 많이 봅니다.',
+  volume:
+    '해당 봉(기간) 동안 체결된 거래 수량입니다.\n가격이 오르거나 내릴 때 거래량이 함께 크면 그 방향에 대한 관심이 크다고 해석하는 경우가 많고, \n 가격만 움직이고 거래량이 적으면 추세가 약할 수 있다는 식으로 함께 읽습니다.',
+  bb:
+    '일정 기간 종가의 이동평균을 중심으로, 변동성(표준편차)에 비례한 폭으로 위·아래 밴드를 그은 지표입니다.\n가격이 밴드에 닿거나 벗어날 때 과열·과매도 구간을 참고하거나, 밴드 폭이 좁아졌다 넓어지는 모습으로 변동성 변화를 읽는 데 쓰입니다.',
+  macd:
+    'MACD 선(M)은 단기 EMA와 장기 EMA의 차이로, \n 0선 위/아래에서 추세의 방향과 강도를 봅니다.\n\n시그널 선(Sig)은 MACD의 이동평균으로, \n MACD가 시그널을 상향 돌파하면 단기 강세 전환, \n 하향 이탈하면 약세 전환 신호로 해석합니다.\n\n히스토그램(H, 막대/캔들)은 MACD와 시그널의 차이이며, 막대가 커지면 모멘텀 강화, 줄어들면 모멘텀 둔화로 봅니다.\n'
+} as const;
 
 interface CoinDetailSidebarProps {
   coin: CoinResponse | null;
@@ -28,6 +66,36 @@ interface TooltipPositionerProps {
   longAccountPercent: string;
   shortAccountPercent: string;
   longShortRatio: string;
+}
+
+/** 기술적 지표 기간 설정 버튼용 톱니바퀴 아이콘 */
+function IndicatorSettingsGearIcon() {
+  return (
+    <svg
+      className="coin-detail-chart-indicator-settings-icon"
+      width={15}
+      height={15}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 function TooltipPositioner({ mouseX, mouseY, dateTimeString, longAccountPercent, shortAccountPercent, longShortRatio }: TooltipPositionerProps) {
@@ -99,6 +167,85 @@ function TooltipPositioner({ mouseX, mouseY, dateTimeString, longAccountPercent,
 
 export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: CoinDetailSidebarProps) {
   const [chartType, setChartType] = useState<'candle' | 'line'>('candle');
+  const [showSma, setShowSma] = useState(false);
+  const [showEma, setShowEma] = useState(false);
+  const [showRsi, setShowRsi] = useState(false);
+  const [showBb, setShowBb] = useState(false);
+  const [showMacd, setShowMacd] = useState(false);
+  const [showVolume, setShowVolume] = useState(true);
+  const [smaPeriod, setSmaPeriod] = useState<number>(CHART_INDICATOR_PERIODS.sma);
+  const [emaPeriod, setEmaPeriod] = useState<number>(CHART_INDICATOR_PERIODS.ema);
+  const [rsiPeriod, setRsiPeriod] = useState<number>(CHART_INDICATOR_PERIODS.rsi);
+  const [bbPeriod, setBbPeriod] = useState<number>(CHART_INDICATOR_PERIODS.bb);
+  const [macdFastPeriod, setMacdFastPeriod] = useState<number>(CHART_INDICATOR_PERIODS.macdFast);
+  const [macdSlowPeriod, setMacdSlowPeriod] = useState<number>(CHART_INDICATOR_PERIODS.macdSlow);
+  const [macdSignalPeriod, setMacdSignalPeriod] = useState<number>(CHART_INDICATOR_PERIODS.macdSignal);
+  const [bbStdDev, setBbStdDev] = useState<number>(CHART_BB_STD_DEV_DEFAULT);
+  const [smaColorOverride, setSmaColorOverride] = useState<string | null>(null);
+  const [emaColorOverride, setEmaColorOverride] = useState<string | null>(null);
+  const [rsiColorOverride, setRsiColorOverride] = useState<string | null>(null);
+  const [bbColorOverride, setBbColorOverride] = useState<string | null>(null);
+  const [macdColorOverride, setMacdColorOverride] = useState<string | null>(null);
+  const [macdSignalColorOverride, setMacdSignalColorOverride] = useState<string | null>(null);
+  const [smaLineWidth, setSmaLineWidth] = useState<ChartIndicatorLineWidthPreset>(1);
+  const [emaLineWidth, setEmaLineWidth] = useState<ChartIndicatorLineWidthPreset>(1);
+  const [rsiLineWidth, setRsiLineWidth] = useState<ChartIndicatorLineWidthPreset>(1);
+  const [bbLineWidth, setBbLineWidth] = useState<ChartIndicatorLineWidthPreset>(1);
+  const [macdLineWidth, setMacdLineWidth] = useState<ChartIndicatorLineWidthPreset>(1);
+  const [indicatorSettingsKey, setIndicatorSettingsKey] = useState<
+    'sma' | 'ema' | 'rsi' | 'bb' | 'macd' | null
+  >(null);
+  const [indicatorSettingsTab, setIndicatorSettingsTab] = useState<IndicatorSettingsTab>('value');
+  const [appearanceDraft, setAppearanceDraft] = useState<{
+    useAutoColor: boolean;
+    colorHex: string;
+    lineWidth: ChartIndicatorLineWidthPreset;
+  }>({
+    useAutoColor: true,
+    colorHex: CHART_INDICATOR_COLOR_PICKER_SEED.sma,
+    lineWidth: 1,
+  });
+  const [indicatorSettingsDraft, setIndicatorSettingsDraft] = useState('');
+  const [indicatorSettingsStdDevDraft, setIndicatorSettingsStdDevDraft] = useState('');
+  const [indicatorSettingsMacdFastDraft, setIndicatorSettingsMacdFastDraft] = useState('');
+  const [indicatorSettingsMacdSlowDraft, setIndicatorSettingsMacdSlowDraft] = useState('');
+  const [indicatorSettingsMacdSignalDraft, setIndicatorSettingsMacdSignalDraft] = useState('');
+  const [macdAppearanceDraft, setMacdAppearanceDraft] = useState<{
+    macdUseAuto: boolean;
+    macdColorHex: string;
+    signalUseAuto: boolean;
+    signalColorHex: string;
+    lineWidth: ChartIndicatorLineWidthPreset;
+  }>({
+    macdUseAuto: true,
+    macdColorHex: CHART_INDICATOR_COLOR_PICKER_SEED.macd,
+    signalUseAuto: true,
+    signalColorHex: CHART_INDICATOR_COLOR_PICKER_SEED.macdSignal,
+    lineWidth: 1,
+  });
+  const [indicatorSettingsPos, setIndicatorSettingsPos] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
+  const indicatorSettingsPopoverRef = useRef<HTMLDivElement>(null);
+  const [indicatorMenuOpen, setIndicatorMenuOpen] = useState(false);
+  const indicatorTriggerRef = useRef<HTMLButtonElement>(null);
+  const indicatorPanelRef = useRef<HTMLDivElement>(null);
+  const [indicatorPanelStyle, setIndicatorPanelStyle] = useState<CSSProperties>({});
+  const updateIndicatorPanelPosition = useCallback(() => {
+    const el = indicatorTriggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const minW = Math.max(rect.width, 268);
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - minW - 8));
+    setIndicatorPanelStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left,
+      minWidth: minW,
+      zIndex: 10001,
+    });
+  }, []);
   const [detailTab, setDetailTab] = useState<'detail' | 'memo'>('detail');
   const [selectedDateData, setSelectedDateData] = useState<CoinPriceDayResponse | null>(null);
   const [longShortPeriod, setLongShortPeriod] = useState<LongShortPeriod>('1h');
@@ -109,6 +256,206 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [newsPage, setNewsPage] = useState(0);
   
+  useEffect(() => {
+    if (chartType === 'line') {
+      setIndicatorMenuOpen(false);
+    }
+  }, [chartType]);
+
+  useEffect(() => {
+    if (!indicatorMenuOpen) {
+      setIndicatorSettingsKey(null);
+    }
+  }, [indicatorMenuOpen]);
+
+  const openIndicatorSettings = (
+    key: 'sma' | 'ema' | 'rsi' | 'bb' | 'macd',
+    anchorEl: HTMLElement
+  ) => {
+    const r = anchorEl.getBoundingClientRect();
+    const panelWidth = 300;
+    const left = Math.max(8, Math.min(r.left, window.innerWidth - panelWidth - 8));
+    setIndicatorSettingsPos({ top: r.bottom + 4, left });
+    setIndicatorSettingsKey(key);
+    setIndicatorSettingsTab('value');
+    if (key === 'macd') {
+      setIndicatorSettingsDraft('');
+      setIndicatorSettingsMacdFastDraft(String(macdFastPeriod));
+      setIndicatorSettingsMacdSlowDraft(String(macdSlowPeriod));
+      setIndicatorSettingsMacdSignalDraft(String(macdSignalPeriod));
+    } else {
+      const current =
+        key === 'sma' ? smaPeriod : key === 'ema' ? emaPeriod : key === 'rsi' ? rsiPeriod : bbPeriod;
+      setIndicatorSettingsDraft(String(current));
+      setIndicatorSettingsStdDevDraft(
+        key === 'bb' ? String(bbStdDev) : String(CHART_BB_STD_DEV_DEFAULT)
+      );
+    }
+    if (key === 'macd') {
+      setMacdAppearanceDraft({
+        macdUseAuto: macdColorOverride === null,
+        macdColorHex: macdColorOverride ?? CHART_INDICATOR_COLOR_PICKER_SEED.macd,
+        signalUseAuto: macdSignalColorOverride === null,
+        signalColorHex: macdSignalColorOverride ?? CHART_INDICATOR_COLOR_PICKER_SEED.macdSignal,
+        lineWidth: macdLineWidth,
+      });
+      return;
+    }
+    const seed =
+      key === 'bb' ? CHART_INDICATOR_COLOR_PICKER_SEED.bb : CHART_INDICATOR_COLOR_PICKER_SEED[key];
+    const override =
+      key === 'sma'
+        ? smaColorOverride
+        : key === 'ema'
+          ? emaColorOverride
+          : key === 'rsi'
+            ? rsiColorOverride
+            : bbColorOverride;
+    const lw =
+      key === 'sma'
+        ? smaLineWidth
+        : key === 'ema'
+          ? emaLineWidth
+          : key === 'rsi'
+            ? rsiLineWidth
+            : bbLineWidth;
+    setAppearanceDraft({
+      useAutoColor: override === null,
+      colorHex: override ?? seed,
+      lineWidth: lw,
+    });
+  };
+
+  const applyIndicatorSettings = () => {
+    const key = indicatorSettingsKey;
+    if (!key) return;
+    if (key === 'macd') {
+      const fast = clampIndicatorPeriod(Number(indicatorSettingsMacdFastDraft));
+      const slow = clampIndicatorPeriod(Number(indicatorSettingsMacdSlowDraft));
+      const signal = clampIndicatorPeriod(Number(indicatorSettingsMacdSignalDraft));
+      if (fast >= slow) {
+        window.alert('단기 기간은 장기 기간보다 작아야 합니다.');
+        return;
+      }
+      setMacdFastPeriod(fast);
+      setMacdSlowPeriod(slow);
+      setMacdSignalPeriod(signal);
+      setMacdColorOverride(macdAppearanceDraft.macdUseAuto ? null : macdAppearanceDraft.macdColorHex);
+      setMacdSignalColorOverride(
+        macdAppearanceDraft.signalUseAuto ? null : macdAppearanceDraft.signalColorHex
+      );
+      setMacdLineWidth(macdAppearanceDraft.lineWidth);
+      setIndicatorSettingsKey(null);
+      return;
+    }
+    if (key === 'bb') {
+      setBbPeriod(clampIndicatorPeriod(Number(indicatorSettingsDraft)));
+      setBbStdDev(clampBbStdDev(Number(indicatorSettingsStdDevDraft)));
+      setBbColorOverride(appearanceDraft.useAutoColor ? null : appearanceDraft.colorHex);
+      setBbLineWidth(appearanceDraft.lineWidth);
+    } else {
+      const v = clampIndicatorPeriod(Number(indicatorSettingsDraft));
+      if (key === 'sma') {
+        setSmaPeriod(v);
+        setSmaColorOverride(appearanceDraft.useAutoColor ? null : appearanceDraft.colorHex);
+        setSmaLineWidth(appearanceDraft.lineWidth);
+      } else if (key === 'ema') {
+        setEmaPeriod(v);
+        setEmaColorOverride(appearanceDraft.useAutoColor ? null : appearanceDraft.colorHex);
+        setEmaLineWidth(appearanceDraft.lineWidth);
+      } else {
+        setRsiPeriod(v);
+        setRsiColorOverride(appearanceDraft.useAutoColor ? null : appearanceDraft.colorHex);
+        setRsiLineWidth(appearanceDraft.lineWidth);
+      }
+    }
+    setIndicatorSettingsKey(null);
+  };
+
+  const resetIndicatorSettingsValueTab = () => {
+    const key = indicatorSettingsKey;
+    if (!key) return;
+    if (key === 'bb') {
+      setIndicatorSettingsDraft(String(CHART_INDICATOR_PERIODS.bb));
+      setIndicatorSettingsStdDevDraft(String(CHART_BB_STD_DEV_DEFAULT));
+      return;
+    }
+    if (key === 'macd') {
+      setIndicatorSettingsMacdFastDraft(String(CHART_INDICATOR_PERIODS.macdFast));
+      setIndicatorSettingsMacdSlowDraft(String(CHART_INDICATOR_PERIODS.macdSlow));
+      setIndicatorSettingsMacdSignalDraft(String(CHART_INDICATOR_PERIODS.macdSignal));
+      return;
+    }
+    setIndicatorSettingsDraft(String(CHART_INDICATOR_PERIODS[key]));
+  };
+
+  const resetIndicatorSettingsAppearanceTab = () => {
+    const key = indicatorSettingsKey;
+    if (!key) return;
+    if (key === 'macd') {
+      setMacdAppearanceDraft({
+        macdUseAuto: true,
+        macdColorHex: CHART_INDICATOR_COLOR_PICKER_SEED.macd,
+        signalUseAuto: true,
+        signalColorHex: CHART_INDICATOR_COLOR_PICKER_SEED.macdSignal,
+        lineWidth: 1,
+      });
+      return;
+    }
+    const seed =
+      key === 'bb' ? CHART_INDICATOR_COLOR_PICKER_SEED.bb : CHART_INDICATOR_COLOR_PICKER_SEED[key];
+    setAppearanceDraft({
+      useAutoColor: true,
+      colorHex: seed,
+      lineWidth: 1,
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (!indicatorMenuOpen) return;
+    updateIndicatorPanelPosition();
+  }, [indicatorMenuOpen, updateIndicatorPanelPosition]);
+
+  useEffect(() => {
+    if (!indicatorMenuOpen) return;
+    const reposition = () => {
+      updateIndicatorPanelPosition();
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const node = e.target as Node;
+      if (indicatorSettingsPopoverRef.current?.contains(node)) {
+        return;
+      }
+      if (indicatorTriggerRef.current?.contains(node) || indicatorPanelRef.current?.contains(node)) {
+        return;
+      }
+      setIndicatorMenuOpen(false);
+    };
+    window.addEventListener('resize', reposition);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    const scrollParent = indicatorTriggerRef.current?.closest('.coin-detail-sidebar-body');
+    scrollParent?.addEventListener('scroll', reposition, { passive: true });
+    return () => {
+      window.removeEventListener('resize', reposition);
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      scrollParent?.removeEventListener('scroll', reposition);
+    };
+  }, [indicatorMenuOpen, updateIndicatorPanelPosition]);
+
+  useEffect(() => {
+    if (!indicatorMenuOpen && !indicatorSettingsKey) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (indicatorSettingsKey) {
+        setIndicatorSettingsKey(null);
+      } else {
+        setIndicatorMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [indicatorMenuOpen, indicatorSettingsKey]);
+
   const dateString = useMemo(() => {
     if (!selectedDateData) return null;
     const date = new Date(selectedDateData.candleDateTimeKst);
@@ -381,19 +728,497 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
         </div>
         <div className="coin-detail-sidebar-body">
 
-          <div className="coin-detail-chart-controls">
-            <button
-              className={`coin-detail-chart-type-button ${chartType === 'candle' ? 'active' : ''}`}
-              onClick={() => setChartType('candle')}
-            >
-              캔들
-            </button>
-            <button
-              className={`coin-detail-chart-type-button ${chartType === 'line' ? 'active' : ''}`}
-              onClick={() => setChartType('line')}
-            >
-              라인
-            </button>
+          <div className="coin-detail-chart-toolbar">
+            {chartType === 'candle' ? (
+              <div className="coin-detail-chart-indicators">
+                <button
+                  ref={indicatorTriggerRef}
+                  type="button"
+                  className="coin-detail-chart-indicators-trigger"
+                  id="coin-detail-chart-indicators-trigger"
+                  aria-expanded={indicatorMenuOpen}
+                  aria-haspopup="menu"
+                  aria-controls="coin-detail-chart-indicators-panel"
+                  onClick={() => {
+                    setIndicatorMenuOpen((open) => {
+                      if (open) return false;
+                      updateIndicatorPanelPosition();
+                      return true;
+                    });
+                  }}
+                >
+                  <span>기술적 지표</span>
+                  <span
+                    className={`coin-detail-chart-indicators-chevron${indicatorMenuOpen ? ' is-open' : ''}`}
+                    aria-hidden
+                  />
+                </button>
+                {indicatorMenuOpen ? (
+                  <div
+                    ref={indicatorPanelRef}
+                    id="coin-detail-chart-indicators-panel"
+                    className="coin-detail-chart-indicators-panel"
+                    style={indicatorPanelStyle}
+                    role="menu"
+                    aria-labelledby="coin-detail-chart-indicators-trigger"
+                  >
+                    <div
+                      className="coin-detail-chart-indicator-row coin-detail-chart-indicator-row--split coin-detail-chart-indicator-tooltip-host"
+                      data-tooltip={INDICATOR_ROW_TOOLTIPS.sma}
+                    >
+                      <label className="coin-detail-chart-indicator-row-label" role="menuitemcheckbox">
+                        <input
+                          type="checkbox"
+                          checked={showSma}
+                          onChange={(e) => setShowSma(e.target.checked)}
+                        />
+                        <span>이동평균 (MA, Moving Average)</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="coin-detail-chart-indicator-settings-btn"
+                        aria-label="이동평균 기간 설정"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openIndicatorSettings('sma', e.currentTarget);
+                        }}
+                      >
+                        <IndicatorSettingsGearIcon />
+                      </button>
+                    </div>
+                    <div
+                      className="coin-detail-chart-indicator-row coin-detail-chart-indicator-row--split coin-detail-chart-indicator-tooltip-host"
+                      data-tooltip={INDICATOR_ROW_TOOLTIPS.ema}
+                    >
+                      <label className="coin-detail-chart-indicator-row-label" role="menuitemcheckbox">
+                        <input
+                          type="checkbox"
+                          checked={showEma}
+                          onChange={(e) => setShowEma(e.target.checked)}
+                        />
+                        <span>지수 이동평균 (EMA, Exponential Moving Average)</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="coin-detail-chart-indicator-settings-btn"
+                        aria-label="지수 이동평균 기간 설정"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openIndicatorSettings('ema', e.currentTarget);
+                        }}
+                      >
+                        <IndicatorSettingsGearIcon />
+                      </button>
+                    </div>
+                    <div
+                      className="coin-detail-chart-indicator-row coin-detail-chart-indicator-row--split coin-detail-chart-indicator-tooltip-host"
+                      data-tooltip={INDICATOR_ROW_TOOLTIPS.bb}
+                    >
+                      <label className="coin-detail-chart-indicator-row-label" role="menuitemcheckbox">
+                        <input
+                          type="checkbox"
+                          checked={showBb}
+                          onChange={(e) => setShowBb(e.target.checked)}
+                        />
+                        <span>볼린저 밴드 (BB, Bollinger Bands)</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="coin-detail-chart-indicator-settings-btn"
+                        aria-label="볼린저 밴드 기간·표준편차 설정"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openIndicatorSettings('bb', e.currentTarget);
+                        }}
+                      >
+                        <IndicatorSettingsGearIcon />
+                      </button>
+                    </div>
+                    <div
+                      className="coin-detail-chart-indicator-row coin-detail-chart-indicator-row--split coin-detail-chart-indicator-tooltip-host"
+                      data-tooltip={INDICATOR_ROW_TOOLTIPS.rsi}
+                    >
+                      <label className="coin-detail-chart-indicator-row-label" role="menuitemcheckbox">
+                        <input
+                          type="checkbox"
+                          checked={showRsi}
+                          onChange={(e) => setShowRsi(e.target.checked)}
+                        />
+                        <span>상대강도지수 (RSI, Relative Strength Index)</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="coin-detail-chart-indicator-settings-btn"
+                        aria-label="상대강도지수 기간 설정"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openIndicatorSettings('rsi', e.currentTarget);
+                        }}
+                      >
+                        <IndicatorSettingsGearIcon />
+                      </button>
+                    </div>
+                    <div
+                      className="coin-detail-chart-indicator-row coin-detail-chart-indicator-row--split coin-detail-chart-indicator-tooltip-host"
+                      data-tooltip={INDICATOR_ROW_TOOLTIPS.macd}
+                    >
+                      <label className="coin-detail-chart-indicator-row-label" role="menuitemcheckbox">
+                        <input
+                          type="checkbox"
+                          checked={showMacd}
+                          onChange={(e) => setShowMacd(e.target.checked)}
+                        />
+                        <span>이동평균 수렴·발산 (MACD, Moving Average Convergence Divergence)</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="coin-detail-chart-indicator-settings-btn"
+                        aria-label="MACD 기간·모양 설정"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openIndicatorSettings('macd', e.currentTarget);
+                        }}
+                      >
+                        <IndicatorSettingsGearIcon />
+                      </button>
+                    </div>
+                    <label
+                      className="coin-detail-chart-indicator-row coin-detail-chart-indicator-tooltip-host"
+                      role="menuitemcheckbox"
+                      data-tooltip={INDICATOR_ROW_TOOLTIPS.volume}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={showVolume}
+                        onChange={(e) => setShowVolume(e.target.checked)}
+                      />
+                      <span>거래량 (Vol., Volume)</span>
+                    </label>
+                  </div>
+                ) : null}
+                {indicatorSettingsKey ? (
+                  <div
+                    ref={indicatorSettingsPopoverRef}
+                    className="coin-detail-chart-indicator-settings-popover"
+                    style={{
+                      position: 'fixed',
+                      top: indicatorSettingsPos.top,
+                      left: indicatorSettingsPos.left,
+                      zIndex: 10002,
+                      width: 300,
+                    }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="지표 설정"
+                  >
+                    <div className="coin-detail-chart-indicator-settings-tabs" role="tablist" aria-label="설정 구분">
+                      <button
+                        type="button"
+                        role="tab"
+                        id="indicator-tab-value"
+                        aria-selected={indicatorSettingsTab === 'value'}
+                        className={`coin-detail-chart-indicator-settings-tab${indicatorSettingsTab === 'value' ? ' is-active' : ''}`}
+                        onClick={() => setIndicatorSettingsTab('value')}
+                      >
+                        값
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        id="indicator-tab-appearance"
+                        aria-selected={indicatorSettingsTab === 'appearance'}
+                        className={`coin-detail-chart-indicator-settings-tab${indicatorSettingsTab === 'appearance' ? ' is-active' : ''}`}
+                        onClick={() => setIndicatorSettingsTab('appearance')}
+                      >
+                        모양
+                      </button>
+                    </div>
+                    {indicatorSettingsTab === 'value' ? (
+                      <div
+                        className="coin-detail-chart-indicator-settings-form"
+                        role="tabpanel"
+                        aria-labelledby="indicator-tab-value"
+                      >
+                        {indicatorSettingsKey === 'macd' ? (
+                          <>
+                            <label className="coin-detail-chart-indicator-settings-label" htmlFor="indicator-macd-fast">
+                              단기 (일)
+                            </label>
+                            <input
+                              id="indicator-macd-fast"
+                              type="number"
+                              min={CHART_INDICATOR_PERIOD_LIMITS.min}
+                              max={CHART_INDICATOR_PERIOD_LIMITS.max}
+                              className="coin-detail-chart-indicator-settings-input"
+                              value={indicatorSettingsMacdFastDraft}
+                              onChange={(e) => setIndicatorSettingsMacdFastDraft(e.target.value)}
+                            />
+                            <label
+                              className="coin-detail-chart-indicator-settings-label"
+                              htmlFor="indicator-macd-slow"
+                              style={{ marginTop: 12 }}
+                            >
+                              장기 (일)
+                            </label>
+                            <input
+                              id="indicator-macd-slow"
+                              type="number"
+                              min={CHART_INDICATOR_PERIOD_LIMITS.min}
+                              max={CHART_INDICATOR_PERIOD_LIMITS.max}
+                              className="coin-detail-chart-indicator-settings-input"
+                              value={indicatorSettingsMacdSlowDraft}
+                              onChange={(e) => setIndicatorSettingsMacdSlowDraft(e.target.value)}
+                            />
+                            <label
+                              className="coin-detail-chart-indicator-settings-label"
+                              htmlFor="indicator-macd-signal"
+                              style={{ marginTop: 12 }}
+                            >
+                              시그널 (일)
+                            </label>
+                            <input
+                              id="indicator-macd-signal"
+                              type="number"
+                              min={CHART_INDICATOR_PERIOD_LIMITS.min}
+                              max={CHART_INDICATOR_PERIOD_LIMITS.max}
+                              className="coin-detail-chart-indicator-settings-input"
+                              value={indicatorSettingsMacdSignalDraft}
+                              onChange={(e) => setIndicatorSettingsMacdSignalDraft(e.target.value)}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <label className="coin-detail-chart-indicator-settings-label" htmlFor="indicator-period-input">
+                              기간 (일)
+                            </label>
+                            <input
+                              id="indicator-period-input"
+                              type="number"
+                              min={CHART_INDICATOR_PERIOD_LIMITS.min}
+                              max={CHART_INDICATOR_PERIOD_LIMITS.max}
+                              className="coin-detail-chart-indicator-settings-input"
+                              value={indicatorSettingsDraft}
+                              onChange={(e) => setIndicatorSettingsDraft(e.target.value)}
+                            />
+                            {indicatorSettingsKey === 'bb' ? (
+                              <>
+                                <label
+                                  className="coin-detail-chart-indicator-settings-label"
+                                  htmlFor="indicator-stddev-input"
+                                  style={{ marginTop: 12 }}
+                                >
+                                  표준편차 (σ)
+                                </label>
+                                <input
+                                  id="indicator-stddev-input"
+                                  type="number"
+                                  min={CHART_BB_STD_DEV_LIMITS.min}
+                                  max={CHART_BB_STD_DEV_LIMITS.max}
+                                  step={0.5}
+                                  className="coin-detail-chart-indicator-settings-input"
+                                  value={indicatorSettingsStdDevDraft}
+                                  onChange={(e) => setIndicatorSettingsStdDevDraft(e.target.value)}
+                                />
+                              </>
+                            ) : null}
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        className="coin-detail-chart-indicator-settings-form coin-detail-chart-indicator-settings-form--appearance"
+                        role="tabpanel"
+                        aria-labelledby="indicator-tab-appearance"
+                      >
+                        {indicatorSettingsKey === 'macd' ? (
+                          <>
+                            <span className="coin-detail-chart-indicator-settings-label">MACD 선</span>
+                            <label className="coin-detail-chart-indicator-settings-auto-color">
+                              <input
+                                type="checkbox"
+                                checked={macdAppearanceDraft.macdUseAuto}
+                                onChange={(e) =>
+                                  setMacdAppearanceDraft((d) => ({
+                                    ...d,
+                                    macdUseAuto: e.target.checked,
+                                  }))
+                                }
+                              />
+                              <span>테마 기본 색 사용</span>
+                            </label>
+                            {!macdAppearanceDraft.macdUseAuto ? (
+                              <input
+                                type="color"
+                                className="coin-detail-chart-indicator-settings-color-input"
+                                value={macdAppearanceDraft.macdColorHex}
+                                onChange={(e) =>
+                                  setMacdAppearanceDraft((d) => ({
+                                    ...d,
+                                    macdColorHex: e.target.value,
+                                  }))
+                                }
+                                aria-label="MACD 선 색상"
+                              />
+                            ) : null}
+                            <span
+                              className="coin-detail-chart-indicator-settings-label"
+                              style={{ marginTop: 12 }}
+                            >
+                              시그널 선
+                            </span>
+                            <label className="coin-detail-chart-indicator-settings-auto-color">
+                              <input
+                                type="checkbox"
+                                checked={macdAppearanceDraft.signalUseAuto}
+                                onChange={(e) =>
+                                  setMacdAppearanceDraft((d) => ({
+                                    ...d,
+                                    signalUseAuto: e.target.checked,
+                                  }))
+                                }
+                              />
+                              <span>테마 기본 색 사용</span>
+                            </label>
+                            {!macdAppearanceDraft.signalUseAuto ? (
+                              <input
+                                type="color"
+                                className="coin-detail-chart-indicator-settings-color-input"
+                                value={macdAppearanceDraft.signalColorHex}
+                                onChange={(e) =>
+                                  setMacdAppearanceDraft((d) => ({
+                                    ...d,
+                                    signalColorHex: e.target.value,
+                                  }))
+                                }
+                                aria-label="시그널 선 색상"
+                              />
+                            ) : null}
+                            <span className="coin-detail-chart-indicator-settings-label">
+                              선 굵기 (MACD·시그널 공통)
+                            </span>
+                            <div
+                              className="coin-detail-chart-indicator-line-widths"
+                              role="group"
+                              aria-label="선 굵기"
+                            >
+                              {CHART_INDICATOR_LINE_WIDTH_OPTIONS.map((w, i) => (
+                                <button
+                                  key={w}
+                                  type="button"
+                                  className={`coin-detail-chart-indicator-line-width-btn${
+                                    macdAppearanceDraft.lineWidth === w ? ' is-active' : ''
+                                  }`}
+                                  onClick={() =>
+                                    setMacdAppearanceDraft((d) => ({ ...d, lineWidth: w }))
+                                  }
+                                >
+                                  {INDICATOR_LINE_WIDTH_LABELS[i] ?? w}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="coin-detail-chart-indicator-settings-label">색상</span>
+                            <label className="coin-detail-chart-indicator-settings-auto-color">
+                              <input
+                                type="checkbox"
+                                checked={appearanceDraft.useAutoColor}
+                                onChange={(e) =>
+                                  setAppearanceDraft((d) => ({ ...d, useAutoColor: e.target.checked }))
+                                }
+                              />
+                              <span>테마 기본 색 사용</span>
+                            </label>
+                            {!appearanceDraft.useAutoColor ? (
+                              <input
+                                type="color"
+                                className="coin-detail-chart-indicator-settings-color-input"
+                                value={appearanceDraft.colorHex}
+                                onChange={(e) =>
+                                  setAppearanceDraft((d) => ({ ...d, colorHex: e.target.value }))
+                                }
+                                aria-label="선 색상"
+                              />
+                            ) : null}
+                            <span className="coin-detail-chart-indicator-settings-label">선 굵기</span>
+                            <div
+                              className="coin-detail-chart-indicator-line-widths"
+                              role="group"
+                              aria-label="선 굵기"
+                            >
+                              {CHART_INDICATOR_LINE_WIDTH_OPTIONS.map((w, i) => (
+                                <button
+                                  key={w}
+                                  type="button"
+                                  className={`coin-detail-chart-indicator-line-width-btn${
+                                    appearanceDraft.lineWidth === w ? ' is-active' : ''
+                                  }`}
+                                  onClick={() => setAppearanceDraft((d) => ({ ...d, lineWidth: w }))}
+                                >
+                                  {INDICATOR_LINE_WIDTH_LABELS[i] ?? w}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    <div className="coin-detail-chart-indicator-settings-actions">
+                      <button
+                        type="button"
+                        className="coin-detail-chart-indicator-settings-reset"
+                        aria-label={
+                          indicatorSettingsTab === 'value'
+                            ? '값 탭을 기본값으로 초기화'
+                            : '모양 탭을 기본값으로 초기화'
+                        }
+                        onClick={
+                          indicatorSettingsTab === 'value'
+                            ? resetIndicatorSettingsValueTab
+                            : resetIndicatorSettingsAppearanceTab
+                        }
+                      >
+                        초기화
+                      </button>
+                      <div className="coin-detail-chart-indicator-settings-actions-right">
+                        <button type="button" className="coin-detail-chart-indicator-settings-apply" onClick={applyIndicatorSettings}>
+                          적용
+                        </button>
+                        <button
+                          type="button"
+                          className="coin-detail-chart-indicator-settings-cancel"
+                          onClick={() => setIndicatorSettingsKey(null)}
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="coin-detail-chart-indicators-spacer" aria-hidden />
+            )}
+            <div className="coin-detail-chart-controls">
+              <button
+                className={`coin-detail-chart-type-button ${chartType === 'candle' ? 'active' : ''}`}
+                onClick={() => setChartType('candle')}
+              >
+                캔들
+              </button>
+              <button
+                className={`coin-detail-chart-type-button ${chartType === 'line' ? 'active' : ''}`}
+                onClick={() => setChartType('line')}
+              >
+                라인
+              </button>
+            </div>
           </div>
 
           {chartType === 'line' ? (
@@ -411,6 +1236,31 @@ export default function CoinDetailSidebar({ coin, isClosing = false, onClose }: 
               marketCode={coin.marketCode}
               containerClassName="coin-detail-chart"
               onDateClick={handleDateClick}
+              showSma={showSma}
+              showEma={showEma}
+              showRsi={showRsi}
+              showMacd={showMacd}
+              showBb={showBb}
+              showVolume={showVolume}
+              smaPeriod={smaPeriod}
+              emaPeriod={emaPeriod}
+              rsiPeriod={rsiPeriod}
+              macdFastPeriod={macdFastPeriod}
+              macdSlowPeriod={macdSlowPeriod}
+              macdSignalPeriod={macdSignalPeriod}
+              bbPeriod={bbPeriod}
+              bbStdDev={bbStdDev}
+              smaColor={smaColorOverride}
+              emaColor={emaColorOverride}
+              rsiColor={rsiColorOverride}
+              macdColor={macdColorOverride}
+              macdSignalLineColor={macdSignalColorOverride}
+              bbColor={bbColorOverride}
+              smaLineWidth={smaLineWidth}
+              emaLineWidth={emaLineWidth}
+              rsiLineWidth={rsiLineWidth}
+              macdLineWidth={macdLineWidth}
+              bbLineWidth={bbLineWidth}
             />
           )}
 

@@ -70,6 +70,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 16px 16px 16px;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   -ms-overflow-style: auto;
@@ -293,10 +294,419 @@
   border-bottom-color: rgb(232, 235, 238);
 }
 
+.coin-detail-chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.coin-detail-chart-indicators {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.85));
+}
+
+.coin-detail-chart-indicators-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 배경: .coin-detail-info-details 와 동일 (라이트) */
+.coin-detail-chart-indicators-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  background-color: rgba(2, 32, 71, 0.035);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--foreground);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  max-width: 100%;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.coin-detail-chart-indicators-trigger:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--foreground);
+}
+
+.coin-detail-chart-indicators-chevron {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4px solid currentColor;
+  opacity: 0.75;
+  transition: transform 0.15s ease;
+}
+
+.coin-detail-chart-indicators-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.coin-detail-chart-indicators-panel {
+  /* 위치는 인라인 style(position: fixed, top, left)로만 지정 — 레이아웃·스크롤에 영향 없음 */
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: var(--sidebar-bg, #ffffff);
+  box-shadow: 0 4px 16px rgba(0, 19, 43, 0.12);
+}
+
+.coin-detail-chart-indicator-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.coin-detail-chart-indicator-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.coin-detail-chart-indicator-row input {
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.coin-detail-chart-indicators-panel .coin-detail-chart-indicator-row input[type='checkbox'] {
+  accent-color: var(--main-color, #02a262);
+}
+
+.coin-detail-chart-indicator-row--split {
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.coin-detail-chart-indicator-row-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  cursor: pointer;
+}
+
+/* 드롭다운 지표 행: 호버 시 설명 툴팁 — 패널 우측에 붙이고 행 상단 정렬 */
+.coin-detail-chart-indicator-tooltip-host {
+  position: relative;
+}
+
+.coin-detail-chart-indicator-tooltip-host::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: 8px;
+  padding: 8px 12px;
+  background-color: rgb(232, 235, 238);
+  color: #171717;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: pre-line;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 24px));
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 19, 43, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 10050;
+  word-break: keep-all;
+}
+
+.coin-detail-chart-indicator-tooltip-host:hover::after {
+  opacity: 1;
+}
+
+.dark .coin-detail-chart-indicator-tooltip-host::after {
+  background-color: rgb(232, 235, 238);
+  color: #171717;
+}
+
+.coin-detail-chart-indicator-settings-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--foreground);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.coin-detail-chart-indicator-settings-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.coin-detail-chart-indicator-settings-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.coin-detail-chart-indicator-settings-popover {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--sidebar-bg, #fff);
+  box-shadow: 0 8px 24px rgba(0, 19, 43, 0.15);
+}
+
+.coin-detail-chart-indicator-settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 2px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.coin-detail-chart-indicator-settings-tab {
+  flex: 1;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-inactive, rgba(121, 131, 140, 0.9));
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.coin-detail-chart-indicator-settings-tab:hover {
+  color: var(--foreground);
+}
+
+.coin-detail-chart-indicator-settings-tab.is-active {
+  background: var(--sidebar-bg, #fff);
+  color: var(--foreground);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.coin-detail-chart-indicator-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coin-detail-chart-indicator-settings-form--appearance {
+  gap: 10px;
+}
+
+.coin-detail-chart-indicator-settings-auto-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  user-select: none;
+}
+
+.coin-detail-chart-indicator-settings-auto-color input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.coin-detail-chart-indicator-settings-color-input {
+  width: 100%;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--sidebar-bg, #fff);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.coin-detail-chart-indicator-settings-color-input:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+  box-shadow: 0 0 0 2px rgba(2, 162, 98, 0.22);
+}
+
+.coin-detail-chart-indicator-line-widths {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.coin-detail-chart-indicator-line-width-btn {
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  color: rgba(55, 65, 81, 0.92);
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.coin-detail-chart-indicator-line-width-btn:hover {
+  background: rgba(0, 0, 0, 0.07);
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--foreground);
+}
+
+.coin-detail-chart-indicator-line-width-btn.is-active {
+  border-color: var(--main-color, #02a262);
+  background: rgba(2, 162, 98, 0.16);
+  color: #01814a;
+  box-shadow: inset 0 0 0 1px rgba(2, 162, 98, 0.22);
+}
+
+.coin-detail-chart-indicator-settings-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.coin-detail-chart-indicator-settings-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--foreground);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.coin-detail-chart-indicator-settings-input:hover:not(:focus) {
+  border-color: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.045);
+}
+
+.coin-detail-chart-indicator-settings-input:focus {
+  outline: none;
+  border-color: var(--main-color, #02a262);
+  background: var(--sidebar-bg, #fff);
+  box-shadow:
+    0 0 0 2px rgba(2, 162, 98, 0.22),
+    inset 0 0 0 1px rgba(2, 162, 98, 0.08);
+}
+
+/* number 입력 우측 스피너(위/아래) 숨김 — Chrome / Safari / Edge */
+.coin-detail-chart-indicator-settings-input[type='number']::-webkit-outer-spin-button,
+.coin-detail-chart-indicator-settings-input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.coin-detail-chart-indicator-settings-input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.coin-detail-chart-indicator-settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.coin-detail-chart-indicator-settings-actions-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.coin-detail-chart-indicator-settings-reset {
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--foreground);
+  font-family: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.coin-detail-chart-indicator-settings-reset:hover {
+  background: rgba(0, 0, 0, 0.07);
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+.coin-detail-chart-indicator-settings-apply,
+.coin-detail-chart-indicator-settings-cancel {
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.coin-detail-chart-indicator-settings-apply {
+  background: var(--main-color, #02a262);
+  color: #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(2, 162, 98, 0.25);
+}
+
+.coin-detail-chart-indicator-settings-apply:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 1px 3px rgba(2, 162, 98, 0.35);
+}
+
+.coin-detail-chart-indicator-settings-cancel {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.16);
+  color: var(--foreground);
+}
+
+.coin-detail-chart-indicator-settings-cancel:hover {
+  background: rgba(0, 0, 0, 0.07);
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
 .coin-detail-chart-controls {
   display: flex;
   gap: 0;
-  margin-bottom: 5px;
   background-color: rgba(2, 32, 71, 0.035);
   border-radius: 4px;
   padding: 0;
@@ -305,6 +715,7 @@
   min-width: 80px;
   margin-left: auto;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .coin-detail-chart-type-button {
@@ -716,6 +1127,152 @@
 
 .dark .coin-detail-market-code {
   color: rgba(237, 237, 237, 0.6);
+}
+
+.dark .coin-detail-chart-indicators {
+  color: rgba(237, 237, 237, 0.65);
+}
+
+/* 트리거 배경: .dark .coin-detail-info-details 와 동일 */
+.dark .coin-detail-chart-indicators-trigger {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .coin-detail-chart-indicators-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--foreground);
+}
+
+.dark .coin-detail-chart-indicators-panel {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--sidebar-bg, #17171c);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.dark .coin-detail-chart-indicator-row:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.dark .coin-detail-chart-indicator-settings-btn {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--foreground);
+}
+
+.dark .coin-detail-chart-indicator-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .coin-detail-chart-indicator-settings-popover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--sidebar-bg, #17171c);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+.dark .coin-detail-chart-indicator-settings-tabs {
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.dark .coin-detail-chart-indicator-settings-tab {
+  color: rgba(237, 237, 237, 0.48);
+}
+
+.dark .coin-detail-chart-indicator-settings-tab:hover {
+  color: rgba(245, 245, 245, 0.92);
+}
+
+.dark .coin-detail-chart-indicator-settings-tab.is-active {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fafafa;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.dark .coin-detail-chart-indicator-settings-color-input {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .coin-detail-chart-indicator-line-width-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(229, 231, 235, 0.88);
+}
+
+.dark .coin-detail-chart-indicator-line-width-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #f9fafb;
+}
+
+.dark .coin-detail-chart-indicator-line-width-btn.is-active {
+  border-color: rgba(52, 211, 153, 0.65);
+  background: rgba(2, 162, 98, 0.28);
+  color: #d1fae5;
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 185, 129, 0.35),
+    0 0 0 1px rgba(2, 162, 98, 0.2);
+}
+
+.dark .coin-detail-chart-indicator-settings-input {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(243, 244, 246, 0.96);
+}
+
+.dark .coin-detail-chart-indicator-settings-input:hover:not(:focus) {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .coin-detail-chart-indicator-settings-input:focus {
+  border-color: var(--main-color, #02a262);
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 0 0 2px rgba(2, 162, 98, 0.42),
+    inset 0 0 0 1px rgba(52, 211, 153, 0.15);
+}
+
+.dark .coin-detail-chart-indicator-settings-color-input:focus {
+  border-color: var(--main-color, #02a262);
+  box-shadow: 0 0 0 2px rgba(2, 162, 98, 0.38);
+}
+
+.dark .coin-detail-chart-indicator-settings-cancel {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(243, 244, 246, 0.96);
+}
+
+.dark .coin-detail-chart-indicator-settings-cancel:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.dark .coin-detail-chart-indicator-settings-reset {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(243, 244, 246, 0.96);
+}
+
+.dark .coin-detail-chart-indicator-settings-reset:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.dark .coin-detail-chart-indicator-settings-apply {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.dark .coin-detail-chart-indicator-settings-apply:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 2px 6px rgba(2, 162, 98, 0.35);
 }
 
 .dark .coin-detail-chart-controls {
