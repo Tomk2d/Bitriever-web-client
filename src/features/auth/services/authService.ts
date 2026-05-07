@@ -2,6 +2,7 @@ import { apiClient } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 import { store } from '@/lib/redux';
 import { clearUser } from '@/store/slices/authSlice';
+import { tokenStore } from '@/lib/tokenStore';
 import type { UserResponse } from '../types';
 
 export interface LoginRequest {
@@ -43,9 +44,7 @@ export const authService = {
 
     const authData = result.data;
     
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', authData.accessToken);
-    }
+    tokenStore.setAccessToken(authData.accessToken);
     
     return authData;
   },
@@ -83,15 +82,13 @@ export const authService = {
 
     const authData = result.data;
     
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', authData.accessToken);
-    }
+    tokenStore.setAccessToken(authData.accessToken);
     
     return authData;
   },
 
   logout: async (): Promise<void> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const accessToken = tokenStore.getAccessToken();
 
     try {
       const response = await fetch('/api/auth/logout', {
@@ -113,9 +110,7 @@ export const authService = {
       console.warn('로그아웃 서버 요청 중 에러 (무시):', error);
     }
     
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-    }
+    tokenStore.clearAccessToken();
 
     // Redux store의 유저 관련 state 초기화
     store.dispatch(clearUser());
@@ -142,7 +137,7 @@ export const authService = {
   },
 
   setNickname: async (nickname: string): Promise<void> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const accessToken = tokenStore.getAccessToken();
     
     if (!accessToken) {
       throw new Error('로그인이 필요합니다.');
@@ -165,7 +160,7 @@ export const authService = {
   },
 
   setProfileUrl: async (profileUrl: string): Promise<void> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const accessToken = tokenStore.getAccessToken();
 
     if (!accessToken) {
       throw new Error('로그인이 필요합니다.');
@@ -188,7 +183,7 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<UserResponse> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const accessToken = tokenStore.getAccessToken();
     
     if (!accessToken) {
       throw new Error('로그인이 필요합니다.');

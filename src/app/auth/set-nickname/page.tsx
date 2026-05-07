@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { Input, Button } from '@/shared/components/ui';
 import { authService } from '@/features/auth/services/authService';
+import { useHasAccessToken } from '@/features/auth/hooks/useAccessToken';
 import { setUser } from '@/store/slices/authSlice';
 import { assetService } from '@/features/asset/services/assetService';
 import './SetNicknamePage.css';
@@ -17,14 +18,14 @@ export default function SetNicknamePage() {
   const [isChecking, setIsChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isNicknameAvailable, setIsNicknameAvailable] = useState<boolean | null>(null);
+  const hasToken = useHasAccessToken();
 
   useEffect(() => {
     // 토큰이 없으면 로그인 페이지로 리다이렉트
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
+    if (!hasToken) {
       router.push('/login');
     }
-  }, [router]);
+  }, [hasToken, router]);
 
   const validateNickname = (value: string): boolean => {
     const newErrors: { nickname?: string } = {};

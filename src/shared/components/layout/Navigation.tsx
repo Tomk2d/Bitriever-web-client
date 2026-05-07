@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 import { authService } from '@/features/auth/services/authService';
+import { tokenStore } from '@/lib/tokenStore';
 import NewsHeadlineRotator from './NewsHeadlineRotator';
 import './Navigation.css';
 
@@ -22,12 +23,12 @@ export default function Navigation() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // 앱 초기화 시 localStorage의 토큰 확인 및 사용자 정보 가져오기
+  // 앱 초기화 시 메모리 토큰 확인 및 사용자 정보 가져오기
   useEffect(() => {
     const initializeAuth = async () => {
       if (isInitialized) return;
       
-      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const accessToken = tokenStore.getAccessToken();
       
       // 토큰이 없으면 초기화만 완료
       if (!accessToken) {
@@ -49,9 +50,7 @@ export default function Navigation() {
         } catch (error) {
           // 에러 발생 시 조용히 처리 (로그인되지 않은 상태로 유지)
           // 토큰이 유효하지 않으면 제거
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('accessToken');
-          }
+          tokenStore.clearAccessToken();
           dispatch(clearUser());
         }
       }

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useHasAccessToken } from '@/features/auth/hooks/useAccessToken';
 import { notificationService } from '../services/notificationService';
 import {
   NotificationResponse,
@@ -16,8 +17,7 @@ export const useNotifications = (
   read?: boolean,
   type?: NotificationType
 ) => {
-  const hasToken =
-    typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useHasAccessToken();
 
   return useQuery({
     queryKey: ['notifications', page, size, read, type],
@@ -35,8 +35,7 @@ export const useInfiniteNotifications = (
   type?: NotificationType,
   size: number = 20
 ) => {
-  const hasToken =
-    typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useHasAccessToken();
 
   return useInfiniteQuery({
     queryKey: ['notifications', 'infinite', read, type, size],
@@ -60,8 +59,7 @@ export const useInfiniteNotifications = (
  * 읽지 않은 알림 개수 조회 훅
  */
 export const useUnreadNotificationCount = () => {
-  const hasToken =
-    typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useHasAccessToken();
 
   return useQuery({
     queryKey: ['notifications', 'unread-count'],

@@ -6,6 +6,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { setUser, setUserFromAuthResponse } from '@/store/slices/authSlice';
 import { authService } from '@/features/auth/services/authService';
 import { assetService } from '@/features/asset/services/assetService';
+import { tokenStore } from '@/lib/tokenStore';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -38,9 +39,7 @@ export default function AuthCallbackPage() {
           return;
         }
         const authData = result.data;
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('accessToken', authData.accessToken);
-        }
+        tokenStore.setAccessToken(authData.accessToken);
 
         if (authData.requiresNickname) {
           router.push('/auth/set-nickname');

@@ -1,4 +1,5 @@
 import { authService } from '@/features/auth/services/authService';
+import { tokenStore } from '@/lib/tokenStore';
 
 /** 401 시 refresh 후 한 번 재시도하는 공용 fetch. 동시 401 요청은 하나의 refresh만 수행하고 대기 후 재시도 */
 let refreshPromise: Promise<string> | null = null;
@@ -24,8 +25,7 @@ export async function authenticatedFetch(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  const token = tokenStore.getAccessToken();
   const headers = new Headers(init?.headers);
   if (token) headers.set('Authorization', `Bearer ${token}`);
 

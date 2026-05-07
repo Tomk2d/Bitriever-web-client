@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { getBackendUrl } from '@/lib/env';
 import { authService } from '@/features/auth/services/authService';
+import { tokenStore } from '@/lib/tokenStore';
 import { NotificationResponse, TradeEvaluationEventPayload } from '../types';
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -44,8 +45,7 @@ export const useNotificationSSE = (options: UseNotificationSSEOptions = {}) => {
     }
 
     // 토큰 가져오기
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const token = tokenStore.getAccessToken();
 
     if (!token) {
       console.warn('[SSE] 토큰이 없어 연결할 수 없습니다.');

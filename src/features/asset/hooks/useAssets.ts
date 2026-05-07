@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { useHasAccessToken } from '@/features/auth/hooks/useAccessToken';
 import { assetService } from '../services/assetService';
 
 export const useAssets = (enabled: boolean = true) => {
   // 토큰 확인
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useHasAccessToken();
 
   return useQuery({
     queryKey: ['assets'],

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useHasAccessToken } from '@/features/auth/hooks/useAccessToken';
 import { tradingHistoryService } from '../services/tradingHistoryService';
 import { getMonthStartDate, getMonthEndDate } from '@/shared/utils/dateUtils';
 
@@ -7,7 +8,7 @@ export const useTradingHistories = (activeStartDate: Date | null) => {
   const month = activeStartDate ? activeStartDate.getMonth() + 1 : null;
 
   // 토큰 확인
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useHasAccessToken();
 
   return useQuery({
     queryKey: ['trading-histories', year, month],

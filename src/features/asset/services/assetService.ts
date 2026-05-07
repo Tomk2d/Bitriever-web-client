@@ -1,4 +1,5 @@
 import { authenticatedFetch } from '@/lib/authenticatedFetch';
+import { tokenStore } from '@/lib/tokenStore';
 import type { AssetResponse } from '../types';
 
 const MAX_RETRIES = 3;
@@ -8,7 +9,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const assetService = {
   syncAssets: async (): Promise<boolean> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const accessToken = tokenStore.getAccessToken();
     if (!accessToken) {
       console.warn('자산 동기화: JWT 토큰이 없어 요청을 보내지 않습니다.');
       return false;
@@ -51,7 +52,7 @@ export const assetService = {
   },
 
   getUserAssets: async (): Promise<AssetResponse[]> => {
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const accessToken = tokenStore.getAccessToken();
     if (!accessToken) {
       throw new Error('로그인이 필요합니다.');
     }
