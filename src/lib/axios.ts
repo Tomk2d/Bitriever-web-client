@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authService } from '@/features/auth/services/authService';
 import { getBackendUrl } from '@/lib/env';
+import { tokenStore } from '@/lib/tokenStore';
 
 export const apiClient = axios.create({
   baseURL: getBackendUrl(),
@@ -28,12 +29,9 @@ const addRefreshSubscriber = (callback: (token: string) => void) => {
 // 요청 인터셉터
 apiClient.interceptors.request.use(
   (config) => {
-    // 로컬 스토리지에서 토큰 가져오기
-    if (typeof window !== 'undefined') {
-      const accessToken = localStorage.getItem('accessToken');
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
+    const accessToken = tokenStore.getAccessToken();
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },

@@ -1,6 +1,7 @@
 import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { getWebSocketUrl } from '@/lib/env';
+import { tokenStore } from '@/lib/tokenStore';
 
 const WS_URL = getWebSocketUrl();
 
@@ -36,12 +37,10 @@ export class WebSocketClient {
     }
 
     // 인증 토큰 가져오기
-    let connectHeaders: Record<string, string> = {};
-    if (typeof window !== 'undefined') {
-      const accessToken = localStorage.getItem('accessToken');
-      if (accessToken) {
-        connectHeaders['Authorization'] = `Bearer ${accessToken}`;
-      }
+    const connectHeaders: Record<string, string> = {};
+    const accessToken = tokenStore.getAccessToken();
+    if (accessToken) {
+      connectHeaders['Authorization'] = `Bearer ${accessToken}`;
     }
 
     // SockJS를 사용한 연결

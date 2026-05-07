@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { useHasAccessToken } from '@/features/auth/hooks/useAccessToken';
 import { authService } from '../services/authService';
 import type { UserResponse } from '../types';
 
 export const useCurrentUser = (enabled: boolean = true) => {
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useHasAccessToken();
 
   return useQuery<UserResponse>({
     queryKey: ['current-user'],
